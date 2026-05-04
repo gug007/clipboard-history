@@ -13,6 +13,9 @@ struct SettingsView: View {
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
         .frame(width: 520, height: 420)
+        .onDisappear {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 }
 

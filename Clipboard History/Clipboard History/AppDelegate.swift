@@ -90,20 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private static let pausedKey = "ClipboardHistory.isPaused"
 
     private static func openSettings() {
-        // Briefly switch to .regular so the Settings window can show & receive focus.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        if #available(macOS 14.0, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
-    }
-
-    func applicationDidResignActive(_ notification: Notification) {
-        // When the user closes Settings (or switches away), drop back to .accessory
-        // so the Dock icon disappears.
-        NSApp.setActivationPolicy(.accessory)
+        SettingsLauncher.shared.launch()
     }
 
     private static func databaseURL() throws -> URL {
