@@ -12,8 +12,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
+        let initialPaused = UserDefaults.standard.bool(forKey: Self.pausedKey)
+
         // Menu bar icon first — guarantees the user can always quit, regardless of below.
-        menuBar = MenuBarController(onOpen: { [weak self] in self?.overlay?.toggle() })
+        menuBar = MenuBarController(
+            initialPaused: initialPaused,
+            onOpen: { [weak self] in self?.overlay?.toggle() },
+            onTogglePause: { [weak self] in self?.handlePauseToggle() }
+        )
 
         let store: HistoryStore
         do {
@@ -58,12 +64,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.watcher = watcher
         watcher.start()
+        if initialPaused {
+            watcher.setPaused(true)
+            print("[Startup] Restored paused state from previous session")
+        }
 
         let hotkey = HotkeyService { [weak overlay] in overlay?.toggle() }
         self.hotkey = hotkey
         hotkey.register(keyCode: UInt32(kVK_ANSI_V), modifiers: [.command, .shift])
-        print("[Startup] All systems ready — hotkey ⇧⌘V registered")
+        print("[Startup] All systems ready — hotkey ⇧⌘V registered (paused=\(initialPaused))")
     }
+
+    private func handlePauseToggle() {
+        guard let menuBar else { return }
+        let paused = menuBar.isPaused
+        watcher?.setPaused(paused)
+        UserDefaults.standard.set(paused, forKey: Self.pausedKey)
+        print("[Pause] now paused=\(paused)")
+    }
+
+    private static let pausedKey = "ClipboardHistory.isPaused"
 
     private static func databaseURL() throws -> URL {
         let appSupport = try FileManager.default.url(

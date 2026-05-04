@@ -15,13 +15,16 @@ final class HistoryStore {
         self.pool = try AppDatabase.openPool(at: databaseURL)
     }
 
+    static let retentionCap = 1_000
+    private static let dedupWindowSeconds: TimeInterval = 30
+
     func append(_ entry: ClipEntry, payloads: [ClipPayload]) throws {
         try pool.write { db in
-            // 5-second dedup: bump createdAt of existing same-hash entry instead of inserting.
+            // 30-second dedup: bump createdAt of existing same-hash entry instead of inserting.
             let recentSame = try ClipEntry
                 .filter(Column("contentHash") == entry.contentHash)
                 .filter(Column("deletedAt") == nil)
-                .filter(Column("createdAt") > entry.createdAt.addingTimeInterval(-5))
+                .filter(Column("createdAt") > entry.createdAt.addingTimeInterval(-Self.dedupWindowSeconds))
                 .fetchOne(db)
             if var existing = recentSame {
                 existing.createdAt = entry.createdAt
@@ -46,7 +49,33 @@ final class HistoryStore {
                     entry.sourceAppName ?? entry.sourceApp ?? ""
                 ]
             )
+
+            try Self.pruneInTransaction(db: db, cap: Self.retentionCap)
         }
+    }
+
+    private static func pruneInTransaction(db: GRDB.Database, cap: Int) throws {
+        let toDeleteIds = try String.fetchAll(db, sql: """
+            SELECT id FROM clip_entry
+            WHERE deletedAt IS NULL AND isPinned = 0
+            ORDER BY createdAt DESC
+            LIMIT -1 OFFSET ?
+            """, arguments: [cap])
+
+        guard !toDeleteIds.isEmpty else { return }
+
+        let now = Date()
+        for id in toDeleteIds {
+            try db.execute(
+                sql: "UPDATE clip_entry SET deletedAt = ?, updatedAt = ? WHERE id = ?",
+                arguments: [now, now, id]
+            )
+            try db.execute(
+                sql: "DELETE FROM clip_fts WHERE entryId = ?",
+                arguments: [id]
+            )
+        }
+        print("[Retention] soft-deleted \(toDeleteIds.count) entries past cap=\(cap)")
     }
 
     func recent(limit: Int = 50) throws -> [ClipEntry] {
