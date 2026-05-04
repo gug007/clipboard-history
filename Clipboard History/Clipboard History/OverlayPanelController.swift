@@ -71,13 +71,67 @@ final class OverlayPanelController {
     private func paste(_ entry: ClipEntry) {
         do {
             let payloads = try store.payloads(for: entry.id)
-            if let text = payloads.first?.inlineText {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(text, forType: .string)
+            switch entry.kind {
+            case .text, .url, .richText:
+                if let text = payloads.first?.inlineText {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(text, forType: .string)
+                }
+            case .file, .multiFile:
+                pasteFiles(payloads)
+            case .image:
+                break
             }
         } catch {
-            NSLog("Paste failed: %@", String(describing: error))
+            print("[Paste] failed: \(error)")
         }
         hide()
+    }
+
+    private func pasteFiles(_ payloads: [ClipPayload]) {
+        var resolved: [URL] = []
+        for payload in payloads {
+            guard let bookmark = payload.bookmarkData else { continue }
+            var stale = false
+            do {
+                let url = try URL(
+                    resolvingBookmarkData: bookmark,
+                    options: [.withSecurityScope],
+                    relativeTo: nil,
+                    bookmarkDataIsStale: &stale
+                )
+                _ = url.startAccessingSecurityScopedResource()
+                resolved.append(url)
+            } catch {
+                print("[Paste] bookmark resolve failed for \(payload.filename ?? "?"): \(error)")
+            }
+        }
+        guard !resolved.isEmpty else { return }
+
+        let pb = NSPasteboard.general
+        pb.clearContents()
+
+        let items: [NSPasteboardItem] = resolved.enumerated().map { idx, url in
+            let item = NSPasteboardItem()
+            item.setString(url.absoluteString, forType: .fileURL)
+            if idx == 0 {
+                let paths = resolved.map { $0.path }
+                item.setPropertyList(
+                    paths,
+                    forType: NSPasteboard.PasteboardType("NSFilenamesPboardType")
+                )
+            }
+            return item
+        }
+        pb.writeObjects(items)
+
+        // Hold the security scope open for ~30s so destination apps can read.
+        let urls = resolved
+        Task {
+            try? await Task.sleep(nanoseconds: 30_000_000_000)
+            for url in urls {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
     }
 }

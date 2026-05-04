@@ -6,17 +6,17 @@ struct OverlayView: View {
     let onPaste: (ClipEntry) -> Void
     let onDismiss: () -> Void
 
-    @State private var entries: [ClipEntry] = []
+    @State private var items: [ClipItem] = []
     @State private var query = ""
     @State private var selectionIndex = 0
     @FocusState private var searchFocused: Bool
 
-    private var displayed: [ClipEntry] {
+    private var displayed: [ClipItem] {
         let q = query.trimmingCharacters(in: .whitespaces)
-        guard !q.isEmpty else { return entries }
-        return entries.filter {
-            $0.displayTitle.localizedCaseInsensitiveContains(q)
-                || $0.searchableText.localizedCaseInsensitiveContains(q)
+        guard !q.isEmpty else { return items }
+        return items.filter {
+            $0.entry.displayTitle.localizedCaseInsensitiveContains(q)
+                || $0.entry.searchableText.localizedCaseInsensitiveContains(q)
         }
     }
 
@@ -39,8 +39,8 @@ struct OverlayView: View {
                 emptyState
             } else {
                 ScrollViewReader { proxy in
-                    List(Array(displayed.enumerated()), id: \.offset) { idx, entry in
-                        EntryRow(entry: entry)
+                    List(Array(displayed.enumerated()), id: \.offset) { idx, item in
+                        EntryRow(item: item)
                             .listRowBackground(
                                 idx == selectionIndex
                                     ? Color.accentColor.opacity(0.25)
@@ -49,7 +49,7 @@ struct OverlayView: View {
                             .listRowSeparator(.hidden)
                             .id(idx)
                             .contentShape(Rectangle())
-                            .onTapGesture { onPaste(entry) }
+                            .onTapGesture { onPaste(item.entry) }
                     }
                     .scrollContentBackground(.hidden)
                     .listStyle(.plain)
@@ -83,10 +83,10 @@ struct OverlayView: View {
         .task {
             searchFocused = true
             do {
-                for try await items in store.observeEntries(limit: 100) {
-                    entries = items
-                    if selectionIndex >= items.count {
-                        selectionIndex = max(0, items.count - 1)
+                for try await newItems in store.observeItems(limit: 100) {
+                    items = newItems
+                    if selectionIndex >= newItems.count {
+                        selectionIndex = max(0, newItems.count - 1)
                     }
                 }
             } catch {
@@ -98,7 +98,7 @@ struct OverlayView: View {
         }
         .onKeyPress(.return) {
             if displayed.indices.contains(selectionIndex) {
-                onPaste(displayed[selectionIndex])
+                onPaste(displayed[selectionIndex].entry)
             }
             return .handled
         }
@@ -121,12 +121,12 @@ struct OverlayView: View {
             Image(systemName: "list.clipboard")
                 .font(.system(size: 36))
                 .foregroundStyle(.tertiary)
-            Text(entries.isEmpty
+            Text(items.isEmpty
                  ? "Your clipboard history will appear here"
                  : "No matches")
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
-            if entries.isEmpty {
+            if items.isEmpty {
                 Text("Copy something to get started.")
                     .font(.system(size: 12))
                     .foregroundStyle(.tertiary)
@@ -151,18 +151,17 @@ struct OverlayView: View {
 }
 
 private struct EntryRow: View {
-    let entry: ClipEntry
+    let item: ClipItem
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: iconName)
-                .foregroundStyle(.tertiary)
-                .frame(width: 18)
+            iconView
+                .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.displayTitle)
+                Text(item.entry.displayTitle)
                     .lineLimit(1)
                     .font(.system(size: 13))
-                if let sub = entry.displaySubtitle {
+                if let sub = item.entry.displaySubtitle {
                     Text(sub)
                         .lineLimit(1)
                         .font(.system(size: 11))
@@ -170,7 +169,7 @@ private struct EntryRow: View {
                 }
             }
             Spacer()
-            Text(relative(entry.createdAt))
+            Text(relative(item.entry.createdAt))
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
         }
@@ -178,8 +177,22 @@ private struct EntryRow: View {
         .padding(.vertical, 6)
     }
 
-    private var iconName: String {
-        switch entry.kind {
+    @ViewBuilder
+    private var iconView: some View {
+        if let data = item.firstIcon, let nsImage = NSImage(data: data) {
+            Image(nsImage: nsImage)
+                .resizable()
+                .interpolation(.medium)
+                .scaledToFit()
+        } else {
+            Image(systemName: defaultIconName)
+                .foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var defaultIconName: String {
+        switch item.entry.kind {
         case .text:      return "text.alignleft"
         case .file:      return "doc"
         case .image:     return "photo"

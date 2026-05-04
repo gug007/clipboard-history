@@ -22,4 +22,5 @@ struct ClipPayload: Codable, Identifiable, Equatable, FetchableRecord, Persistab
     var bookmarkData: Data?
     var uti: String?
     var byteSize: Int64
+    var iconPNG: Data?
 }

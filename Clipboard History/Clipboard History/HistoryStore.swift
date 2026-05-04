@@ -1,6 +1,13 @@
 import Foundation
 import GRDB
 
+struct ClipItem: Identifiable, Equatable {
+    let entry: ClipEntry
+    let firstIcon: Data?
+
+    var id: String { entry.id }
+}
+
 final class HistoryStore {
     private let pool: DatabasePool
 
@@ -88,14 +95,28 @@ final class HistoryStore {
         }
     }
 
-    func observeEntries(limit: Int = 100) -> AsyncValueObservation<[ClipEntry]> {
+    func observeItems(limit: Int = 100) -> AsyncValueObservation<[ClipItem]> {
         ValueObservation
-            .tracking { db in
-                try ClipEntry
+            .tracking { db -> [ClipItem] in
+                let entries = try ClipEntry
                     .filter(Column("deletedAt") == nil)
                     .order(Column("isPinned").desc, Column("createdAt").desc)
                     .limit(limit)
                     .fetchAll(db)
+
+                return try entries.map { entry in
+                    let firstIcon: Data?
+                    if entry.kind == .file || entry.kind == .multiFile {
+                        firstIcon = try ClipPayload
+                            .filter(Column("entryId") == entry.id)
+                            .order(Column("position"))
+                            .limit(1)
+                            .fetchOne(db)?.iconPNG
+                    } else {
+                        firstIcon = nil
+                    }
+                    return ClipItem(entry: entry, firstIcon: firstIcon)
+                }
             }
             .values(in: pool)
     }

@@ -73,9 +73,73 @@ extension ClipEntry {
             fileURLString: nil,
             bookmarkData: nil,
             uti: "public.utf8-plain-text",
-            byteSize: Int64(text.utf8.count)
+            byteSize: Int64(text.utf8.count),
+            iconPNG: nil
         )
         return (entry, payload)
+    }
+
+    static func fromFiles(_ event: CapturedFileEvent, deviceId: String) -> (ClipEntry, [ClipPayload]) {
+        let id = UUID().uuidString
+        let now = Date()
+        let kind: Kind = event.files.count > 1 ? .multiFile : .file
+
+        let title: String
+        if event.files.count == 1 {
+            title = event.files[0].displayName
+        } else {
+            let names = event.files.prefix(3).map(\.displayName).joined(separator: ", ")
+            let extra = event.files.count - 3
+            title = extra > 0 ? "\(names) +\(extra) more" : names
+        }
+
+        let totalBytes = event.files.reduce(Int64(0)) { $0 + $1.byteSize }
+
+        // Dedup key: stable across re-copies of the same set of paths/sizes/mtimes.
+        let dedupSeed = event.files
+            .map { "\($0.url.path):\($0.byteSize):\(Int($0.mtime.timeIntervalSince1970))" }
+            .joined(separator: "|")
+        let contentHash = sha256(dedupSeed.data(using: .utf8) ?? Data())
+
+        let searchable = (
+            event.files.map(\.displayName)
+            + event.files.map { $0.url.deletingLastPathComponent().path }
+        ).joined(separator: " ")
+
+        let entry = ClipEntry(
+            id: id,
+            createdAt: now,
+            updatedAt: now,
+            deviceId: deviceId,
+            kind: kind,
+            displayTitle: title,
+            displaySubtitle: event.sourceAppName.map { "from \($0)" },
+            byteSize: totalBytes,
+            contentHash: contentHash,
+            sourceApp: event.sourceApp,
+            sourceAppName: event.sourceAppName,
+            isPinned: false,
+            pinnedAt: nil,
+            deletedAt: nil,
+            searchableText: searchable
+        )
+
+        let payloads = event.files.enumerated().map { idx, info in
+            ClipPayload(
+                id: UUID().uuidString,
+                entryId: id,
+                position: idx,
+                payloadKind: .file,
+                inlineText: nil,
+                filename: info.displayName,
+                fileURLString: info.url.absoluteString,
+                bookmarkData: info.bookmarkData,
+                uti: info.uti,
+                byteSize: info.byteSize,
+                iconPNG: info.iconPNG
+            )
+        }
+        return (entry, payloads)
     }
 
     private static func sha256(_ data: Data) -> String {

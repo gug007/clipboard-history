@@ -66,6 +66,12 @@ enum AppDatabase {
             }
         }
 
+        m.registerMigration("v2_iconPNG") { db in
+            try db.alter(table: "clip_payload") { t in
+                t.add(column: "iconPNG", .blob)
+            }
+        }
+
         return m
     }()
 }

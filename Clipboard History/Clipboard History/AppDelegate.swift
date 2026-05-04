@@ -33,14 +33,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let deviceId = self.deviceId
         let watcher = ClipboardWatcher { [weak store] event in
             guard let store else { return }
-            let (entry, payload) = ClipEntry.fromText(
-                event.text,
-                sourceApp: event.sourceApp,
-                sourceAppName: event.sourceAppName,
-                deviceId: deviceId
-            )
+            let entry: ClipEntry
+            let payloads: [ClipPayload]
+            switch event {
+            case .text(let textEvent):
+                let (e, p) = ClipEntry.fromText(
+                    textEvent.text,
+                    sourceApp: textEvent.sourceApp,
+                    sourceAppName: textEvent.sourceAppName,
+                    deviceId: deviceId
+                )
+                entry = e
+                payloads = [p]
+            case .files(let fileEvent):
+                let (e, ps) = ClipEntry.fromFiles(fileEvent, deviceId: deviceId)
+                entry = e
+                payloads = ps
+            }
             do {
-                try store.append(entry, payloads: [payload])
+                try store.append(entry, payloads: payloads)
             } catch {
                 print("[Capture] append failed: \(error)")
             }
