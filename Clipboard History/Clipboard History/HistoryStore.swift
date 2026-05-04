@@ -72,7 +72,9 @@ final class HistoryStore {
     private static func pruneInTransaction(db: GRDB.Database, cap: Int) throws {
         let toDeleteIds = try String.fetchAll(db, sql: """
             SELECT id FROM clip_entry
-            WHERE deletedAt IS NULL AND isPinned = 0
+            WHERE deletedAt IS NULL
+              AND isPinned = 0
+              AND id NOT IN (SELECT entryId FROM clip_entry_group)
             ORDER BY createdAt DESC
             LIMIT -1 OFFSET ?
             """, arguments: [cap])
