@@ -4,5 +4,13 @@
 <dict>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
+	<key>CFBundleSignature</key>
+	<string></string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/gug007/clipboard-history/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>nh3ia04tu11ct90fLa/82LxIc1Tj1WFtVO7p5NDbDkM=</string>
 </dict>
 </plist>
