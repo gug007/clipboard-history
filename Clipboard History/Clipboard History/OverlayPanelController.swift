@@ -71,8 +71,28 @@ final class OverlayPanelController {
     func toggle() { panel.isVisible ? hide() : show() }
 
     func show() {
-        panel.center()
+        centerPanelOnActiveScreen()
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    private func centerPanelOnActiveScreen() {
+        // Pick the screen the user is currently on (cursor location), falling back
+        // to the key window's screen, then the main screen.
+        let mouseLocation = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+            ?? NSApp.keyWindow?.screen
+            ?? NSScreen.main
+            ?? NSScreen.screens.first
+        guard let visible = screen?.visibleFrame else {
+            panel.center()
+            return
+        }
+        let panelSize = panel.frame.size
+        let origin = NSPoint(
+            x: visible.minX + (visible.width - panelSize.width) / 2,
+            y: visible.minY + (visible.height - panelSize.height) / 2
+        )
+        panel.setFrameOrigin(origin)
     }
 
     func hide() {

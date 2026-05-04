@@ -9,6 +9,14 @@ struct SettingsView: View {
         case storage, privacy, about
     }
 
+    private var detailTitle: String {
+        switch selection {
+        case .storage: return "Storage"
+        case .privacy: return "Privacy"
+        case .about:   return "About"
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
@@ -33,7 +41,7 @@ struct SettingsView: View {
                 case .about:   AboutTab()
                 }
             }
-            .toolbar(.hidden, for: .windowToolbar)
+            .navigationTitle(detailTitle)
         }
         .frame(width: 700, height: 480)
         .onDisappear {
