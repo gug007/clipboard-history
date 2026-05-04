@@ -4,11 +4,11 @@ import SwiftUI
 struct OverlayTabStrip: View {
     let groups: [ClipGroup]
     @Binding var selectedFilter: HistoryStore.Filter
+    @Binding var isCreating: Bool
     let onCreateGroup: (String) -> Void
     let onRenameGroup: (ClipGroup, String) -> Void
     let onDeleteGroup: (ClipGroup) -> Void
 
-    @State private var isCreating = false
     @State private var newName = ""
     @FocusState private var newFieldFocused: Bool
 
@@ -115,6 +115,14 @@ struct OverlayTabStrip: View {
                 .frame(width: 110)
                 .onSubmit { commitCreation() }
                 .onExitCommand { cancelCreation() }
+                .onKeyPress(.return) {
+                    commitCreation()
+                    return .handled
+                }
+                .onKeyPress(.escape) {
+                    cancelCreation()
+                    return .handled
+                }
             Button(action: commitCreation) {
                 Image(systemName: "return")
                     .font(.system(size: 10, weight: .medium))

@@ -16,6 +16,7 @@ struct OverlayView: View {
     @State private var query = ""
     @State private var selectionIndex = 0
     @State private var selectedFilter: HistoryStore.Filter = .all
+    @State private var isCreatingGroup = false
     @FocusState private var searchFocused: Bool
 
     private var displayed: [ClipItem] {
@@ -50,6 +51,7 @@ struct OverlayView: View {
             OverlayTabStrip(
                 groups: groups,
                 selectedFilter: $selectedFilter,
+                isCreating: $isCreatingGroup,
                 onCreateGroup: { name in createGroup(named: name) },
                 onRenameGroup: { group, name in renameGroup(group, to: name) },
                 onDeleteGroup: { group in deleteGroup(group) }
@@ -208,11 +210,13 @@ struct OverlayView: View {
         if !cmd {
             switch press.key {
             case .return:
+                if isCreatingGroup { return .ignored }
                 if displayed.indices.contains(selectionIndex) {
                     onPaste(displayed[selectionIndex].entry)
                 }
                 return .handled
             case .escape:
+                if isCreatingGroup { return .ignored }
                 onDismiss()
                 return .handled
             case .upArrow:
