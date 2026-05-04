@@ -299,6 +299,7 @@ private struct EntryRow: View {
     let onDelete: () -> Void
 
     @State private var isHovering = false
+    @State private var showPreview = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -365,16 +366,25 @@ private struct EntryRow: View {
     @ViewBuilder
     private var iconView: some View {
         if let data = item.firstIcon, let nsImage = NSImage(data: data) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .interpolation(.medium)
-                .scaledToFit()
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.5)
-                )
+            Button {
+                showPreview.toggle()
+            } label: {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .interpolation(.medium)
+                    .scaledToFit()
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.5)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("Show preview")
+            .popover(isPresented: $showPreview, arrowEdge: .trailing) {
+                PreviewPopover(image: nsImage)
+            }
         } else {
             Image(systemName: defaultIconName)
                 .font(.system(size: 22))
@@ -398,5 +408,32 @@ private struct EntryRow: View {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .short
         return f.localizedString(for: date, relativeTo: Date())
+    }
+}
+
+private struct PreviewPopover: View {
+    let image: NSImage
+
+    private var fittedSize: CGSize {
+        let maxSide: CGFloat = 360
+        let minSide: CGFloat = 160
+        let w = max(image.size.width, 1)
+        let h = max(image.size.height, 1)
+        let scale = min(maxSide / w, maxSide / h, 1)
+        let fitted = CGSize(width: w * scale, height: h * scale)
+        if max(fitted.width, fitted.height) < minSide {
+            let up = minSide / max(fitted.width, fitted.height)
+            return CGSize(width: fitted.width * up, height: fitted.height * up)
+        }
+        return fitted
+    }
+
+    var body: some View {
+        Image(nsImage: image)
+            .resizable()
+            .interpolation(.high)
+            .scaledToFit()
+            .frame(width: fittedSize.width, height: fittedSize.height)
+            .padding(10)
     }
 }

@@ -5,18 +5,21 @@ final class MenuBarController: NSObject {
     private let onOpen: () -> Void
     private let onTogglePause: () -> Void
     private let onOpenSettings: () -> Void
+    private let onCheckForUpdates: () -> Void
     private(set) var isPaused: Bool
 
     init(
         initialPaused: Bool,
         onOpen: @escaping () -> Void,
         onTogglePause: @escaping () -> Void,
-        onOpenSettings: @escaping () -> Void
+        onOpenSettings: @escaping () -> Void,
+        onCheckForUpdates: @escaping () -> Void
     ) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.onOpen = onOpen
         self.onTogglePause = onTogglePause
         self.onOpenSettings = onOpenSettings
+        self.onCheckForUpdates = onCheckForUpdates
         self.isPaused = initialPaused
         super.init()
         updateIcon()
@@ -72,6 +75,14 @@ final class MenuBarController: NSObject {
         settings.target = self
         menu.addItem(settings)
 
+        let updates = NSMenuItem(
+            title: "Check for Updates…",
+            action: #selector(checkForUpdatesTapped),
+            keyEquivalent: ""
+        )
+        updates.target = self
+        menu.addItem(updates)
+
         menu.addItem(.separator())
 
         menu.addItem(NSMenuItem(
@@ -93,4 +104,6 @@ final class MenuBarController: NSObject {
     }
 
     @objc private func settingsTapped() { onOpenSettings() }
+
+    @objc private func checkForUpdatesTapped() { onCheckForUpdates() }
 }

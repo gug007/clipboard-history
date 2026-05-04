@@ -1,4 +1,5 @@
 import AppKit
+import Sparkle
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var historyStore: HistoryStore?
@@ -8,6 +9,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotkey: HotkeyService?
     private let deviceId = AppDelegate.persistentDeviceId()
     private let panelState = PanelState()
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -20,7 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             initialPaused: initialPaused,
             onOpen: { [weak self] in self?.overlay?.toggle() },
             onTogglePause: { [weak self] in self?.handlePauseToggle() },
-            onOpenSettings: { Self.openSettings() }
+            onOpenSettings: { Self.openSettings() },
+            onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
         )
 
         let store: HistoryStore
@@ -89,6 +96,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private static func openSettings() {
         SettingsLauncher.shared.launch()
+    }
+
+    private func checkForUpdates() {
+        updaterController.checkForUpdates(nil)
     }
 
     private static func databaseURL() throws -> URL {
