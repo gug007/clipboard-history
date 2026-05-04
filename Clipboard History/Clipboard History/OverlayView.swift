@@ -170,7 +170,7 @@ struct OverlayView: View {
             }
         }
 
-        // Cmd-modified shortcuts
+        // Cmd-modified shortcuts — match on `press.key` (more reliable than `characters` with modifiers).
         if press.key == .delete {
             if displayed.indices.contains(selectionIndex) {
                 onDelete(displayed[selectionIndex].entry)
@@ -181,30 +181,36 @@ struct OverlayView: View {
             return .handled
         }
 
-        let chars = press.characters.lowercased()
-        switch chars {
-        case "d":
+        if press.key == "d" {
             if displayed.indices.contains(selectionIndex) {
                 onToggleFavorite(displayed[selectionIndex].entry)
             }
             return .handled
-        case "r":
+        }
+
+        if press.key == "r" {
             if displayed.indices.contains(selectionIndex) {
                 let entry = displayed[selectionIndex].entry
                 if entry.kind == .file || entry.kind == .multiFile {
                     onReveal(entry)
+                } else {
+                    print("[Reveal] entry kind \(entry.kind) is not a file — ignored")
                 }
             }
             return .handled
-        case "f" where shift:
+        }
+
+        if press.key == "f" && shift {
             favoritesOnly.toggle()
             selectionIndex = 0
             return .handled
-        default:
-            break
         }
 
-        if let n = Int(chars), (1...9).contains(n) {
+        let digitMap: [(KeyEquivalent, Int)] = [
+            ("1", 1), ("2", 2), ("3", 3), ("4", 4), ("5", 5),
+            ("6", 6), ("7", 7), ("8", 8), ("9", 9)
+        ]
+        for (key, n) in digitMap where press.key == key {
             let idx = n - 1
             if displayed.indices.contains(idx) {
                 onPaste(displayed[idx].entry)
