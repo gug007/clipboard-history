@@ -183,7 +183,7 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           DMG_NAME="ClipboardHistory-${{ steps.version.outputs.version }}.dmg"
-          ../scripts/create-dmg.sh "build/Build/Products/Release/$APP_NAME.app" "$DMG_NAME"
+          bash ../scripts/create-dmg.sh "build/Build/Products/Release/$APP_NAME.app" "$DMG_NAME"
           DMG_PATH="$(pwd)/$DMG_NAME"
           echo "dmg_path=$DMG_PATH" >> "$GITHUB_OUTPUT"
           echo "dmg_name=$DMG_NAME" >> "$GITHUB_OUTPUT"
