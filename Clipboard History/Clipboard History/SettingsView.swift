@@ -70,6 +70,7 @@ private struct GeneralSettingsTab: View {
                             .font(.system(size: 13, weight: .semibold))
                         Spacer()
                         KeyboardShortcuts.Recorder(for: .openHistory)
+                            .accessibilityLabel("Shortcut to open clipboard history")
                     }
                     Text("Press this shortcut from anywhere to open the history overlay.")
                         .font(.system(size: 12))
@@ -90,6 +91,7 @@ private struct GeneralSettingsTab: View {
                         .toggleStyle(.switch)
                         .controlSize(.small)
                         .labelsHidden()
+                        .accessibilityLabel("Launch at login")
                     }
                     if launch.state == .requiresApproval {
                         HStack(spacing: 6) {
@@ -140,6 +142,8 @@ private struct StorageSettingsTab: View {
                         step: 100
                     )
                     .controlSize(.small)
+                    .accessibilityLabel("History size")
+                    .accessibilityValue("\(settings.retentionCap) items")
                 }
 
                 Divider().opacity(0.35)
@@ -158,6 +162,8 @@ private struct StorageSettingsTab: View {
                         step: 1
                     )
                     .controlSize(.small)
+                    .accessibilityLabel("Maximum file size to capture")
+                    .accessibilityValue("\(settings.perFileSizeCapMB) megabytes")
                 }
 
                 Divider().opacity(0.35)
@@ -268,6 +274,7 @@ private struct PrivacySettingsTab: View {
                             }
                         }
                         .frame(width: 22, height: 22)
+                        .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(displayName(for: bundleID))
                                 .font(.system(size: 13))
@@ -279,8 +286,11 @@ private struct PrivacySettingsTab: View {
                     }
                     .tag(bundleID)
                     .padding(.vertical, 2)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("\(displayName(for: bundleID)), \(bundleID)")
                 }
             }
+            .accessibilityLabel("Excluded apps list")
             .listStyle(.inset)
             .scrollContentBackground(.hidden)
             .padding(.horizontal, 16)
@@ -294,6 +304,7 @@ private struct PrivacySettingsTab: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .accessibilityLabel("Add app to exclusion list")
                 Button {
                     removeSelected()
                 } label: {
@@ -303,6 +314,7 @@ private struct PrivacySettingsTab: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .disabled(selection.isEmpty)
+                .accessibilityLabel("Remove selected apps from exclusion list")
                 Spacer()
                 Button("Reset to defaults") {
                     settings.excludedApps = AppSettings.defaultExcludedApps
@@ -310,6 +322,7 @@ private struct PrivacySettingsTab: View {
                 }
                 .buttonStyle(.borderless)
                 .controlSize(.small)
+                .accessibilityHint("Restores the built-in list of password managers and secure-input apps.")
             }
             .padding(.horizontal, 28)
             .padding(.vertical, 14)
@@ -364,6 +377,7 @@ private struct AboutTab: View {
                 .font(.system(size: 56, weight: .light))
                 .foregroundStyle(.tint)
                 .padding(.bottom, 4)
+                .accessibilityHidden(true)
             VStack(spacing: 4) {
                 Text("Clipboard History")
                     .font(.system(size: 20, weight: .semibold))
@@ -372,10 +386,13 @@ private struct AboutTab: View {
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Clipboard History, version \(Bundle.main.shortVersion), build \(Bundle.main.buildNumber)")
             Text("⇧⌘V to open · pause from the menu bar")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .padding(.top, 6)
+                .accessibilityLabel("Press Shift Command V to open. Pause from the menu bar.")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)

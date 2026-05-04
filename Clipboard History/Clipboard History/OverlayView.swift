@@ -55,6 +55,8 @@ struct OverlayView: View {
                 }
                 .buttonStyle(.plain)
                 .help(favoritesOnly ? "Show all (⇧⌘F)" : "Show favorites only (⇧⌘F)")
+                .accessibilityLabel(favoritesOnly ? "Show all clips" : "Show favorites only")
+                .accessibilityAddTraits(favoritesOnly ? [.isToggle, .isSelected] : .isToggle)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -66,32 +68,7 @@ struct OverlayView: View {
             } else {
                 ScrollViewReader { proxy in
                     List(Array(displayed.enumerated()), id: \.offset) { idx, item in
-                        EntryRow(
-                            item: item,
-                            onToggleFavorite: { onToggleFavorite(item.entry) },
-                            onDelete: { onDelete(item.entry) }
-                        )
-                            .listRowBackground(
-                                idx == selectionIndex
-                                    ? Color.accentColor.opacity(0.25)
-                                    : Color.clear
-                            )
-                            .listRowSeparator(.hidden)
-                            .id(idx)
-                            .contentShape(Rectangle())
-                            .onTapGesture { onPaste(item.entry) }
-                            .contextMenu {
-                                Button("Paste") { onPaste(item.entry) }
-                                if item.entry.kind == .file || item.entry.kind == .multiFile {
-                                    Button("Reveal in Finder") { onReveal(item.entry) }
-                                }
-                                Divider()
-                                Button(item.entry.isPinned ? "Remove from Favorites" : "Add to Favorites") {
-                                    onToggleFavorite(item.entry)
-                                }
-                                Divider()
-                                Button("Delete", role: .destructive) { onDelete(item.entry) }
-                            }
+                        rowView(for: item, at: idx)
                     }
                     .scrollContentBackground(.hidden)
                     .listStyle(.plain)
@@ -104,12 +81,15 @@ struct OverlayView: View {
             Divider().opacity(0.3)
 
             HStack(spacing: 12) {
-                hint("↑↓", "navigate")
-                hint("⏎", "paste")
-                hint("⌘D", "favorite")
-                hint("⌘⌫", "delete")
-                hint("⌘R", "reveal")
-                hint("⎋", "close")
+                Group {
+                    hint("↑↓", "navigate")
+                    hint("⏎", "paste")
+                    hint("⌘D", "favorite")
+                    hint("⌘⌫", "delete")
+                    hint("⌘R", "reveal")
+                    hint("⎋", "close")
+                }
+                .accessibilityHidden(true)
                 Spacer()
                 if state.isPaused {
                     pausedPill
@@ -117,6 +97,7 @@ struct OverlayView: View {
                 Text("\(displayed.count) item\(displayed.count == 1 ? "" : "s")")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
+                    .accessibilityLabel("\(displayed.count) clipboard \(displayed.count == 1 ? "item" : "items")")
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
@@ -230,6 +211,7 @@ struct OverlayView: View {
             Image(systemName: emptyIcon)
                 .font(.system(size: 36))
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
             Text(emptyText)
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
@@ -240,6 +222,8 @@ struct OverlayView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(items.isEmpty ? "\(emptyText). \(emptyHint)" : emptyText)
     }
 
     private var emptyIcon: String {
@@ -276,6 +260,77 @@ struct OverlayView: View {
         .padding(.vertical, 3)
         .background(Color.orange.opacity(0.15))
         .clipShape(Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Recording paused. Resume from the menu bar.")
+    }
+
+    @ViewBuilder
+    private func rowView(for item: ClipItem, at idx: Int) -> some View {
+        EntryRow(
+            item: item,
+            onToggleFavorite: { onToggleFavorite(item.entry) },
+            onDelete: { onDelete(item.entry) }
+        )
+        .listRowBackground(
+            idx == selectionIndex ? Color.accentColor.opacity(0.25) : Color.clear
+        )
+        .listRowSeparator(.hidden)
+        .id(idx)
+        .contentShape(Rectangle())
+        .onTapGesture { onPaste(item.entry) }
+        .contextMenu { rowContextMenu(for: item) }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(rowAccessibilityLabel(for: item))
+        .accessibilityHint("Press Return to paste")
+        .accessibilityAddTraits(idx == selectionIndex ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction(named: item.entry.isPinned ? "Remove from favorites" : "Add to favorites") {
+            onToggleFavorite(item.entry)
+        }
+        .accessibilityAction(named: "Delete") { onDelete(item.entry) }
+        .accessibilityAction(named: "Reveal in Finder") {
+            if item.entry.kind == .file || item.entry.kind == .multiFile {
+                onReveal(item.entry)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func rowContextMenu(for item: ClipItem) -> some View {
+        Button("Paste") { onPaste(item.entry) }
+        if item.entry.kind == .file || item.entry.kind == .multiFile {
+            Button("Reveal in Finder") { onReveal(item.entry) }
+        }
+        Divider()
+        Button(item.entry.isPinned ? "Remove from Favorites" : "Add to Favorites") {
+            onToggleFavorite(item.entry)
+        }
+        Divider()
+        Button("Delete", role: .destructive) { onDelete(item.entry) }
+    }
+
+    private func rowAccessibilityLabel(for item: ClipItem) -> String {
+        var parts: [String] = []
+        parts.append(item.entry.displayTitle)
+        switch item.entry.kind {
+        case .text, .url, .richText:
+            break
+        case .file:      parts.append("file")
+        case .multiFile: parts.append("multiple files")
+        case .image:     parts.append("image")
+        }
+        if let sub = item.entry.displaySubtitle {
+            parts.append(sub)
+        }
+        if item.entry.isPinned { parts.append("favorited") }
+        if item.isStale { parts.append("file has been moved or deleted") }
+        parts.append(accessibleRelativeTime(item.entry.createdAt))
+        return parts.joined(separator: ", ")
+    }
+
+    private func accessibleRelativeTime(_ date: Date) -> String {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .full
+        return f.localizedString(for: date, relativeTo: Date())
     }
 
     private func hint(_ key: String, _ label: String) -> some View {
