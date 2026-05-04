@@ -16,7 +16,6 @@ final class HistoryStore {
         self.pool = try AppDatabase.openPool(at: databaseURL)
     }
 
-    static let retentionCap = 1_000
     private static let dedupWindowSeconds: TimeInterval = 30
 
     func append(_ entry: ClipEntry, payloads: [ClipPayload]) throws {
@@ -51,7 +50,16 @@ final class HistoryStore {
                 ]
             )
 
-            try Self.pruneInTransaction(db: db, cap: Self.retentionCap)
+            try Self.pruneInTransaction(db: db, cap: AppSettings.shared.retentionCap)
+        }
+    }
+
+    func clearAll() throws {
+        try pool.write { db in
+            try db.execute(sql: "DELETE FROM clip_payload")
+            try db.execute(sql: "DELETE FROM clip_entry")
+            try db.execute(sql: "DELETE FROM clip_fts")
+            print("[Storage] cleared all history")
         }
     }
 
@@ -83,7 +91,7 @@ final class HistoryStore {
         try pool.read { db in
             try ClipEntry
                 .filter(Column("deletedAt") == nil)
-                .order(Column("isPinned").desc, Column("createdAt").desc)
+                .order(Column("createdAt").desc)
                 .limit(limit)
                 .fetchAll(db)
         }
@@ -130,7 +138,7 @@ final class HistoryStore {
             .tracking { db -> [ClipItem] in
                 let entries = try ClipEntry
                     .filter(Column("deletedAt") == nil)
-                    .order(Column("isPinned").desc, Column("createdAt").desc)
+                    .order(Column("createdAt").desc)
                     .limit(limit)
                     .fetchAll(db)
 

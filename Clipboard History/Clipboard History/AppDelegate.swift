@@ -2,7 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var store: HistoryStore?
+    private(set) var historyStore: HistoryStore?
     private var watcher: ClipboardWatcher?
     private var menuBar: MenuBarController?
     private var overlay: OverlayPanelController?
@@ -20,7 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menuBar = MenuBarController(
             initialPaused: initialPaused,
             onOpen: { [weak self] in self?.overlay?.toggle() },
-            onTogglePause: { [weak self] in self?.handlePauseToggle() }
+            onTogglePause: { [weak self] in self?.handlePauseToggle() },
+            onOpenSettings: { Self.openSettings() }
         )
 
         let store: HistoryStore
@@ -28,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let url = try Self.databaseURL()
             print("[Startup] Database URL: \(url.path)")
             store = try HistoryStore(databaseURL: url)
-            self.store = store
+            self.historyStore = store
             print("[Startup] HistoryStore opened successfully")
         } catch {
             print("[Startup] FATAL: HistoryStore failed: \(error)")
@@ -87,6 +88,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private static let pausedKey = "ClipboardHistory.isPaused"
+
+    private static func openSettings() {
+        // Briefly switch to .regular so the Settings window can show & receive focus.
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        if #available(macOS 14.0, *) {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        } else {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
+    }
+
+    func applicationDidResignActive(_ notification: Notification) {
+        // When the user closes Settings (or switches away), drop back to .accessory
+        // so the Dock icon disappears.
+        NSApp.setActivationPolicy(.accessory)
+    }
 
     private static func databaseURL() throws -> URL {
         let appSupport = try FileManager.default.url(

@@ -4,16 +4,19 @@ final class MenuBarController: NSObject {
     private let statusItem: NSStatusItem
     private let onOpen: () -> Void
     private let onTogglePause: () -> Void
+    private let onOpenSettings: () -> Void
     private(set) var isPaused: Bool
 
     init(
         initialPaused: Bool,
         onOpen: @escaping () -> Void,
-        onTogglePause: @escaping () -> Void
+        onTogglePause: @escaping () -> Void,
+        onOpenSettings: @escaping () -> Void
     ) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.onOpen = onOpen
         self.onTogglePause = onTogglePause
+        self.onOpenSettings = onOpenSettings
         self.isPaused = initialPaused
         super.init()
         updateIcon()
@@ -61,6 +64,16 @@ final class MenuBarController: NSObject {
 
         menu.addItem(.separator())
 
+        let settings = NSMenuItem(
+            title: "Settings…",
+            action: #selector(settingsTapped),
+            keyEquivalent: ","
+        )
+        settings.target = self
+        menu.addItem(settings)
+
+        menu.addItem(.separator())
+
         menu.addItem(NSMenuItem(
             title: "Quit Clipboard History",
             action: #selector(NSApplication.terminate(_:)),
@@ -78,4 +91,6 @@ final class MenuBarController: NSObject {
         statusItem.menu = makeMenu()
         onTogglePause()
     }
+
+    @objc private func settingsTapped() { onOpenSettings() }
 }

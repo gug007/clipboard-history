@@ -77,7 +77,8 @@ final class ClipboardWatcher {
         }
 
         let app = NSWorkspace.shared.frontmostApplication
-        if let bundleId = app?.bundleIdentifier, Self.skippedSourceApps.contains(bundleId) {
+        if let bundleId = app?.bundleIdentifier,
+           AppSettings.shared.excludedApps.contains(bundleId) {
             return
         }
 
@@ -211,13 +212,4 @@ final class ClipboardWatcher {
         "Hide"
     ]
 
-    private static let skippedSourceApps: Set<String> = [
-        "com.agilebits.onepassword7",
-        "com.bitwarden.desktop",
-        "com.dashlane.5",
-        "com.apple.keychainaccess",
-        "com.apple.Passwords",
-        "com.lastpass.LastPassMacApp",
-        "org.keepassxc.keepassxc"
-    ]
 }
