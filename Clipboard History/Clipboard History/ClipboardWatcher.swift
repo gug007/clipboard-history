@@ -1,4 +1,5 @@
 import AppKit
+import QuickLookThumbnailing
 import UniformTypeIdentifiers
 
 struct CapturedTextEvent {
@@ -46,7 +47,8 @@ final class ClipboardWatcher {
         guard timer == nil else { return }
         let t = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                self?.tick()
+                guard let self else { return }
+                await self.tick()
             }
         }
         RunLoop.main.add(t, forMode: .common)
@@ -60,7 +62,7 @@ final class ClipboardWatcher {
 
     func setPaused(_ paused: Bool) { isPaused = paused }
 
-    private func tick() {
+    private func tick() async {
         guard !isPaused else { return }
         let pb = NSPasteboard.general
         let current = pb.changeCount
@@ -79,8 +81,7 @@ final class ClipboardWatcher {
             return
         }
 
-        // Files take priority over text (Finder, save dialogs).
-        if let fileEvent = captureFiles(pb: pb, app: app) {
+        if let fileEvent = await captureFiles(pb: pb, app: app) {
             onCapture(.files(fileEvent))
             return
         }
@@ -91,43 +92,67 @@ final class ClipboardWatcher {
         }
     }
 
-    private func captureFiles(pb: NSPasteboard, app: NSRunningApplication?) -> CapturedFileEvent? {
+    private func captureFiles(pb: NSPasteboard, app: NSRunningApplication?) async -> CapturedFileEvent? {
         let options: [NSPasteboard.ReadingOptionKey: Any] = [.urlReadingFileURLsOnly: true]
         guard
             let urls = pb.readObjects(forClasses: [NSURL.self], options: options) as? [URL],
             !urls.isEmpty
         else { return nil }
 
-        let fileInfos: [CapturedFileEvent.FileInfo] = urls.compactMap { url in
-            let standardized = url.standardizedFileURL
+        // Phase 1: synchronous metadata + bookmark while pasteboard sandbox extension is alive.
+        struct Partial {
+            let url: URL
+            let bookmarkData: Data?
+            let displayName: String
+            let byteSize: Int64
+            let isDirectory: Bool
+            let uti: String?
+            let mtime: Date
+        }
 
+        let partials: [Partial] = urls.compactMap { url in
+            let standardized = url.standardizedFileURL
             let bookmarkData = try? standardized.bookmarkData(
                 options: [.withSecurityScope],
                 includingResourceValuesForKeys: nil,
                 relativeTo: nil
             )
-
             let values = try? standardized.resourceValues(forKeys: [
-                .totalFileSizeKey, .fileSizeKey, .isDirectoryKey, .contentTypeKey, .contentModificationDateKey
+                .totalFileSizeKey, .fileSizeKey, .isDirectoryKey,
+                .contentTypeKey, .contentModificationDateKey
             ])
-            let byteSize = Int64(values?.totalFileSize ?? values?.fileSize ?? 0)
-            let isDirectory = values?.isDirectory ?? false
-            let uti = values?.contentType?.identifier
-            let mtime = values?.contentModificationDate ?? Date()
-
-            return CapturedFileEvent.FileInfo(
+            return Partial(
                 url: standardized,
                 bookmarkData: bookmarkData,
                 displayName: standardized.lastPathComponent,
-                byteSize: byteSize,
-                isDirectory: isDirectory,
-                uti: uti,
-                iconPNG: Self.iconPNG(for: standardized),
-                mtime: mtime
+                byteSize: Int64(values?.totalFileSize ?? values?.fileSize ?? 0),
+                isDirectory: values?.isDirectory ?? false,
+                uti: values?.contentType?.identifier,
+                mtime: values?.contentModificationDate ?? Date()
             )
         }
 
-        guard !fileInfos.isEmpty else { return nil }
+        guard !partials.isEmpty else { return nil }
+
+        // Phase 2: async thumbnail generation (real image previews / PDF pages / etc.).
+        let scale = NSScreen.main?.backingScaleFactor ?? 2.0
+        var fileInfos: [CapturedFileEvent.FileInfo] = []
+        for partial in partials {
+            let thumb = await Self.thumbnailPNG(for: partial.url, scale: scale)
+                ?? Self.fallbackIconPNG(for: partial.url)
+            fileInfos.append(
+                CapturedFileEvent.FileInfo(
+                    url: partial.url,
+                    bookmarkData: partial.bookmarkData,
+                    displayName: partial.displayName,
+                    byteSize: partial.byteSize,
+                    isDirectory: partial.isDirectory,
+                    uti: partial.uti,
+                    iconPNG: thumb,
+                    mtime: partial.mtime
+                )
+            )
+        }
 
         return CapturedFileEvent(
             files: fileInfos,
@@ -147,12 +172,35 @@ final class ClipboardWatcher {
         )
     }
 
-    private static func iconPNG(for url: URL, size: CGFloat = 64) -> Data? {
+    private static func thumbnailPNG(for url: URL, size: CGFloat = 128, scale: CGFloat) async -> Data? {
+        let request = QLThumbnailGenerator.Request(
+            fileAt: url,
+            size: NSSize(width: size, height: size),
+            scale: scale,
+            representationTypes: .all
+        )
+        do {
+            let rep = try await QLThumbnailGenerator.shared.generateBestRepresentation(for: request)
+            return pngData(from: rep.nsImage)
+        } catch {
+            return nil
+        }
+    }
+
+    private static func fallbackIconPNG(for url: URL, size: CGFloat = 128) -> Data? {
         let icon = NSWorkspace.shared.icon(forFile: url.path)
         icon.size = NSSize(width: size, height: size)
-        guard let tiff = icon.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiff) else { return nil }
-        return bitmap.representation(using: .png, properties: [:])
+        return pngData(from: icon)
+    }
+
+    private static func pngData(from image: NSImage) -> Data? {
+        if let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+            let rep = NSBitmapImageRep(cgImage: cg)
+            return rep.representation(using: .png, properties: [:])
+        }
+        guard let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff) else { return nil }
+        return rep.representation(using: .png, properties: [:])
     }
 
     private static let skippedTypes: [String] = [

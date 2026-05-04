@@ -154,9 +154,8 @@ private struct EntryRow: View {
     let item: ClipItem
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             iconView
-                .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.entry.displayTitle)
                     .lineLimit(1)
@@ -184,10 +183,17 @@ private struct EntryRow: View {
                 .resizable()
                 .interpolation(.medium)
                 .scaledToFit()
+                .frame(width: 44, height: 44)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
         } else {
             Image(systemName: defaultIconName)
+                .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(width: 44, height: 44)
         }
     }
 
