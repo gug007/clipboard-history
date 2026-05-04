@@ -387,15 +387,19 @@ private struct EntryRow: View {
             }
         } else {
             Image(systemName: defaultIconName)
-                .font(.system(size: 22))
+                .font(.system(size: defaultIconSize, weight: .light))
                 .foregroundStyle(.tertiary)
                 .frame(width: 44, height: 44)
         }
     }
 
+    private var defaultIconSize: CGFloat {
+        item.entry.kind == .text ? 26 : 22
+    }
+
     private var defaultIconName: String {
         switch item.entry.kind {
-        case .text:      return "text.quote"
+        case .text:      return "paragraphsign"
         case .file:      return "doc"
         case .image:     return "photo"
         case .multiFile: return "doc.on.doc"

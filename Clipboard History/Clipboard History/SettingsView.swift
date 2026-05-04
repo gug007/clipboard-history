@@ -59,6 +59,8 @@ struct SettingsView: View {
 // MARK: - General
 
 private struct GeneralSettingsTab: View {
+    @State private var launch = LaunchAtLogin.shared
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -73,12 +75,44 @@ private struct GeneralSettingsTab: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
+
+                Divider().opacity(0.35)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Launch at login")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        Toggle("", isOn: Binding(
+                            get: { launch.isEnabled },
+                            set: { launch.setEnabled($0) }
+                        ))
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+                        .labelsHidden()
+                    }
+                    if launch.state == .requiresApproval {
+                        HStack(spacing: 6) {
+                            Text("Approval needed in System Settings → Login Items.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                            Button("Open") { launch.openSystemSettings() }
+                                .buttonStyle(.borderless)
+                                .controlSize(.small)
+                        }
+                    } else {
+                        Text("Start Clipboard History automatically when you log in.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             .padding(.horizontal, 28)
             .padding(.vertical, 24)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollContentBackground(.hidden)
+        .onAppear { launch.refresh() }
     }
 }
 
