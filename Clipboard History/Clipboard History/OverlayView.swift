@@ -473,6 +473,9 @@ struct OverlayView: View {
             parts.append(sub)
         }
         if item.entry.isPinned { parts.append("favorited") }
+        if !item.groupNames.isEmpty {
+            parts.append("in \(item.groupNames.joined(separator: ", "))")
+        }
         if item.isStale { parts.append("file has been moved or deleted") }
         parts.append(accessibleRelativeTime(item.entry.createdAt))
         return parts.joined(separator: ", ")
@@ -518,11 +521,26 @@ private struct EntryRow: View {
                     .font(.system(size: 13))
                     .strikethrough(item.isStale, color: .secondary)
                     .foregroundStyle(item.isStale ? Color.secondary : Color.primary)
-                if let sub = item.entry.displaySubtitle {
-                    Text(sub)
-                        .lineLimit(1)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
+                if item.entry.displaySubtitle != nil || !item.groupNames.isEmpty {
+                    HStack(spacing: 6) {
+                        if let sub = item.entry.displaySubtitle {
+                            Text(sub)
+                                .lineLimit(1)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
+                        ForEach(item.groupNames, id: \.self) { name in
+                            Text(name)
+                                .font(.system(size: 9, weight: .medium))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(
+                                    Capsule().fill(Color.accentColor.opacity(0.18))
+                                )
+                                .foregroundStyle(Color.accentColor)
+                                .lineLimit(1)
+                        }
+                    }
                 }
             }
             Spacer()

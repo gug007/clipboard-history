@@ -5,6 +5,7 @@ struct ClipItem: Identifiable, Equatable {
     let entry: ClipEntry
     let firstIcon: Data?
     let isStale: Bool
+    let groupNames: [String]
 
     var id: String { entry.id }
 }
@@ -169,6 +170,11 @@ final class HistoryStore {
                         """, arguments: [groupId, limit])
                 }
 
+                let groupsByEntry = try Self.fetchGroupNames(
+                    db: db,
+                    entryIds: entries.map(\.id)
+                )
+
                 return try entries.map { entry in
                     let firstIcon: Data?
                     var isStale = false
@@ -185,7 +191,12 @@ final class HistoryStore {
                     } else {
                         firstIcon = nil
                     }
-                    return ClipItem(entry: entry, firstIcon: firstIcon, isStale: isStale)
+                    return ClipItem(
+                        entry: entry,
+                        firstIcon: firstIcon,
+                        isStale: isStale,
+                        groupNames: groupsByEntry[entry.id] ?? []
+                    )
                 }
             }
             .values(in: pool)
@@ -260,6 +271,28 @@ final class HistoryStore {
             )
             return Set(rows)
         }
+    }
+
+    private static func fetchGroupNames(
+        db: GRDB.Database,
+        entryIds: [String]
+    ) throws -> [String: [String]] {
+        guard !entryIds.isEmpty else { return [:] }
+        let placeholders = entryIds.map { _ in "?" }.joined(separator: ",")
+        let rows = try Row.fetchAll(db, sql: """
+            SELECT eg.entryId, g.name
+            FROM clip_entry_group eg
+            JOIN clip_group g ON g.id = eg.groupId
+            WHERE eg.entryId IN (\(placeholders))
+            ORDER BY g.sortOrder
+            """, arguments: StatementArguments(entryIds))
+        var result: [String: [String]] = [:]
+        for row in rows {
+            let entryId: String = row[0]
+            let name: String = row[1]
+            result[entryId, default: []].append(name)
+        }
+        return result
     }
 
     private static func bookmarkResolvesToReachable(_ bookmark: Data) -> Bool {

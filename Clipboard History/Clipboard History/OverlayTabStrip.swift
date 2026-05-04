@@ -46,28 +46,12 @@ struct OverlayTabStrip: View {
         isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                if let systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 10))
-                }
-                Text(label)
-                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(
-                        isSelected
-                            ? Color.accentColor.opacity(0.25)
-                            : Color.secondary.opacity(0.08)
-                    )
-            )
-            .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
-        }
-        .buttonStyle(.plain)
+        TabPill(
+            label: label,
+            systemImage: systemImage,
+            isSelected: isSelected,
+            action: action
+        )
     }
 
     @ViewBuilder
@@ -87,23 +71,11 @@ struct OverlayTabStrip: View {
     }
 
     private var plusButton: some View {
-        Button {
+        PlusTab {
             newName = ""
             isCreating = true
             DispatchQueue.main.async { newFieldFocused = true }
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 11, weight: .medium))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .background(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .fill(Color.secondary.opacity(0.08))
-                )
-                .foregroundStyle(Color.secondary)
         }
-        .buttonStyle(.plain)
-        .help("New Group")
     }
 
     private var creationField: some View {
@@ -169,5 +141,82 @@ struct OverlayTabStrip: View {
         if alert.runModal() == .alertFirstButtonReturn {
             onRenameGroup(group, field.stringValue)
         }
+    }
+}
+
+private struct TabPill: View {
+    let label: String
+    let systemImage: String?
+    let isSelected: Bool
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 10, weight: .medium))
+                }
+                Text(label)
+                    .font(.system(size: 12, weight: isSelected ? .medium : .regular))
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(background)
+            .foregroundStyle(foreground)
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isSelected)
+        .animation(.easeOut(duration: 0.12), value: isHovering)
+    }
+
+    private var foreground: Color {
+        if isSelected { return .accentColor }
+        return isHovering ? .primary : .secondary
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        if isSelected {
+            Capsule().fill(Color.accentColor.opacity(0.14))
+        } else if isHovering {
+            Capsule().fill(Color.primary.opacity(0.06))
+        } else {
+            Color.clear
+        }
+    }
+}
+
+private struct PlusTab: View {
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "plus")
+                .font(.system(size: 11, weight: .medium))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(
+                    Group {
+                        if isHovering {
+                            Capsule().fill(Color.primary.opacity(0.06))
+                        } else {
+                            Color.clear
+                        }
+                    }
+                )
+                .foregroundStyle(isHovering ? Color.primary : Color.secondary)
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .help("New Group")
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isHovering)
     }
 }
