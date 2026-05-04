@@ -69,22 +69,56 @@ final class OverlayPanelController {
     }
 
     private func paste(_ entry: ClipEntry) {
+        print("[Paste] === paste() entered id=\(entry.id) kind=\(entry.kind) ===")
         do {
             let payloads = try store.payloads(for: entry.id)
+            print("[Paste] loaded \(payloads.count) payload(s)")
             switch entry.kind {
             case .text, .url, .richText:
                 if let text = payloads.first?.inlineText {
+                    print("[Paste] writing text (\(text.count) chars)")
                     pasteText(text)
+                } else {
+                    print("[Paste] WARN: text-kind entry but no inlineText payload")
                 }
             case .file, .multiFile:
+                print("[Paste] writing \(payloads.count) file payload(s)")
                 pasteFiles(payloads)
             case .image:
-                break
+                print("[Paste] image kind — not implemented")
             }
         } catch {
-            print("[Paste] failed: \(error)")
+            print("[Paste] payload load failed: \(error)")
         }
         hide()
+        print("[Paste] panel hidden, scheduling auto-paste in 50ms")
+        Self.performAutoPasteAfterDelay()
+    }
+
+    private static func performAutoPasteAfterDelay() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            let opts = [
+                kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
+            ] as CFDictionary
+            let trusted = AXIsProcessTrustedWithOptions(opts)
+            print("[Paste] AXIsProcessTrustedWithOptions returned trusted=\(trusted)")
+            guard trusted else {
+                print("[Paste] >>> Accessibility NOT granted. Pasteboard is set; press ⌘V manually.")
+                print("[Paste] >>> If no system prompt appeared, open System Settings → Privacy & Security → Accessibility and toggle 'Clipboard History' manually.")
+                return
+            }
+            let src = CGEventSource(stateID: .combinedSessionState)
+            let v: CGKeyCode = 0x09 // V
+            if let down = CGEvent(keyboardEventSource: src, virtualKey: v, keyDown: true) {
+                down.flags = .maskCommand
+                down.post(tap: .cghidEventTap)
+            }
+            if let up = CGEvent(keyboardEventSource: src, virtualKey: v, keyDown: false) {
+                up.flags = .maskCommand
+                up.post(tap: .cghidEventTap)
+            }
+            print("[Paste] auto-paste ⌘V posted to .cghidEventTap")
+        }
     }
 
     private func pasteText(_ text: String) {

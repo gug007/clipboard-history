@@ -29,6 +29,11 @@ struct OverlayView: View {
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
                     .font(.system(size: 14))
+                    .onSubmit {
+                        if displayed.indices.contains(selectionIndex) {
+                            onPaste(displayed[selectionIndex].entry)
+                        }
+                    }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
