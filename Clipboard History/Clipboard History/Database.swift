@@ -72,6 +72,39 @@ enum AppDatabase {
             }
         }
 
+        m.registerMigration("v3_groups") { db in
+            try db.create(table: "clip_group") { t in
+                t.column("id", .text).primaryKey()
+                t.column("name", .text).notNull()
+                t.column("sortOrder", .integer).notNull()
+                t.column("createdAt", .datetime).notNull()
+            }
+            try db.create(
+                index: "idx_clip_group_sort",
+                on: "clip_group",
+                columns: ["sortOrder"]
+            )
+
+            try db.create(table: "clip_entry_group") { t in
+                t.column("entryId", .text).notNull()
+                    .references("clip_entry", onDelete: .cascade)
+                t.column("groupId", .text).notNull()
+                    .references("clip_group", onDelete: .cascade)
+                t.column("addedAt", .datetime).notNull()
+                t.primaryKey(["entryId", "groupId"])
+            }
+            try db.create(
+                index: "idx_clip_entry_group_entry",
+                on: "clip_entry_group",
+                columns: ["entryId"]
+            )
+            try db.create(
+                index: "idx_clip_entry_group_group",
+                on: "clip_entry_group",
+                columns: ["groupId"]
+            )
+        }
+
         return m
     }()
 }

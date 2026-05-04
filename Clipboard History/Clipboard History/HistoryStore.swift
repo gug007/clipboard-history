@@ -10,6 +10,12 @@ struct ClipItem: Identifiable, Equatable {
 }
 
 final class HistoryStore {
+    enum Filter: Equatable, Hashable {
+        case all
+        case favorites
+        case group(String)
+    }
+
     private let pool: DatabasePool
 
     init(databaseURL: URL) throws {
@@ -133,14 +139,33 @@ final class HistoryStore {
         }
     }
 
-    func observeItems(limit: Int = 100) -> AsyncValueObservation<[ClipItem]> {
+    func observeItems(limit: Int = 100, filter: Filter = .all) -> AsyncValueObservation<[ClipItem]> {
         ValueObservation
             .tracking { db -> [ClipItem] in
-                let entries = try ClipEntry
-                    .filter(Column("deletedAt") == nil)
-                    .order(Column("createdAt").desc)
-                    .limit(limit)
-                    .fetchAll(db)
+                let entries: [ClipEntry]
+                switch filter {
+                case .all:
+                    entries = try ClipEntry
+                        .filter(Column("deletedAt") == nil)
+                        .order(Column("createdAt").desc)
+                        .limit(limit)
+                        .fetchAll(db)
+                case .favorites:
+                    entries = try ClipEntry
+                        .filter(Column("deletedAt") == nil)
+                        .filter(Column("isPinned") == true)
+                        .order(Column("createdAt").desc)
+                        .limit(limit)
+                        .fetchAll(db)
+                case .group(let groupId):
+                    entries = try ClipEntry.fetchAll(db, sql: """
+                        SELECT e.* FROM clip_entry e
+                        JOIN clip_entry_group eg ON eg.entryId = e.id
+                        WHERE e.deletedAt IS NULL AND eg.groupId = ?
+                        ORDER BY e.createdAt DESC
+                        LIMIT ?
+                        """, arguments: [groupId, limit])
+                }
 
                 return try entries.map { entry in
                     let firstIcon: Data?
@@ -162,6 +187,77 @@ final class HistoryStore {
                 }
             }
             .values(in: pool)
+    }
+
+    func observeGroups() -> AsyncValueObservation<[ClipGroup]> {
+        ValueObservation
+            .tracking { db -> [ClipGroup] in
+                try ClipGroup
+                    .order(Column("sortOrder"))
+                    .fetchAll(db)
+            }
+            .values(in: pool)
+    }
+
+    @discardableResult
+    func createGroup(name: String) throws -> ClipGroup {
+        try pool.write { db in
+            let nextOrder = try Int.fetchOne(
+                db, sql: "SELECT COALESCE(MAX(sortOrder), -1) + 1 FROM clip_group"
+            ) ?? 0
+            let group = ClipGroup(
+                id: UUID().uuidString,
+                name: name,
+                sortOrder: nextOrder,
+                createdAt: Date()
+            )
+            try group.insert(db)
+            return group
+        }
+    }
+
+    func renameGroup(id: String, to name: String) throws {
+        try pool.write { db in
+            try db.execute(
+                sql: "UPDATE clip_group SET name = ? WHERE id = ?",
+                arguments: [name, id]
+            )
+        }
+    }
+
+    func deleteGroup(id: String) throws {
+        try pool.write { db in
+            try db.execute(
+                sql: "DELETE FROM clip_group WHERE id = ?",
+                arguments: [id]
+            )
+        }
+    }
+
+    func setMembership(entryId: String, groupId: String, member: Bool) throws {
+        try pool.write { db in
+            if member {
+                try db.execute(sql: """
+                    INSERT OR IGNORE INTO clip_entry_group (entryId, groupId, addedAt)
+                    VALUES (?, ?, ?)
+                    """, arguments: [entryId, groupId, Date()])
+            } else {
+                try db.execute(
+                    sql: "DELETE FROM clip_entry_group WHERE entryId = ? AND groupId = ?",
+                    arguments: [entryId, groupId]
+                )
+            }
+        }
+    }
+
+    func groupIds(for entryId: String) throws -> Set<String> {
+        try pool.read { db in
+            let rows = try String.fetchAll(
+                db, sql: "SELECT groupId FROM clip_entry_group WHERE entryId = ?",
+                arguments: [entryId]
+            )
+            return Set(rows)
+        }
     }
 
     private static func bookmarkResolvesToReachable(_ bookmark: Data) -> Bool {

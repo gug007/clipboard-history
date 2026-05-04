@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import GRDB
 
@@ -11,24 +12,19 @@ struct OverlayView: View {
     let onReveal: (ClipEntry) -> Void
 
     @State private var items: [ClipItem] = []
+    @State private var groups: [ClipGroup] = []
     @State private var query = ""
     @State private var selectionIndex = 0
-    @State private var favoritesOnly = false
+    @State private var selectedFilter: HistoryStore.Filter = .all
     @FocusState private var searchFocused: Bool
 
     private var displayed: [ClipItem] {
-        var result = items
-        if favoritesOnly {
-            result = result.filter { $0.entry.isPinned }
-        }
         let q = query.trimmingCharacters(in: .whitespaces)
-        if !q.isEmpty {
-            result = result.filter {
-                $0.entry.displayTitle.localizedCaseInsensitiveContains(q)
-                    || $0.entry.searchableText.localizedCaseInsensitiveContains(q)
-            }
+        guard !q.isEmpty else { return items }
+        return items.filter {
+            $0.entry.displayTitle.localizedCaseInsensitiveContains(q)
+                || $0.entry.searchableText.localizedCaseInsensitiveContains(q)
         }
-        return result
     }
 
     var body: some View {
@@ -45,21 +41,19 @@ struct OverlayView: View {
                             onPaste(displayed[selectionIndex].entry)
                         }
                     }
-                Button {
-                    favoritesOnly.toggle()
-                    selectionIndex = 0
-                } label: {
-                    Image(systemName: "star")
-                        .foregroundStyle(favoritesOnly ? Color.yellow : Color.secondary)
-                        .font(.system(size: 14, weight: favoritesOnly ? .semibold : .regular))
-                }
-                .buttonStyle(.plain)
-                .help(favoritesOnly ? "Show all (⇧⌘F)" : "Show favorites only (⇧⌘F)")
-                .accessibilityLabel(favoritesOnly ? "Show all clips" : "Show favorites only")
-                .accessibilityAddTraits(favoritesOnly ? [.isToggle, .isSelected] : .isToggle)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
+
+            Divider().opacity(0.3)
+
+            OverlayTabStrip(
+                groups: groups,
+                selectedFilter: $selectedFilter,
+                onCreateGroup: { name in createGroup(named: name) },
+                onRenameGroup: { group, name in renameGroup(group, to: name) },
+                onDeleteGroup: { group in deleteGroup(group) }
+            )
 
             Divider().opacity(0.3)
 
@@ -85,8 +79,8 @@ struct OverlayView: View {
                     hint("↑↓", "navigate")
                     hint("⏎", "paste")
                     hint("⌘D", "favorite")
+                    hint("⌥1-9", "tabs")
                     hint("⌘⌫", "delete")
-                    hint("⌘R", "reveal")
                     hint("⎋", "close")
                 }
                 .accessibilityHidden(true)
@@ -111,8 +105,10 @@ struct OverlayView: View {
         )
         .task {
             searchFocused = true
+        }
+        .task(id: selectedFilter) {
             do {
-                for try await newItems in store.observeItems(limit: 100) {
+                for try await newItems in store.observeItems(limit: 100, filter: selectedFilter) {
                     items = newItems
                     if selectionIndex >= newItems.count {
                         selectionIndex = max(0, newItems.count - 1)
@@ -122,7 +118,20 @@ struct OverlayView: View {
                 NSLog("Observation failed: %@", String(describing: error))
             }
         }
+        .task {
+            do {
+                for try await newGroups in store.observeGroups() {
+                    groups = newGroups
+                    pruneSelectedFilterIfNeeded()
+                }
+            } catch {
+                NSLog("Group observation failed: %@", String(describing: error))
+            }
+        }
         .onChange(of: query) { _, _ in
+            selectionIndex = 0
+        }
+        .onChange(of: selectedFilter) { _, _ in
             selectionIndex = 0
         }
         .onKeyPress(phases: [.down]) { press in
@@ -130,9 +139,71 @@ struct OverlayView: View {
         }
     }
 
+    private func pruneSelectedFilterIfNeeded() {
+        if case .group(let id) = selectedFilter, !groups.contains(where: { $0.id == id }) {
+            selectedFilter = .all
+        }
+    }
+
+    private func createGroup(named name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        do {
+            let group = try store.createGroup(name: trimmed)
+            selectedFilter = .group(group.id)
+        } catch {
+            NSLog("createGroup failed: %@", String(describing: error))
+        }
+    }
+
+    private func renameGroup(_ group: ClipGroup, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != group.name else { return }
+        do {
+            try store.renameGroup(id: group.id, to: trimmed)
+        } catch {
+            NSLog("renameGroup failed: %@", String(describing: error))
+        }
+    }
+
+    private func deleteGroup(_ group: ClipGroup) {
+        do {
+            try store.deleteGroup(id: group.id)
+            if selectedFilter == .group(group.id) {
+                selectedFilter = .all
+            }
+        } catch {
+            NSLog("deleteGroup failed: %@", String(describing: error))
+        }
+    }
+
+    private func toggleMembership(entryId: String, group: ClipGroup) {
+        do {
+            let current = try store.groupIds(for: entryId)
+            try store.setMembership(
+                entryId: entryId,
+                groupId: group.id,
+                member: !current.contains(group.id)
+            )
+        } catch {
+            NSLog("toggleMembership failed: %@", String(describing: error))
+        }
+    }
+
+    private func memberGroupIds(for entryId: String) -> Set<String> {
+        (try? store.groupIds(for: entryId)) ?? []
+    }
+
     private func handleKey(_ press: KeyPress) -> KeyPress.Result {
         let cmd = press.modifiers.contains(.command)
         let shift = press.modifiers.contains(.shift)
+        let option = press.modifiers.contains(.option)
+
+        if option && !cmd {
+            if let result = handleOptionDigit(press), result == .handled {
+                return .handled
+            }
+        }
 
         if !cmd {
             switch press.key {
@@ -186,8 +257,7 @@ struct OverlayView: View {
         }
 
         if press.key == "f" && shift {
-            favoritesOnly.toggle()
-            selectionIndex = 0
+            selectedFilter = .favorites
             return .handled
         }
 
@@ -204,6 +274,26 @@ struct OverlayView: View {
         }
 
         return .ignored
+    }
+
+    private func handleOptionDigit(_ press: KeyPress) -> KeyPress.Result? {
+        let digitMap: [(KeyEquivalent, Int)] = [
+            ("1", 1), ("2", 2), ("3", 3), ("4", 4), ("5", 5),
+            ("6", 6), ("7", 7), ("8", 8), ("9", 9)
+        ]
+        for (key, n) in digitMap where press.key == key {
+            switch n {
+            case 1: selectedFilter = .all
+            case 2: selectedFilter = .favorites
+            default:
+                let groupIndex = n - 3
+                if groups.indices.contains(groupIndex) {
+                    selectedFilter = .group(groups[groupIndex].id)
+                }
+            }
+            return .handled
+        }
+        return nil
     }
 
     private var emptyState: some View {
@@ -228,17 +318,27 @@ struct OverlayView: View {
 
     private var emptyIcon: String {
         if state.isPaused && items.isEmpty { return "pause.circle" }
-        if favoritesOnly { return "star" }
-        return "list.clipboard"
+        switch selectedFilter {
+        case .favorites: return "star"
+        case .group: return "folder"
+        case .all: return "list.clipboard"
+        }
     }
 
     private var emptyText: String {
         if items.isEmpty {
-            return state.isPaused
-                ? "Recording is paused"
-                : "Your clipboard history will appear here"
+            switch selectedFilter {
+            case .all:
+                return state.isPaused
+                    ? "Recording is paused"
+                    : "Your clipboard history will appear here"
+            case .favorites:
+                return "No favorites yet — press ⌘D on any item"
+            case .group(let id):
+                let name = groups.first(where: { $0.id == id })?.name ?? "this group"
+                return "No items in \(name) yet — right-click any clip to add"
+            }
         }
-        if favoritesOnly { return "No favorites yet — press ⌘D on any item" }
         return "No matches"
     }
 
@@ -304,8 +404,55 @@ struct OverlayView: View {
         Button(item.entry.isPinned ? "Remove from Favorites" : "Add to Favorites") {
             onToggleFavorite(item.entry)
         }
+        groupMembershipMenu(for: item)
         Divider()
         Button("Delete", role: .destructive) { onDelete(item.entry) }
+    }
+
+    @ViewBuilder
+    private func groupMembershipMenu(for item: ClipItem) -> some View {
+        let memberIds = memberGroupIds(for: item.entry.id)
+        Menu("Groups") {
+            if groups.isEmpty {
+                Text("No groups yet")
+            } else {
+                ForEach(groups) { group in
+                    Button {
+                        toggleMembership(entryId: item.entry.id, group: group)
+                    } label: {
+                        Label(
+                            group.name,
+                            systemImage: memberIds.contains(group.id) ? "checkmark" : ""
+                        )
+                    }
+                }
+            }
+            Divider()
+            Button("New Group…") { addToNewGroup(entryId: item.entry.id) }
+        }
+    }
+
+    private func addToNewGroup(entryId: String) {
+        let alert = NSAlert()
+        alert.messageText = "New Group"
+        alert.informativeText = "Name this group and add the selected clip to it."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Create")
+        alert.addButton(withTitle: "Cancel")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 24))
+        field.placeholderString = "Group name"
+        alert.accessoryView = field
+        if alert.runModal() == .alertFirstButtonReturn {
+            let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !name.isEmpty else { return }
+            do {
+                let group = try store.createGroup(name: name)
+                try store.setMembership(entryId: entryId, groupId: group.id, member: true)
+                selectedFilter = .group(group.id)
+            } catch {
+                NSLog("addToNewGroup failed: %@", String(describing: error))
+            }
+        }
     }
 
     private func rowAccessibilityLabel(for item: ClipItem) -> String {
