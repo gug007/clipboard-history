@@ -85,6 +85,48 @@ jobs:
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             | tail -20
 
+      - name: Re-sign Sparkle frameworks
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -e
+          APP_PATH="build/Build/Products/Release/$APP_NAME.app"
+          SPARKLE="$APP_PATH/Contents/Frameworks/Sparkle.framework"
+
+          if [ ! -d "$SPARKLE" ]; then
+            echo "::warning::Sparkle.framework not found — skipping re-sign"
+            exit 0
+          fi
+
+          sign_one() {
+            codesign --force --options=runtime --timestamp \
+              --sign "$SIGN_IDENTITY" "$1"
+          }
+
+          # Innermost first: XPC services
+          for xpc in "$SPARKLE"/Versions/B/XPCServices/*.xpc; do
+            [ -d "$xpc" ] || continue
+            echo "  signing $(basename "$xpc")"
+            sign_one "$xpc"
+          done
+
+          # Helper apps + bare executables next to the framework
+          for helper in "$SPARKLE"/Versions/B/*.app "$SPARKLE"/Versions/B/Autoupdate; do
+            [ -e "$helper" ] || continue
+            echo "  signing $(basename "$helper")"
+            sign_one "$helper"
+          done
+
+          # Sparkle framework itself
+          echo "  signing Sparkle.framework"
+          sign_one "$SPARKLE"
+
+          # Re-seal the app bundle so its signature covers the new framework state
+          echo "  re-sealing $APP_NAME.app"
+          sign_one "$APP_PATH"
+
+          echo "==> Verifying"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
       - name: Notarize
         working-directory: ${{ env.PROJECT_DIR }}
         env:
