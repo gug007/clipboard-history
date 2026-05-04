@@ -1,5 +1,4 @@
 import AppKit
-import Carbon.HIToolbox
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var historyStore: HistoryStore?
@@ -74,8 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let hotkey = HotkeyService { [weak overlay] in overlay?.toggle() }
         self.hotkey = hotkey
-        hotkey.register(keyCode: UInt32(kVK_ANSI_V), modifiers: [.command, .shift])
-        print("[Startup] All systems ready — hotkey ⇧⌘V registered (paused=\(initialPaused))")
+        print("[Startup] All systems ready — global hotkey registered (paused=\(initialPaused))")
     }
 
     private func handlePauseToggle() {

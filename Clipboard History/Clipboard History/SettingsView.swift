@@ -1,16 +1,18 @@
 import SwiftUI
 import AppKit
+import KeyboardShortcuts
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
-    @State private var selection: Tab = .storage
+    @State private var selection: Tab = .general
 
     enum Tab: Hashable {
-        case storage, privacy, about
+        case general, storage, privacy, about
     }
 
     private var detailTitle: String {
         switch selection {
+        case .general: return "General"
         case .storage: return "Storage"
         case .privacy: return "Privacy"
         case .about:   return "About"
@@ -20,6 +22,9 @@ struct SettingsView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
+                NavigationLink(value: Tab.general) {
+                    Label("General", systemImage: "gear")
+                }
                 NavigationLink(value: Tab.storage) {
                     Label("Storage", systemImage: "internaldrive")
                 }
@@ -36,6 +41,7 @@ struct SettingsView: View {
         } detail: {
             Group {
                 switch selection {
+                case .general: GeneralSettingsTab()
                 case .storage: StorageSettingsTab()
                 case .privacy: PrivacySettingsTab()
                 case .about:   AboutTab()
@@ -47,6 +53,32 @@ struct SettingsView: View {
         .onDisappear {
             NSApp.setActivationPolicy(.accessory)
         }
+    }
+}
+
+// MARK: - General
+
+private struct GeneralSettingsTab: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Open clipboard history")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        KeyboardShortcuts.Recorder(for: .openHistory)
+                    }
+                    Text("Press this shortcut from anywhere to open the history overlay.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollContentBackground(.hidden)
     }
 }
 
