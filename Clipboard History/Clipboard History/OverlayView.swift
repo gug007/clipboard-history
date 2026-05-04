@@ -361,8 +361,9 @@ private struct EntryRow: View {
             iconView
                 .opacity(item.isStale ? 0.4 : 1.0)
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.entry.displayTitle)
-                    .lineLimit(1)
+                Text(bodyText)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
                     .font(.system(size: 13))
                     .strikethrough(item.isStale, color: .secondary)
                     .foregroundStyle(item.isStale ? Color.secondary : Color.primary)
@@ -456,6 +457,19 @@ private struct EntryRow: View {
         case .multiFile: return "doc.on.doc"
         case .richText:  return "doc.richtext"
         case .url:       return "link"
+        }
+    }
+
+    private var bodyText: String {
+        switch item.entry.kind {
+        case .text, .url, .richText:
+            let lines = item.entry.searchableText
+                .split(separator: "\n", maxSplits: 3, omittingEmptySubsequences: true)
+                .prefix(3)
+                .map { String($0.prefix(200)) }
+            return lines.isEmpty ? item.entry.displayTitle : lines.joined(separator: "\n")
+        case .file, .multiFile, .image:
+            return item.entry.displayTitle
         }
     }
 
