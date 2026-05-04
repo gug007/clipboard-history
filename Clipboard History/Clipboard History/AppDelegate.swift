@@ -18,6 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
+        // Touch the singleton so the first-launch default (register as login item) is applied.
+        _ = LaunchAtLogin.shared
+
         let initialPaused = UserDefaults.standard.bool(forKey: Self.pausedKey)
         panelState.isPaused = initialPaused
 

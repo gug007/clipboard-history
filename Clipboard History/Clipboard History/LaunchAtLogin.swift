@@ -12,6 +12,8 @@ final class LaunchAtLogin {
         case requiresApproval
     }
 
+    private static let defaultAppliedKey = "LaunchAtLogin.defaultApplied"
+
     private let service = SMAppService.mainApp
     private(set) var state: State
 
@@ -19,6 +21,14 @@ final class LaunchAtLogin {
 
     private init() {
         state = Self.read(service)
+        applyDefaultIfNeeded()
+    }
+
+    private func applyDefaultIfNeeded() {
+        let d = UserDefaults.standard
+        guard !d.bool(forKey: Self.defaultAppliedKey) else { return }
+        d.set(true, forKey: Self.defaultAppliedKey)
+        setEnabled(true)
     }
 
     func setEnabled(_ enabled: Bool) {
