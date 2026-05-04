@@ -194,22 +194,50 @@ jobs:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           set -e
-          SIGN_TOOL=$(find "$PROJECT_DIR/build/SourcePackages/checkouts/Sparkle" \
+
+          # Sparkle ships as a binary XCFramework, so the tool lives under artifacts/
+          # in modern Xcode. Search the whole SourcePackages tree to be safe.
+          SIGN_TOOL=$(find "$PROJECT_DIR/build/SourcePackages" \
             -name "sign_update" -type f 2>/dev/null | head -1)
           if [ -z "${SIGN_TOOL:-}" ]; then
             echo "::error::Sparkle's sign_update tool not found"
+            echo "Searched in: $PROJECT_DIR/build/SourcePackages"
+            find "$PROJECT_DIR/build/SourcePackages" -maxdepth 4 -type d 2>/dev/null | head -30
+            exit 1
+          fi
+          echo "sign_update: $SIGN_TOOL"
+
+          KEY_FILE="$RUNNER_TEMP/sparkle_ed_key"
+          # printf '%s' avoids appending a trailing newline; strip CR/whitespace.
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | tr -d '\r\n\t ' > "$KEY_FILE"
+          KEY_LEN=$(wc -c < "$KEY_FILE" | tr -d ' ')
+          echo "key file size: $KEY_LEN bytes"
+
+          DMG_PATH="${{ steps.dmg.outputs.dmg_path }}"
+          if [ ! -f "$DMG_PATH" ]; then
+            echo "::error::DMG not found at $DMG_PATH"
             exit 1
           fi
 
-          KEY_FILE="$RUNNER_TEMP/sparkle_ed_key"
-          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
-
-          SIG_LINE=$("$SIGN_TOOL" -f "$KEY_FILE" "${{ steps.dmg.outputs.dmg_path }}")
+          # Capture stdout AND stderr; show both in log.
+          set +e
+          SIGN_OUT=$("$SIGN_TOOL" -f "$KEY_FILE" "$DMG_PATH" 2>&1)
+          SIGN_RC=$?
+          set -e
           rm -f "$KEY_FILE"
 
-          # Output looks like:  sparkle:edSignature="..." length="123456"
+          echo "::group::sign_update output (rc=$SIGN_RC)"
+          echo "$SIGN_OUT"
+          echo "::endgroup::"
+
+          if [ "$SIGN_RC" -ne 0 ]; then
+            echo "::error::sign_update failed with exit $SIGN_RC"
+            exit "$SIGN_RC"
+          fi
+
+          # sign_update prints `sparkle:edSignature="..." length="..."` on stdout
+          SIG_LINE="$SIGN_OUT"
           echo "signature_line=$SIG_LINE" >> "$GITHUB_OUTPUT"
-          echo "signature: $SIG_LINE"
 
       - name: Update appcast.xml
         env:

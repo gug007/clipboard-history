@@ -395,7 +395,7 @@ private struct EntryRow: View {
 
     private var defaultIconName: String {
         switch item.entry.kind {
-        case .text:      return "text.alignleft"
+        case .text:      return "text.quote"
         case .file:      return "doc"
         case .image:     return "photo"
         case .multiFile: return "doc.on.doc"
