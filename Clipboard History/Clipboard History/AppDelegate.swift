@@ -8,11 +8,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlay: OverlayPanelController?
     private var hotkey: HotkeyService?
     private let deviceId = AppDelegate.persistentDeviceId()
+    private let panelState = PanelState()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         let initialPaused = UserDefaults.standard.bool(forKey: Self.pausedKey)
+        panelState.isPaused = initialPaused
 
         // Menu bar icon first — guarantees the user can always quit, regardless of below.
         menuBar = MenuBarController(
@@ -33,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        let overlay = OverlayPanelController(store: store)
+        let overlay = OverlayPanelController(store: store, state: panelState)
         self.overlay = overlay
 
         let deviceId = self.deviceId
@@ -79,6 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let menuBar else { return }
         let paused = menuBar.isPaused
         watcher?.setPaused(paused)
+        panelState.isPaused = paused
         UserDefaults.standard.set(paused, forKey: Self.pausedKey)
         print("[Pause] now paused=\(paused)")
     }

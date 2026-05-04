@@ -5,12 +5,14 @@ final class OverlayPanelController {
     private let panel: NSPanel
     private var hostingView: NSHostingView<OverlayView>!
     private let store: HistoryStore
+    private let state: PanelState
     private var lastPasteAt: Date?
 
     var isVisible: Bool { panel.isVisible }
 
-    init(store: HistoryStore) {
+    init(store: HistoryStore, state: PanelState) {
         self.store = store
+        self.state = state
 
         let size = NSSize(width: 720, height: 480)
         panel = NSPanel(
@@ -35,6 +37,7 @@ final class OverlayPanelController {
 
         let host = NSHostingView(rootView: OverlayView(
             store: store,
+            state: state,
             onPaste: { _ in },
             onDismiss: {},
             onToggleFavorite: { _ in },
@@ -56,6 +59,7 @@ final class OverlayPanelController {
 
         host.rootView = OverlayView(
             store: store,
+            state: state,
             onPaste: { [weak self] entry in self?.paste(entry) },
             onDismiss: { [weak self] in self?.hide() },
             onToggleFavorite: { [weak self] entry in self?.toggleFavorite(entry) },

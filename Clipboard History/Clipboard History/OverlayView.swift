@@ -3,6 +3,7 @@ import GRDB
 
 struct OverlayView: View {
     let store: HistoryStore
+    let state: PanelState
     let onPaste: (ClipEntry) -> Void
     let onDismiss: () -> Void
     let onToggleFavorite: (ClipEntry) -> Void
@@ -110,6 +111,9 @@ struct OverlayView: View {
                 hint("⌘R", "reveal")
                 hint("⎋", "close")
                 Spacer()
+                if state.isPaused {
+                    pausedPill
+                }
                 Text("\(displayed.count) item\(displayed.count == 1 ? "" : "s")")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
@@ -223,14 +227,14 @@ struct OverlayView: View {
 
     private var emptyState: some View {
         VStack(spacing: 12) {
-            Image(systemName: favoritesOnly ? "star" : "list.clipboard")
+            Image(systemName: emptyIcon)
                 .font(.system(size: 36))
                 .foregroundStyle(.tertiary)
             Text(emptyText)
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
             if items.isEmpty {
-                Text("Copy something to get started.")
+                Text(emptyHint)
                     .font(.system(size: 12))
                     .foregroundStyle(.tertiary)
             }
@@ -238,10 +242,40 @@ struct OverlayView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var emptyIcon: String {
+        if state.isPaused && items.isEmpty { return "pause.circle" }
+        if favoritesOnly { return "star" }
+        return "list.clipboard"
+    }
+
     private var emptyText: String {
-        if items.isEmpty { return "Your clipboard history will appear here" }
+        if items.isEmpty {
+            return state.isPaused
+                ? "Recording is paused"
+                : "Your clipboard history will appear here"
+        }
         if favoritesOnly { return "No favorites yet — press ⌘D on any item" }
         return "No matches"
+    }
+
+    private var emptyHint: String {
+        state.isPaused
+            ? "Resume from the menu bar to start capturing again."
+            : "Copy something to get started."
+    }
+
+    private var pausedPill: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "pause.fill")
+                .font(.system(size: 9, weight: .bold))
+            Text("Paused")
+                .font(.system(size: 10, weight: .medium))
+        }
+        .foregroundStyle(Color.orange)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(Color.orange.opacity(0.15))
+        .clipShape(Capsule())
     }
 
     private func hint(_ key: String, _ label: String) -> some View {
