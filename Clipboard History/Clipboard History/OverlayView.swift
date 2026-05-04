@@ -303,10 +303,13 @@ private struct EntryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             iconView
+                .opacity(item.isStale ? 0.4 : 1.0)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.entry.displayTitle)
                     .lineLimit(1)
                     .font(.system(size: 13))
+                    .strikethrough(item.isStale, color: .secondary)
+                    .foregroundStyle(item.isStale ? Color.secondary : Color.primary)
                 if let sub = item.entry.displaySubtitle {
                     Text(sub)
                         .lineLimit(1)
@@ -315,9 +318,13 @@ private struct EntryRow: View {
                 }
             }
             Spacer()
-            Text(relative(item.entry.createdAt))
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
+            if item.isStale {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.orange)
+                    .help("File has been moved or deleted")
+                    .opacity(isHovering ? 1.0 : 0.0)
+            }
 
             HStack(spacing: 4) {
                 Button(action: onToggleFavorite) {
@@ -329,7 +336,7 @@ private struct EntryRow: View {
                 }
                 .buttonStyle(.plain)
                 .help(item.entry.isPinned ? "Remove from Favorites (⌘D)" : "Add to Favorites (⌘D)")
-                .opacity(item.entry.isPinned || isHovering ? 1.0 : 0.45)
+                .opacity(item.entry.isPinned || isHovering ? 1.0 : 0.0)
 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
@@ -342,6 +349,11 @@ private struct EntryRow: View {
                 .help("Delete (⌘⌫)")
                 .opacity(isHovering ? 1.0 : 0.0)
             }
+
+            Text(relative(item.entry.createdAt))
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .frame(width: 64, alignment: .trailing)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)

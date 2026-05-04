@@ -4,6 +4,7 @@ import GRDB
 struct ClipItem: Identifiable, Equatable {
     let entry: ClipEntry
     let firstIcon: Data?
+    let isStale: Bool
 
     var id: String { entry.id }
 }
@@ -135,18 +136,36 @@ final class HistoryStore {
 
                 return try entries.map { entry in
                     let firstIcon: Data?
+                    var isStale = false
                     if entry.kind == .file || entry.kind == .multiFile {
-                        firstIcon = try ClipPayload
+                        let firstPayload = try ClipPayload
                             .filter(Column("entryId") == entry.id)
                             .order(Column("position"))
                             .limit(1)
-                            .fetchOne(db)?.iconPNG
+                            .fetchOne(db)
+                        firstIcon = firstPayload?.iconPNG
+                        if let bookmark = firstPayload?.bookmarkData {
+                            isStale = !Self.bookmarkResolvesToReachable(bookmark)
+                        }
                     } else {
                         firstIcon = nil
                     }
-                    return ClipItem(entry: entry, firstIcon: firstIcon)
+                    return ClipItem(entry: entry, firstIcon: firstIcon, isStale: isStale)
                 }
             }
             .values(in: pool)
+    }
+
+    private static func bookmarkResolvesToReachable(_ bookmark: Data) -> Bool {
+        var stale = false
+        guard let url = try? URL(
+            resolvingBookmarkData: bookmark,
+            options: [.withSecurityScope],
+            relativeTo: nil,
+            bookmarkDataIsStale: &stale
+        ) else { return false }
+        let started = url.startAccessingSecurityScopedResource()
+        defer { if started { url.stopAccessingSecurityScopedResource() } }
+        return (try? url.checkResourceIsReachable()) == true
     }
 }
