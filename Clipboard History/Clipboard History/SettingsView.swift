@@ -3,21 +3,46 @@ import AppKit
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
+    @State private var selection: Tab = .storage
+
+    enum Tab: Hashable {
+        case storage, privacy, about
+    }
+
     var body: some View {
-        TabView {
-            StorageSettingsTab()
-                .tabItem { Label("Storage", systemImage: "internaldrive") }
-            PrivacySettingsTab()
-                .tabItem { Label("Privacy", systemImage: "hand.raised") }
-            AboutTab()
-                .tabItem { Label("About", systemImage: "info.circle") }
+        NavigationSplitView {
+            List(selection: $selection) {
+                NavigationLink(value: Tab.storage) {
+                    Label("Storage", systemImage: "internaldrive")
+                }
+                NavigationLink(value: Tab.privacy) {
+                    Label("Privacy", systemImage: "hand.raised")
+                }
+                NavigationLink(value: Tab.about) {
+                    Label("About", systemImage: "info.circle")
+                }
+            }
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 170, ideal: 180, max: 200)
+            .toolbar(removing: .sidebarToggle)
+        } detail: {
+            Group {
+                switch selection {
+                case .storage: StorageSettingsTab()
+                case .privacy: PrivacySettingsTab()
+                case .about:   AboutTab()
+                }
+            }
+            .toolbar(.hidden, for: .windowToolbar)
         }
-        .frame(width: 520, height: 420)
+        .frame(width: 700, height: 480)
         .onDisappear {
             NSApp.setActivationPolicy(.accessory)
         }
     }
 }
+
+// MARK: - Storage
 
 private struct StorageSettingsTab: View {
     @State private var settings = AppSettings.shared
@@ -25,9 +50,13 @@ private struct StorageSettingsTab: View {
     @State private var clearMessage: String?
 
     var body: some View {
-        Form {
-            Section("History size") {
-                HStack {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                section(
+                    title: "History size",
+                    valueLabel: formatNumber(settings.retentionCap) + " items",
+                    description: "Older non-favorited items are auto-removed once you exceed this cap."
+                ) {
                     Slider(
                         value: Binding(
                             get: { Double(settings.retentionCap) },
@@ -36,17 +65,16 @@ private struct StorageSettingsTab: View {
                         in: 100...10_000,
                         step: 100
                     )
-                    Text("\(settings.retentionCap) items")
-                        .font(.system(.body, design: .monospaced))
-                        .frame(width: 100, alignment: .trailing)
+                    .controlSize(.small)
                 }
-                Text("Older non-favorited items are auto-removed once you exceed this cap.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
 
-            Section("Maximum file size to capture") {
-                HStack {
+                Divider().opacity(0.35)
+
+                section(
+                    title: "Maximum file size to capture",
+                    valueLabel: "\(settings.perFileSizeCapMB) MB",
+                    description: "Files larger than this still appear in history as metadata, but their bytes won't be uploaded to iCloud."
+                ) {
                     Slider(
                         value: Binding(
                             get: { Double(settings.perFileSizeCapMB) },
@@ -55,37 +83,73 @@ private struct StorageSettingsTab: View {
                         in: 1...100,
                         step: 1
                     )
-                    Text("\(settings.perFileSizeCapMB) MB")
-                        .font(.system(.body, design: .monospaced))
-                        .frame(width: 100, alignment: .trailing)
+                    .controlSize(.small)
                 }
-                Text("Files larger than this still appear in history as metadata, but their bytes won't be uploaded to iCloud.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
 
-            Section("Danger zone") {
-                Button(role: .destructive) {
-                    clearConfirm = true
-                } label: {
-                    Label("Clear All History", systemImage: "trash")
-                }
-                if let msg = clearMessage {
-                    Text(msg).font(.callout).foregroundStyle(.secondary)
+                Divider().opacity(0.35)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Danger zone")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                    Button(role: .destructive) {
+                        clearConfirm = true
+                    } label: {
+                        Label("Clear all history", systemImage: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
+                    if let msg = clearMessage {
+                        Text(msg)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .confirmationDialog(
             "Clear all clipboard history?",
             isPresented: $clearConfirm
         ) {
-            Button("Clear All", role: .destructive) {
-                clearAll()
-            }
+            Button("Clear All", role: .destructive) { clearAll() }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This permanently deletes every captured item, including favorites. This cannot be undone.")
+        }
+    }
+
+    private func formatNumber(_ n: Int) -> String {
+        n.formatted(.number.grouping(.automatic).locale(Locale(identifier: "en_US")))
+    }
+
+    @ViewBuilder
+    private func section<Control: View>(
+        title: String,
+        valueLabel: String,
+        description: String,
+        @ViewBuilder control: () -> Control
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Text(valueLabel)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            control()
+            Text(description)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -93,12 +157,14 @@ private struct StorageSettingsTab: View {
         let store = (NSApp.delegate as? AppDelegate)?.historyStore
         do {
             try store?.clearAll()
-            clearMessage = "History cleared at \(Date().formatted(date: .omitted, time: .standard))."
+            clearMessage = "Cleared at \(Date().formatted(date: .omitted, time: .standard))"
         } catch {
             clearMessage = "Clear failed: \(error.localizedDescription)"
         }
     }
 }
+
+// MARK: - Privacy
 
 private struct PrivacySettingsTab: View {
     @State private var settings = AppSettings.shared
@@ -106,29 +172,28 @@ private struct PrivacySettingsTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Excluded apps")
-                .font(.headline)
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 6)
-            Text("Anything copied while one of these apps is frontmost is never captured. Password managers and Keychain Access are excluded by default.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Excluded apps")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("Anything copied while one of these apps is frontmost is never captured.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 28)
+            .padding(.top, 24)
+            .padding(.bottom, 12)
 
             List(selection: $selection) {
                 ForEach(settings.excludedApps, id: \.self) { bundleID in
-                    HStack {
-                        if let icon = appIcon(for: bundleID) {
-                            Image(nsImage: icon)
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                        } else {
-                            Image(systemName: "app.dashed")
-                                .foregroundStyle(.tertiary)
-                                .frame(width: 20, height: 20)
+                    HStack(spacing: 10) {
+                        Group {
+                            if let icon = appIcon(for: bundleID) {
+                                Image(nsImage: icon).resizable()
+                            } else {
+                                Image(systemName: "app.dashed").foregroundStyle(.tertiary)
+                            }
                         }
+                        .frame(width: 22, height: 22)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(displayName(for: bundleID))
                                 .font(.system(size: 13))
@@ -139,9 +204,11 @@ private struct PrivacySettingsTab: View {
                         Spacer()
                     }
                     .tag(bundleID)
+                    .padding(.vertical, 2)
                 }
             }
-            .listStyle(.bordered(alternatesRowBackgrounds: true))
+            .listStyle(.inset)
+            .scrollContentBackground(.hidden)
             .padding(.horizontal, 16)
 
             HStack(spacing: 8) {
@@ -149,21 +216,29 @@ private struct PrivacySettingsTab: View {
                     addApp()
                 } label: {
                     Image(systemName: "plus")
+                        .frame(width: 18, height: 18)
                 }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
                 Button {
                     removeSelected()
                 } label: {
                     Image(systemName: "minus")
+                        .frame(width: 18, height: 18)
                 }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
                 .disabled(selection.isEmpty)
                 Spacer()
                 Button("Reset to defaults") {
                     settings.excludedApps = AppSettings.defaultExcludedApps
                     selection = []
                 }
+                .buttonStyle(.borderless)
+                .controlSize(.small)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 14)
         }
     }
 
@@ -176,13 +251,11 @@ private struct PrivacySettingsTab: View {
 
     private func displayName(for bundleID: String) -> String {
         guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID),
-              let bundle = Bundle(url: url),
-              let name = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-                ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
-        else {
-            return bundleID
-        }
-        return name
+              let bundle = Bundle(url: url)
+        else { return bundleID }
+        return (bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
+            ?? (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String)
+            ?? bundleID
     }
 
     private func addApp() {
@@ -193,12 +266,10 @@ private struct PrivacySettingsTab: View {
         panel.allowsMultipleSelection = false
         panel.allowedContentTypes = [.applicationBundle]
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
-
         guard panel.runModal() == .OK, let url = panel.url,
               let bundle = Bundle(url: url),
               let bid = bundle.bundleIdentifier
         else { return }
-
         if !settings.excludedApps.contains(bid) {
             settings.excludedApps.append(bid)
         }
@@ -210,24 +281,30 @@ private struct PrivacySettingsTab: View {
     }
 }
 
+// MARK: - About
+
 private struct AboutTab: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             Image(systemName: "list.clipboard")
-                .font(.system(size: 60))
+                .font(.system(size: 56, weight: .light))
                 .foregroundStyle(.tint)
-            Text("Clipboard History")
-                .font(.title)
-                .fontWeight(.semibold)
-            Text("Version \(Bundle.main.shortVersion) (\(Bundle.main.buildNumber))")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            Text("⇧⌘V to open · paused/resumed from the menu bar")
-                .font(.caption)
+                .padding(.bottom, 4)
+            VStack(spacing: 4) {
+                Text("Clipboard History")
+                    .font(.system(size: 20, weight: .semibold))
+                Text("Version \(Bundle.main.shortVersion) (\(Bundle.main.buildNumber))")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            Text("⇧⌘V to open · pause from the menu bar")
+                .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
-                .padding(.top, 4)
+                .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(24)
     }
 }
 
