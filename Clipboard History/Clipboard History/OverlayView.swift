@@ -5,19 +5,29 @@ struct OverlayView: View {
     let store: HistoryStore
     let onPaste: (ClipEntry) -> Void
     let onDismiss: () -> Void
+    let onToggleFavorite: (ClipEntry) -> Void
+    let onDelete: (ClipEntry) -> Void
+    let onReveal: (ClipEntry) -> Void
 
     @State private var items: [ClipItem] = []
     @State private var query = ""
     @State private var selectionIndex = 0
+    @State private var favoritesOnly = false
     @FocusState private var searchFocused: Bool
 
     private var displayed: [ClipItem] {
-        let q = query.trimmingCharacters(in: .whitespaces)
-        guard !q.isEmpty else { return items }
-        return items.filter {
-            $0.entry.displayTitle.localizedCaseInsensitiveContains(q)
-                || $0.entry.searchableText.localizedCaseInsensitiveContains(q)
+        var result = items
+        if favoritesOnly {
+            result = result.filter { $0.entry.isPinned }
         }
+        let q = query.trimmingCharacters(in: .whitespaces)
+        if !q.isEmpty {
+            result = result.filter {
+                $0.entry.displayTitle.localizedCaseInsensitiveContains(q)
+                    || $0.entry.searchableText.localizedCaseInsensitiveContains(q)
+            }
+        }
+        return result
     }
 
     var body: some View {
@@ -34,6 +44,16 @@ struct OverlayView: View {
                             onPaste(displayed[selectionIndex].entry)
                         }
                     }
+                Button {
+                    favoritesOnly.toggle()
+                    selectionIndex = 0
+                } label: {
+                    Image(systemName: favoritesOnly ? "star.fill" : "star")
+                        .foregroundStyle(favoritesOnly ? Color.yellow : Color.secondary)
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(.plain)
+                .help(favoritesOnly ? "Show all (⇧⌘F)" : "Show favorites only (⇧⌘F)")
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -45,7 +65,11 @@ struct OverlayView: View {
             } else {
                 ScrollViewReader { proxy in
                     List(Array(displayed.enumerated()), id: \.offset) { idx, item in
-                        EntryRow(item: item)
+                        EntryRow(
+                            item: item,
+                            onToggleFavorite: { onToggleFavorite(item.entry) },
+                            onDelete: { onDelete(item.entry) }
+                        )
                             .listRowBackground(
                                 idx == selectionIndex
                                     ? Color.accentColor.opacity(0.25)
@@ -55,6 +79,18 @@ struct OverlayView: View {
                             .id(idx)
                             .contentShape(Rectangle())
                             .onTapGesture { onPaste(item.entry) }
+                            .contextMenu {
+                                Button("Paste") { onPaste(item.entry) }
+                                if item.entry.kind == .file || item.entry.kind == .multiFile {
+                                    Button("Reveal in Finder") { onReveal(item.entry) }
+                                }
+                                Divider()
+                                Button(item.entry.isPinned ? "Remove from Favorites" : "Add to Favorites") {
+                                    onToggleFavorite(item.entry)
+                                }
+                                Divider()
+                                Button("Delete", role: .destructive) { onDelete(item.entry) }
+                            }
                     }
                     .scrollContentBackground(.hidden)
                     .listStyle(.plain)
@@ -66,9 +102,12 @@ struct OverlayView: View {
 
             Divider().opacity(0.3)
 
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 hint("↑↓", "navigate")
                 hint("⏎", "paste")
+                hint("⌘D", "favorite")
+                hint("⌘⌫", "delete")
+                hint("⌘R", "reveal")
                 hint("⎋", "close")
                 Spacer()
                 Text("\(displayed.count) item\(displayed.count == 1 ? "" : "s")")
@@ -101,34 +140,87 @@ struct OverlayView: View {
         .onChange(of: query) { _, _ in
             selectionIndex = 0
         }
-        .onKeyPress(.return) {
+        .onKeyPress(phases: [.down]) { press in
+            handleKey(press)
+        }
+    }
+
+    private func handleKey(_ press: KeyPress) -> KeyPress.Result {
+        let cmd = press.modifiers.contains(.command)
+        let shift = press.modifiers.contains(.shift)
+
+        if !cmd {
+            switch press.key {
+            case .return:
+                if displayed.indices.contains(selectionIndex) {
+                    onPaste(displayed[selectionIndex].entry)
+                }
+                return .handled
+            case .escape:
+                onDismiss()
+                return .handled
+            case .upArrow:
+                if selectionIndex > 0 { selectionIndex -= 1 }
+                return .handled
+            case .downArrow:
+                if selectionIndex < max(0, displayed.count - 1) { selectionIndex += 1 }
+                return .handled
+            default:
+                return .ignored
+            }
+        }
+
+        // Cmd-modified shortcuts
+        if press.key == .delete {
             if displayed.indices.contains(selectionIndex) {
-                onPaste(displayed[selectionIndex].entry)
+                onDelete(displayed[selectionIndex].entry)
+                if selectionIndex >= displayed.count - 1 {
+                    selectionIndex = max(0, displayed.count - 2)
+                }
             }
             return .handled
         }
-        .onKeyPress(.escape) {
-            onDismiss()
+
+        let chars = press.characters.lowercased()
+        switch chars {
+        case "d":
+            if displayed.indices.contains(selectionIndex) {
+                onToggleFavorite(displayed[selectionIndex].entry)
+            }
+            return .handled
+        case "r":
+            if displayed.indices.contains(selectionIndex) {
+                let entry = displayed[selectionIndex].entry
+                if entry.kind == .file || entry.kind == .multiFile {
+                    onReveal(entry)
+                }
+            }
+            return .handled
+        case "f" where shift:
+            favoritesOnly.toggle()
+            selectionIndex = 0
+            return .handled
+        default:
+            break
+        }
+
+        if let n = Int(chars), (1...9).contains(n) {
+            let idx = n - 1
+            if displayed.indices.contains(idx) {
+                onPaste(displayed[idx].entry)
+            }
             return .handled
         }
-        .onKeyPress(.upArrow) {
-            if selectionIndex > 0 { selectionIndex -= 1 }
-            return .handled
-        }
-        .onKeyPress(.downArrow) {
-            if selectionIndex < max(0, displayed.count - 1) { selectionIndex += 1 }
-            return .handled
-        }
+
+        return .ignored
     }
 
     private var emptyState: some View {
         VStack(spacing: 12) {
-            Image(systemName: "list.clipboard")
+            Image(systemName: favoritesOnly ? "star" : "list.clipboard")
                 .font(.system(size: 36))
                 .foregroundStyle(.tertiary)
-            Text(items.isEmpty
-                 ? "Your clipboard history will appear here"
-                 : "No matches")
+            Text(emptyText)
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
             if items.isEmpty {
@@ -138,6 +230,12 @@ struct OverlayView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var emptyText: String {
+        if items.isEmpty { return "Your clipboard history will appear here" }
+        if favoritesOnly { return "No favorites yet — press ⌘D on any item" }
+        return "No matches"
     }
 
     private func hint(_ key: String, _ label: String) -> some View {
@@ -157,6 +255,10 @@ struct OverlayView: View {
 
 private struct EntryRow: View {
     let item: ClipItem
+    let onToggleFavorite: () -> Void
+    let onDelete: () -> Void
+
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -176,9 +278,36 @@ private struct EntryRow: View {
             Text(relative(item.entry.createdAt))
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
+
+            HStack(spacing: 4) {
+                Button(action: onToggleFavorite) {
+                    Image(systemName: item.entry.isPinned ? "star.fill" : "star")
+                        .font(.system(size: 13))
+                        .foregroundStyle(item.entry.isPinned ? Color.yellow : Color.secondary)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(item.entry.isPinned ? "Remove from Favorites (⌘D)" : "Add to Favorites (⌘D)")
+                .opacity(item.entry.isPinned || isHovering ? 1.0 : 0.45)
+
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.secondary)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Delete (⌘⌫)")
+                .opacity(isHovering ? 1.0 : 0.0)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 
     @ViewBuilder

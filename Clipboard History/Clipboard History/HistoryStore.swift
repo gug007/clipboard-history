@@ -79,7 +79,7 @@ final class HistoryStore {
         }
     }
 
-    func togglePin(id: String) throws {
+    func toggleFavorite(id: String) throws {
         try pool.write { db in
             let now = Date()
             try db.execute(

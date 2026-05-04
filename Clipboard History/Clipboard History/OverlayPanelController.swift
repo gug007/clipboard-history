@@ -5,6 +5,7 @@ final class OverlayPanelController {
     private let panel: NSPanel
     private var hostingView: NSHostingView<OverlayView>!
     private let store: HistoryStore
+    private var lastPasteAt: Date?
 
     var isVisible: Bool { panel.isVisible }
 
@@ -35,7 +36,10 @@ final class OverlayPanelController {
         let host = NSHostingView(rootView: OverlayView(
             store: store,
             onPaste: { _ in },
-            onDismiss: {}
+            onDismiss: {},
+            onToggleFavorite: { _ in },
+            onDelete: { _ in },
+            onReveal: { _ in }
         ))
         host.translatesAutoresizingMaskIntoConstraints = false
         self.hostingView = host
@@ -53,7 +57,10 @@ final class OverlayPanelController {
         host.rootView = OverlayView(
             store: store,
             onPaste: { [weak self] entry in self?.paste(entry) },
-            onDismiss: { [weak self] in self?.hide() }
+            onDismiss: { [weak self] in self?.hide() },
+            onToggleFavorite: { [weak self] entry in self?.toggleFavorite(entry) },
+            onDelete: { [weak self] entry in self?.delete(entry) },
+            onReveal: { [weak self] entry in self?.revealInFinder(entry) }
         )
     }
 
@@ -68,7 +75,55 @@ final class OverlayPanelController {
         panel.orderOut(nil)
     }
 
+    private func toggleFavorite(_ entry: ClipEntry) {
+        do {
+            try store.toggleFavorite(id: entry.id)
+        } catch {
+            print("[Favorite] toggle failed: \(error)")
+        }
+    }
+
+    private func delete(_ entry: ClipEntry) {
+        do {
+            try store.delete(id: entry.id)
+        } catch {
+            print("[Delete] failed: \(error)")
+        }
+    }
+
+    private func revealInFinder(_ entry: ClipEntry) {
+        guard let payloads = try? store.payloads(for: entry.id) else { return }
+        var urls: [URL] = []
+        for payload in payloads {
+            guard let bookmark = payload.bookmarkData else { continue }
+            var stale = false
+            if let url = try? URL(
+                resolvingBookmarkData: bookmark,
+                options: [.withSecurityScope],
+                relativeTo: nil,
+                bookmarkDataIsStale: &stale
+            ) {
+                _ = url.startAccessingSecurityScopedResource()
+                urls.append(url)
+            }
+        }
+        guard !urls.isEmpty else {
+            print("[Reveal] no resolvable URLs for entry \(entry.id)")
+            return
+        }
+        NSWorkspace.shared.activateFileViewerSelecting(urls)
+        hide()
+        let stash = urls
+        Task {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            for url in stash { url.stopAccessingSecurityScopedResource() }
+        }
+    }
+
     private func paste(_ entry: ClipEntry) {
+        if let last = lastPasteAt, Date().timeIntervalSince(last) < 0.4 { return }
+        lastPasteAt = Date()
+
         print("[Paste] === paste() entered id=\(entry.id) kind=\(entry.kind) ===")
         do {
             let payloads = try store.payloads(for: entry.id)
@@ -76,13 +131,11 @@ final class OverlayPanelController {
             switch entry.kind {
             case .text, .url, .richText:
                 if let text = payloads.first?.inlineText {
-                    print("[Paste] writing text (\(text.count) chars)")
                     pasteText(text)
                 } else {
                     print("[Paste] WARN: text-kind entry but no inlineText payload")
                 }
             case .file, .multiFile:
-                print("[Paste] writing \(payloads.count) file payload(s)")
                 pasteFiles(payloads)
             case .image:
                 print("[Paste] image kind — not implemented")
@@ -91,7 +144,6 @@ final class OverlayPanelController {
             print("[Paste] payload load failed: \(error)")
         }
         hide()
-        print("[Paste] panel hidden, scheduling auto-paste in 50ms")
         Self.performAutoPasteAfterDelay()
     }
 
@@ -100,15 +152,12 @@ final class OverlayPanelController {
             let opts = [
                 kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
             ] as CFDictionary
-            let trusted = AXIsProcessTrustedWithOptions(opts)
-            print("[Paste] AXIsProcessTrustedWithOptions returned trusted=\(trusted)")
-            guard trusted else {
-                print("[Paste] >>> Accessibility NOT granted. Pasteboard is set; press ⌘V manually.")
-                print("[Paste] >>> If no system prompt appeared, open System Settings → Privacy & Security → Accessibility and toggle 'Clipboard History' manually.")
+            guard AXIsProcessTrustedWithOptions(opts) else {
+                print("[Paste] Accessibility NOT granted — pasteboard updated, press ⌘V manually.")
                 return
             }
             let src = CGEventSource(stateID: .combinedSessionState)
-            let v: CGKeyCode = 0x09 // V
+            let v: CGKeyCode = 0x09
             if let down = CGEvent(keyboardEventSource: src, virtualKey: v, keyDown: true) {
                 down.flags = .maskCommand
                 down.post(tap: .cghidEventTap)
@@ -117,7 +166,6 @@ final class OverlayPanelController {
                 up.flags = .maskCommand
                 up.post(tap: .cghidEventTap)
             }
-            print("[Paste] auto-paste ⌘V posted to .cghidEventTap")
         }
     }
 
@@ -125,9 +173,7 @@ final class OverlayPanelController {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(text, forType: .string)
-        // Mark as auto-generated so our own watcher skips this self-write.
         pb.setData(Data(), forType: Self.autoGeneratedType)
-        print("[Paste] text written; pb.changeCount=\(pb.changeCount)")
     }
 
     private func pasteFiles(_ payloads: [ClipPayload]) {
@@ -145,8 +191,7 @@ final class OverlayPanelController {
                     relativeTo: nil,
                     bookmarkDataIsStale: &stale
                 )
-                let started = url.startAccessingSecurityScopedResource()
-                print("[Paste] resolved \(url.path) stale=\(stale) accessStarted=\(started)")
+                _ = url.startAccessingSecurityScopedResource()
                 resolved.append(url)
             } catch {
                 print("[Paste] bookmark resolve failed for \(payload.filename ?? "?"): \(error)")
@@ -159,29 +204,17 @@ final class OverlayPanelController {
 
         let pb = NSPasteboard.general
         pb.clearContents()
-
-        // Canonical: writeObjects with NSURLs gives Finder/apps the standard
-        // public.file-url per item with the right format.
-        let success = pb.writeObjects(resolved as [NSURL])
-
-        // Legacy NSFilenamesPboardType — many older apps & Finder paste handlers still expect this.
+        pb.writeObjects(resolved as [NSURL])
         pb.setPropertyList(
             resolved.map(\.path),
             forType: NSPasteboard.PasteboardType("NSFilenamesPboardType")
         )
-
-        // Auto-generated marker → our watcher skips this self-write so we don't dup.
         pb.setData(Data(), forType: Self.autoGeneratedType)
 
-        print("[Paste] wrote \(resolved.count) file URL(s); writeObjects=\(success); pb.changeCount=\(pb.changeCount); types=\(pb.types?.map(\.rawValue) ?? [])")
-
-        // Hold security scope ~30s so the destination can finish reading.
         let urls = resolved
         Task {
             try? await Task.sleep(nanoseconds: 30_000_000_000)
-            for url in urls {
-                url.stopAccessingSecurityScopedResource()
-            }
+            for url in urls { url.stopAccessingSecurityScopedResource() }
         }
     }
 
