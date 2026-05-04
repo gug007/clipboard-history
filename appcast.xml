@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Clipboard History — Updates</title>
+    <link>https://github.com/gug007/clipboard-history</link>
+    <description>Latest releases of Clipboard History.</description>
+    <language>en</language>
+    <item>
+      <title>Version 0.0.5</title>
+      <pubDate>Mon, 04 May 2026 20:25:20 +0000</pubDate>
+      <sparkle:version>0.0.5</sparkle:version>
+      <sparkle:shortVersionString>0.0.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/gug007/clipboard-history/releases/download/v0.0.5/ClipboardHistory-0.0.5.dmg"
+        type="application/octet-stream"
+        sparkle:edSignature="OT7+C7ZKSmbP+CDzvLtwJO61X37Ji4zQFcWh+W8241RKYi2AKmNUFGRy1pxmESaDX8yI/WW/WtCsdyRBkvxYAQ==" length="3071517" />
+    </item>
+  </channel>
+</rss>
