@@ -49,9 +49,9 @@ struct OverlayView: View {
                     favoritesOnly.toggle()
                     selectionIndex = 0
                 } label: {
-                    Image(systemName: favoritesOnly ? "star.fill" : "star")
+                    Image(systemName: "star")
                         .foregroundStyle(favoritesOnly ? Color.yellow : Color.secondary)
-                        .font(.system(size: 14))
+                        .font(.system(size: 14, weight: favoritesOnly ? .semibold : .regular))
                 }
                 .buttonStyle(.plain)
                 .help(favoritesOnly ? "Show all (⇧⌘F)" : "Show favorites only (⇧⌘F)")
@@ -329,8 +329,8 @@ private struct EntryRow: View {
 
             HStack(spacing: 4) {
                 Button(action: onToggleFavorite) {
-                    Image(systemName: item.entry.isPinned ? "star.fill" : "star")
-                        .font(.system(size: 13))
+                    Image(systemName: "star")
+                        .font(.system(size: 13, weight: item.entry.isPinned ? .semibold : .regular))
                         .foregroundStyle(item.entry.isPinned ? Color.yellow : Color.secondary)
                         .frame(width: 22, height: 22)
                         .contentShape(Rectangle())
