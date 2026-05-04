@@ -3,11 +3,14 @@ import SwiftUI
 
 final class OverlayPanelController {
     private let panel: NSPanel
-    private var hostingView: NSHostingView<OverlayView>
+    private var hostingView: NSHostingView<OverlayView>!
+    private let store: HistoryStore
 
     var isVisible: Bool { panel.isVisible }
 
-    init() {
+    init(store: HistoryStore) {
+        self.store = store
+
         let size = NSSize(width: 720, height: 480)
         panel = NSPanel(
             contentRect: NSRect(origin: .zero, size: size),
@@ -29,21 +32,27 @@ final class OverlayPanelController {
         panel.becomesKeyOnlyIfNeeded = false
         panel.hidesOnDeactivate = false
 
-        hostingView = NSHostingView(rootView: OverlayView(onPaste: { _ in }, onDismiss: {}))
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        let host = NSHostingView(rootView: OverlayView(
+            store: store,
+            onPaste: { _ in },
+            onDismiss: {}
+        ))
+        host.translatesAutoresizingMaskIntoConstraints = false
+        self.hostingView = host
 
         let container = NSView()
-        container.addSubview(hostingView)
+        container.addSubview(host)
         NSLayoutConstraint.activate([
-            hostingView.topAnchor.constraint(equalTo: container.topAnchor),
-            hostingView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            hostingView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            hostingView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            host.topAnchor.constraint(equalTo: container.topAnchor),
+            host.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            host.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            host.trailingAnchor.constraint(equalTo: container.trailingAnchor),
         ])
         panel.contentView = container
 
-        hostingView.rootView = OverlayView(
-            onPaste: { [weak self] s in self?.paste(s) },
+        host.rootView = OverlayView(
+            store: store,
+            onPaste: { [weak self] entry in self?.paste(entry) },
             onDismiss: { [weak self] in self?.hide() }
         )
     }
@@ -59,9 +68,16 @@ final class OverlayPanelController {
         panel.orderOut(nil)
     }
 
-    private func paste(_ string: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(string, forType: .string)
+    private func paste(_ entry: ClipEntry) {
+        do {
+            let payloads = try store.payloads(for: entry.id)
+            if let text = payloads.first?.inlineText {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(text, forType: .string)
+            }
+        } catch {
+            NSLog("Paste failed: %@", String(describing: error))
+        }
         hide()
     }
 }

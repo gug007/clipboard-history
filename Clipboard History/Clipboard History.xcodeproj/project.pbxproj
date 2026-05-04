@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0844A60C2FA8CF69004C8FB2 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0844A60B2FA8CF69004C8FB2 /* GRDB */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		0844A5EE2FA8C5C9004C8FB2 /* Clipboard History.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clipboard History.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0844A60C2FA8CF69004C8FB2 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "Clipboard History";
 			packageProductDependencies = (
+				0844A60B2FA8CF69004C8FB2 /* GRDB */,
 			);
 			productName = "Clipboard History";
 			productReference = 0844A5EE2FA8C5C9004C8FB2 /* Clipboard History.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 0844A5E52FA8C5C9004C8FB2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0844A60A2FA8CF69004C8FB2 /* XCRemoteSwiftPackageReference "GRDB" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0844A5EF2FA8C5C9004C8FB2 /* Products */;
 			projectDirPath = "";
@@ -341,6 +350,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0844A60A2FA8CF69004C8FB2 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0844A60B2FA8CF69004C8FB2 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0844A60A2FA8CF69004C8FB2 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0844A5E62FA8C5C9004C8FB2 /* Project object */;
 }

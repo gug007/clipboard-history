@@ -1,20 +1,23 @@
 import SwiftUI
+import GRDB
 
 struct OverlayView: View {
-    let onPaste: (String) -> Void
+    let store: HistoryStore
+    let onPaste: (ClipEntry) -> Void
     let onDismiss: () -> Void
 
+    @State private var entries: [ClipEntry] = []
     @State private var query = ""
     @State private var selectionIndex = 0
     @FocusState private var searchFocused: Bool
 
-    private let allItems: [String] = (1...50).map { i in
-        "Clipboard item #\(i) — sample text for the M0 spike"
-    }
-
-    private var items: [String] {
-        guard !query.isEmpty else { return allItems }
-        return allItems.filter { $0.localizedCaseInsensitiveContains(query) }
+    private var displayed: [ClipEntry] {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return entries }
+        return entries.filter {
+            $0.displayTitle.localizedCaseInsensitiveContains(q)
+                || $0.searchableText.localizedCaseInsensitiveContains(q)
+        }
     }
 
     var body: some View {
@@ -32,32 +35,27 @@ struct OverlayView: View {
 
             Divider().opacity(0.3)
 
-            ScrollViewReader { proxy in
-                List(Array(items.enumerated()), id: \.offset) { idx, item in
-                    HStack(spacing: 10) {
-                        Image(systemName: "doc.on.clipboard")
-                            .foregroundStyle(.tertiary)
-                        Text(item)
-                            .lineLimit(1)
-                            .font(.system(size: 13))
-                        Spacer()
+            if displayed.isEmpty {
+                emptyState
+            } else {
+                ScrollViewReader { proxy in
+                    List(Array(displayed.enumerated()), id: \.offset) { idx, entry in
+                        EntryRow(entry: entry)
+                            .listRowBackground(
+                                idx == selectionIndex
+                                    ? Color.accentColor.opacity(0.25)
+                                    : Color.clear
+                            )
+                            .listRowSeparator(.hidden)
+                            .id(idx)
+                            .contentShape(Rectangle())
+                            .onTapGesture { onPaste(entry) }
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .listRowBackground(
-                        idx == selectionIndex
-                            ? Color.accentColor.opacity(0.25)
-                            : Color.clear
-                    )
-                    .listRowSeparator(.hidden)
-                    .id(idx)
-                    .contentShape(Rectangle())
-                    .onTapGesture { onPaste(item) }
-                }
-                .scrollContentBackground(.hidden)
-                .listStyle(.plain)
-                .onChange(of: selectionIndex) { _, new in
-                    proxy.scrollTo(new, anchor: .center)
+                    .scrollContentBackground(.hidden)
+                    .listStyle(.plain)
+                    .onChange(of: selectionIndex) { _, new in
+                        proxy.scrollTo(new, anchor: .center)
+                    }
                 }
             }
 
@@ -68,7 +66,7 @@ struct OverlayView: View {
                 hint("⏎", "paste")
                 hint("⎋", "close")
                 Spacer()
-                Text("M0 spike — \(items.count) items")
+                Text("\(displayed.count) item\(displayed.count == 1 ? "" : "s")")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
             }
@@ -82,16 +80,25 @@ struct OverlayView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
         )
-        .onAppear {
+        .task {
             searchFocused = true
-            selectionIndex = 0
+            do {
+                for try await items in store.observeEntries(limit: 100) {
+                    entries = items
+                    if selectionIndex >= items.count {
+                        selectionIndex = max(0, items.count - 1)
+                    }
+                }
+            } catch {
+                NSLog("Observation failed: %@", String(describing: error))
+            }
         }
         .onChange(of: query) { _, _ in
             selectionIndex = 0
         }
         .onKeyPress(.return) {
-            if items.indices.contains(selectionIndex) {
-                onPaste(items[selectionIndex])
+            if displayed.indices.contains(selectionIndex) {
+                onPaste(displayed[selectionIndex])
             }
             return .handled
         }
@@ -104,9 +111,28 @@ struct OverlayView: View {
             return .handled
         }
         .onKeyPress(.downArrow) {
-            if selectionIndex < max(0, items.count - 1) { selectionIndex += 1 }
+            if selectionIndex < max(0, displayed.count - 1) { selectionIndex += 1 }
             return .handled
         }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "list.clipboard")
+                .font(.system(size: 36))
+                .foregroundStyle(.tertiary)
+            Text(entries.isEmpty
+                 ? "Your clipboard history will appear here"
+                 : "No matches")
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+            if entries.isEmpty {
+                Text("Copy something to get started.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func hint(_ key: String, _ label: String) -> some View {
@@ -121,5 +147,51 @@ struct OverlayView: View {
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+private struct EntryRow: View {
+    let entry: ClipEntry
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .foregroundStyle(.tertiary)
+                .frame(width: 18)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.displayTitle)
+                    .lineLimit(1)
+                    .font(.system(size: 13))
+                if let sub = entry.displaySubtitle {
+                    Text(sub)
+                        .lineLimit(1)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            Spacer()
+            Text(relative(entry.createdAt))
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+    }
+
+    private var iconName: String {
+        switch entry.kind {
+        case .text:      return "text.alignleft"
+        case .file:      return "doc"
+        case .image:     return "photo"
+        case .multiFile: return "doc.on.doc"
+        case .richText:  return "doc.richtext"
+        case .url:       return "link"
+        }
+    }
+
+    private func relative(_ date: Date) -> String {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .short
+        return f.localizedString(for: date, relativeTo: Date())
     }
 }
