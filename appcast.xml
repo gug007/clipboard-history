@@ -6,6 +6,17 @@
     <description>Latest releases of Clipboard History.</description>
     <language>en</language>
     <item>
+      <title>Version 0.0.16</title>
+      <pubDate>Tue, 05 May 2026 13:33:03 +0000</pubDate>
+      <sparkle:version>0.0.16</sparkle:version>
+      <sparkle:shortVersionString>0.0.16</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/gug007/clipboard-history/releases/download/v0.0.16/ClipboardHistory-0.0.16.dmg"
+        type="application/octet-stream"
+        sparkle:edSignature="MZaSbczXQcWlHKNPYrm1YvDWU3R8l4NolDYTDCeUOU10H+j72nu3W2jgUzDOgypu8MdKidKY5Y2wpyzUUtnYBw==" length="4887077" />
+    </item>
+        <item>
       <title>Version 0.0.15</title>
       <pubDate>Tue, 05 May 2026 13:05:04 +0000</pubDate>
       <sparkle:version>0.0.15</sparkle:version>
