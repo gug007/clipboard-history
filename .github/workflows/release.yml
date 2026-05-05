@@ -83,7 +83,7 @@ jobs:
             ENABLE_APP_SANDBOX=YES \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
             MARKETING_VERSION=${{ steps.version.outputs.version }} \
-            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.version }} \
             | tee xcodebuild.log | tail -20
 
           APP_BIN="build/Build/Products/Release/$APP_NAME.app/Contents/MacOS/$APP_NAME"
