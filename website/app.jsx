@@ -1,4 +1,4 @@
-/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, FeatureGrid, PrivacySection, StorageSection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor */
+/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, FeatureGrid, PrivacySection, StorageSection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
 const { useState, useEffect } = React;
 
 function Nav({ theme, setTheme }) {
@@ -42,6 +42,7 @@ function Nav({ theme, setTheme }) {
 }
 
 function Hero() {
+  const downloadUrl = useDownloadUrl();
   return (
     <header className="hero" id="top">
       <div className="container">
@@ -50,7 +51,7 @@ function Hero() {
           Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press <span className="kbd-combo"><span className="kbd">⇧</span><span className="kbd">⌘</span><span className="kbd">V</span></span> and bring any of it back.
         </p>
         <div className="hero-actions">
-          <a href="#download" className="btn btn-primary btn-lg">
+          <a href={downloadUrl} className="btn btn-primary btn-lg">
             <Icon.apple/> Download free for Mac
           </a>
           <a href="https://github.com/gug007/clipboard-history" className="btn btn-ghost btn-lg">
