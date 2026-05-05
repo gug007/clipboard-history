@@ -3,6 +3,7 @@ const { useState, useEffect } = React;
 
 function Nav({ theme, setTheme }) {
   const [scrolled, setScrolled] = useState(false);
+  const downloadUrl = useDownloadUrl();
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -32,7 +33,7 @@ function Nav({ theme, setTheme }) {
           >
             {theme === "dark" ? <Icon.sun/> : <Icon.moon/>}
           </button>
-          <a href="#download" className="btn btn-primary">
+          <a href={downloadUrl} className="btn btn-primary">
             <Icon.download/> Download
           </a>
         </div>
