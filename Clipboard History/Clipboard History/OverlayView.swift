@@ -30,23 +30,24 @@ struct OverlayView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(.secondary)
                 TextField("Search clipboard history…", text: $query)
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
                     .onSubmit {
                         if displayed.indices.contains(selectionIndex) {
                             onPaste(displayed[selectionIndex].entry)
                         }
                     }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
 
-            Divider().opacity(0.3)
+            Divider().opacity(0.18)
 
             OverlayTabStrip(
                 groups: groups,
@@ -57,7 +58,7 @@ struct OverlayView: View {
                 onDeleteGroup: { group in deleteGroup(group) }
             )
 
-            Divider().opacity(0.3)
+            Divider().opacity(0.18)
 
             if displayed.isEmpty {
                 emptyState
@@ -68,13 +69,14 @@ struct OverlayView: View {
                     }
                     .scrollContentBackground(.hidden)
                     .listStyle(.plain)
+                    .environment(\.defaultMinListRowHeight, 0)
                     .onChange(of: selectionIndex) { _, new in
                         proxy.scrollTo(new, anchor: .center)
                     }
                 }
             }
 
-            Divider().opacity(0.3)
+            Divider().opacity(0.18)
 
             HStack(spacing: 12) {
                 Group {
@@ -371,18 +373,19 @@ struct OverlayView: View {
     @ViewBuilder
     private func rowView(for item: ClipItem, at idx: Int) -> some View {
         let isSelected = idx == selectionIndex
-        let rowBackground: Color = isSelected ? Color.accentColor.opacity(0.25) : Color.clear
         let traits: AccessibilityTraits = isSelected ? [.isButton, .isSelected] : .isButton
         let favoriteActionName: String = item.entry.isPinned ? "Remove from favorites" : "Add to favorites"
         let canReveal = item.entry.kind == .file || item.entry.kind == .multiFile
 
         EntryRow(
             item: item,
+            isSelected: isSelected,
             onToggleFavorite: { onToggleFavorite(item.entry) },
             onDelete: { onDelete(item.entry) }
         )
-        .listRowBackground(rowBackground)
+        .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 1, leading: 8, bottom: 1, trailing: 8))
         .id(idx)
         .contentShape(Rectangle())
         .onTapGesture { onPaste(item.entry) }
@@ -504,6 +507,7 @@ struct OverlayView: View {
 
 private struct EntryRow: View {
     let item: ClipItem
+    let isSelected: Bool
     let onToggleFavorite: () -> Void
     let onDelete: () -> Void
 
@@ -511,39 +515,41 @@ private struct EntryRow: View {
     @State private var showPreview = false
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             iconView
                 .opacity(item.isStale ? 0.4 : 1.0)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(bodyText)
-                    .lineLimit(3)
+                    .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .font(.system(size: 13))
                     .strikethrough(item.isStale, color: .secondary)
                     .foregroundStyle(item.isStale ? Color.secondary : Color.primary)
-                if item.entry.displaySubtitle != nil || !item.groupNames.isEmpty {
-                    HStack(spacing: 6) {
-                        if let sub = item.entry.displaySubtitle {
-                            Text(sub)
-                                .lineLimit(1)
-                                .font(.system(size: 11))
-                                .foregroundStyle(.tertiary)
-                        }
-                        ForEach(item.groupNames, id: \.self) { name in
-                            Text(name)
-                                .font(.system(size: 9, weight: .medium))
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1)
-                                .background(
-                                    Capsule().fill(Color.accentColor.opacity(0.18))
-                                )
-                                .foregroundStyle(Color.accentColor)
-                                .lineLimit(1)
-                        }
+                HStack(spacing: 6) {
+                    if let sub = subtitleText {
+                        Text(sub)
+                            .lineLimit(1)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(relative(item.entry.createdAt))
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                    ForEach(item.groupNames, id: \.self) { name in
+                        Text(name)
+                            .font(.system(size: 10, weight: .medium))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(
+                                Capsule().fill(Color.accentColor.opacity(0.16))
+                            )
+                            .foregroundStyle(Color.accentColor)
+                            .lineLimit(1)
                     }
                 }
             }
-            Spacer()
+            Spacer(minLength: 8)
             if item.isStale {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 11))
@@ -552,10 +558,10 @@ private struct EntryRow: View {
                     .opacity(isHovering ? 1.0 : 0.0)
             }
 
-            HStack(spacing: 4) {
+            HStack(spacing: 2) {
                 Button(action: onToggleFavorite) {
-                    Image(systemName: "star")
-                        .font(.system(size: 13, weight: item.entry.isPinned ? .semibold : .regular))
+                    Image(systemName: item.entry.isPinned ? "star.fill" : "star")
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(item.entry.isPinned ? Color.yellow : Color.secondary)
                         .frame(width: 22, height: 22)
                         .contentShape(Rectangle())
@@ -566,7 +572,7 @@ private struct EntryRow: View {
 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                         .foregroundStyle(Color.secondary)
                         .frame(width: 22, height: 22)
                         .contentShape(Rectangle())
@@ -575,17 +581,24 @@ private struct EntryRow: View {
                 .help("Delete (⌘⌫)")
                 .opacity(isHovering ? 1.0 : 0.0)
             }
-
-            Text(relative(item.entry.createdAt))
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-                .frame(width: 64, alignment: .trailing)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(rowBackground)
+        )
         .onHover { hovering in
             isHovering = hovering
         }
+        .animation(.easeOut(duration: 0.1), value: isHovering)
+        .animation(.easeOut(duration: 0.1), value: isSelected)
+    }
+
+    private var rowBackground: Color {
+        if isSelected { return Color.accentColor.opacity(0.18) }
+        if isHovering { return Color.primary.opacity(0.05) }
+        return .clear
     }
 
     @ViewBuilder
@@ -598,10 +611,10 @@ private struct EntryRow: View {
                     .resizable()
                     .interpolation(.medium)
                     .scaledToFit()
-                    .frame(width: 44, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.5)
                     )
             }
@@ -612,9 +625,9 @@ private struct EntryRow: View {
             }
         } else {
             Image(systemName: defaultIconName)
-                .font(.system(size: 20, weight: .light))
-                .foregroundStyle(.tertiary)
-                .frame(width: 44, height: 44)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(.secondary)
+                .frame(width: 30, height: 30)
         }
     }
 
@@ -629,12 +642,20 @@ private struct EntryRow: View {
         }
     }
 
+    private var subtitleText: String? {
+        guard let raw = item.entry.displaySubtitle else { return nil }
+        if raw.hasPrefix("from ") {
+            return String(raw.dropFirst(5))
+        }
+        return raw
+    }
+
     private var bodyText: String {
         switch item.entry.kind {
         case .text, .url, .richText:
             let lines = item.entry.searchableText
-                .split(separator: "\n", maxSplits: 3, omittingEmptySubsequences: true)
-                .prefix(3)
+                .split(separator: "\n", maxSplits: 2, omittingEmptySubsequences: true)
+                .prefix(2)
                 .map { String($0.prefix(200)) }
             return lines.isEmpty ? item.entry.displayTitle : lines.joined(separator: "\n")
         case .file, .multiFile, .image:
@@ -643,9 +664,14 @@ private struct EntryRow: View {
     }
 
     private func relative(_ date: Date) -> String {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .short
-        return f.localizedString(for: date, relativeTo: Date())
+        let interval = Date().timeIntervalSince(date)
+        if interval < 60 { return "now" }
+        if interval < 3_600 { return "\(Int(interval / 60))m" }
+        if interval < 86_400 { return "\(Int(interval / 3_600))h" }
+        if interval < 604_800 { return "\(Int(interval / 86_400))d" }
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f.string(from: date)
     }
 }
 
