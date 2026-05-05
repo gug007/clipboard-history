@@ -7,7 +7,7 @@
 
   <!-- Primary meta -->
   <title>Clipboard History for Mac — Never lose what you copy</title>
-  <meta name="description" content="A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, images, files. Works offline. Skips passwords automatically."/>
+  <meta name="description" content="Clipboard History for Mac — the free clipboard manager that keeps your full copy-paste history. Press Shift + Command + V to bring back anything you've copied — text, links, images, files. Works offline. Skips passwords automatically."/>
   <meta name="keywords" content="clipboard manager mac, clipboard history mac, mac clipboard app, free clipboard manager, copy paste history, mac productivity, clipboard manager macOS"/>
   <meta name="author" content="Clipboard History"/>
   <link rel="canonical" href="https://clipboard-history.app/"/>
@@ -16,21 +16,25 @@
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://clipboard-history.app/"/>
   <meta property="og:title" content="Clipboard History for Mac — Never lose what you copy"/>
-  <meta property="og:description" content="A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, images, files. Works offline. Skips passwords automatically."/>
+  <meta property="og:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Recall any text, link, image, or file you've copied with Shift + Command + V. Works offline."/>
   <meta property="og:image" content="https://clipboard-history.app/og.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, code, text, images, and files"/>
   <meta property="og:locale" content="en_US"/>
   <meta property="og:site_name" content="Clipboard History"/>
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Clipboard History for Mac — Never lose what you copy"/>
-  <meta name="twitter:description" content="A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied. Works offline."/>
+  <meta name="twitter:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Recall anything you've copied with Shift + Command + V."/>
   <meta name="twitter:image" content="https://clipboard-history.app/og.png"/>
 
   <!-- Favicons -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a84ff'/%3E%3Cpath fill='white' d='M11 7h10v18H11z'/%3E%3Crect x='13' y='5' width='6' height='4' rx='1' fill='%230a84ff'/%3E%3C/svg%3E"/>
+
+  <link rel="preconnect" href="https://unpkg.com" crossorigin/>
+  <link rel="dns-prefetch" href="https://unpkg.com"/>
 
   <link rel="stylesheet" href="site.css"/>
 
@@ -116,23 +120,58 @@
   }
   </script>
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- SEO: visible H1 + key copy that crawlers see before JS loads -->
+  <!-- SEO: full content visible to crawlers without JS execution -->
   <noscript>
-    <header style="max-width:720px;margin:80px auto;padding:0 24px;font-family:system-ui;">
-      <h1>Clipboard History for Mac</h1>
-      <p>A free clipboard manager for macOS. Press Shift + Command + V to bring back anything you've copied — text, links, images, and files. Works completely offline. Skips passwords automatically.</p>
-      <p><a href="https://github.com/gug007/clipboard-history/releases">Download for Mac</a> · <a href="https://github.com/gug007/clipboard-history">View on GitHub</a></p>
-      <p>Requires macOS 14 (Sonoma) or later. Free and open source.</p>
-    </header>
+    <div style="max-width:760px;margin:80px auto;padding:0 24px;font-family:system-ui;line-height:1.6;color:#222;">
+      <header>
+        <h1>Clipboard History for Mac — never lose what you copy</h1>
+        <p>Clipboard History is a free clipboard manager for macOS. It remembers every text, link, image, and file you copy, so you can paste any of it back later. Press <strong>Shift + Command + V</strong> to open your clipboard history.</p>
+        <p>
+          <a href="https://github.com/gug007/clipboard-history/releases">Download free for Mac</a> ·
+          <a href="https://github.com/gug007/clipboard-history">View on GitHub</a>
+        </p>
+        <p><em>Requires macOS 14 (Sonoma) or later. Apple Silicon and Intel Macs supported. Free and open source.</em></p>
+      </header>
+
+      <section>
+        <h2>What Clipboard History does</h2>
+        <ul>
+          <li>Recalls any text, link, image, or file you've ever copied on your Mac.</li>
+          <li>Opens with one keyboard shortcut — Shift + Command + V by default.</li>
+          <li>Works completely offline. Your clipboard history never leaves your computer.</li>
+          <li>Automatically skips items copied from password managers (1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, LastPass).</li>
+          <li>Pauses recording when you're typing into a password field.</li>
+          <li>Lets you star and group your most-used clips.</li>
+          <li>Free, open source, and ad-free.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Frequently asked questions</h2>
+        <h3>Is Clipboard History free?</h3>
+        <p>Yes. Clipboard History is completely free and open source. There's nothing to pay for and no account to create.</p>
+        <h3>Does the clipboard manager work without internet?</h3>
+        <p>Yes. Everything happens on your Mac. Your clipboard history never leaves your computer.</p>
+        <h3>Will it record my passwords?</h3>
+        <p>No. Clipboard History automatically ignores anything copied from password managers like 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass. It also pauses recording whenever you're typing into a password field.</p>
+        <h3>Which Macs does it work on?</h3>
+        <p>Any Mac running macOS 14 (Sonoma) or later. The app works on both Apple Silicon and Intel Macs.</p>
+        <h3>How do I open my clipboard history on Mac?</h3>
+        <p>Press Shift, Command, and V at the same time. A list of everything you've copied appears. Pick one with the arrow keys and hit Return to paste it. You can change the shortcut in Settings.</p>
+      </section>
+
+      <p><strong>This page uses JavaScript for interactive demos.</strong> The content above is the full feature and FAQ summary.</p>
+    </div>
   </noscript>
 
   <div id="root"></div>
   <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="download.jsx"></script>
   <script type="text/babel" src="tweaks-panel.jsx"></script>
   <script type="text/babel" src="hero.jsx"></script>
   <script type="text/babel" src="features.jsx"></script>
