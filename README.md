@@ -8,6 +8,8 @@ Free. Open source. Works offline. Skips passwords automatically.
 
 [Download for Mac](https://github.com/gug007/clipboard-history/releases) · [Website](https://clipboard-history.cc/)
 
+![Clipboard History demo](website/uploads/clipboard-history-demo.gif)
+
 ## A second brain for your clipboard
 
 Every time you copy something new, the last thing is gone. Clipboard History remembers it all — quietly in the background — so you can paste any of it back, anytime.
