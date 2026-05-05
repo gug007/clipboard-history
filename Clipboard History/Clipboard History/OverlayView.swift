@@ -611,10 +611,10 @@ private struct EntryRow: View {
                     .resizable()
                     .interpolation(.medium)
                     .scaledToFit()
-                    .frame(width: 30, height: 30)
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.06), lineWidth: 0.5)
                     )
             }
@@ -625,9 +625,9 @@ private struct EntryRow: View {
             }
         } else {
             Image(systemName: defaultIconName)
-                .font(.system(size: 13, weight: .regular))
+                .font(.system(size: 20, weight: .regular))
                 .foregroundStyle(.secondary)
-                .frame(width: 30, height: 30)
+                .frame(width: 44, height: 44)
         }
     }
 
