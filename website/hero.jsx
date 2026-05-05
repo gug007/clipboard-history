@@ -16,7 +16,7 @@ function HeroOverlay({ variant = "default" }) {
     { kind: "url",   icon: <Icon.link/>,  title: "https://github.com/gug007/clipboard-history/releases/tag/v1.2.0", sub: "Safari · github.com", time: "now",   pinned: false, tag: null },
     { kind: "code",  icon: <Icon.code/>,  title: "useEffect(() => { const id = setInterval(tick, 1000); return () => clearInterval(id); }, [])", sub: "VS Code · App.tsx", time: "2m",  pinned: true,  tag: "Snippets" },
     { kind: "text",  icon: <Icon.text/>,  title: "Quick reminder — perf budget for ⇧⌘V → first paint is 80ms. Keep the panel pre-warmed.", sub: "Notes",       time: "12m", pinned: false, tag: null, body: true },
-    { kind: "image", icon: <Icon.image/>, title: "Screenshot 2026-05-04 at 14.22.png", sub: "1482 × 920 · PNG · 412 KB", time: "1h", pinned: false, tag: null },
+    { kind: "image", icon: <Icon.image/>, title: "Screenshot 2026-05-04 at 14.22.png", sub: "1482 × 920 · PNG · 412 KB", time: "1h", pinned: false, tag: null, thumb: "screenshots/02-current.jpg" },
     { kind: "file",  icon: <Icon.doc/>,   title: "Q2-launch-deck.key", sub: "~/Documents · 2.4 GB", time: "3h", pinned: false, tag: "Launch" },
   ];
 
@@ -36,7 +36,9 @@ function HeroOverlay({ variant = "default" }) {
       <div className="overlay-list">
         {entries.map((e, i) => (
           <div key={i} className={"entry " + (i === selected ? "selected" : "")}>
-            <div className={"entry-icon " + e.kind}>{e.icon}</div>
+            <div className={"entry-icon " + e.kind + (e.thumb ? " has-thumb" : "")}>
+              {e.thumb ? <img src={e.thumb} alt="" loading="lazy"/> : e.icon}
+            </div>
             <div className="entry-body">
               <div className={"entry-title" + (e.body ? " body-text" : "")}>{e.title}</div>
               <div className="entry-sub">

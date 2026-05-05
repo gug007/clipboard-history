@@ -6,7 +6,7 @@ Clipboard History remembers everything you copy on your Mac — every link, ever
 
 Free. Open source. Works offline. Skips passwords automatically.
 
-[Download for Mac](https://github.com/gug007/clipboard-history/releases) · [Website](https://clipboard-history.app/)
+[Download for Mac](https://github.com/gug007/clipboard-history/releases) · [Website](https://clipboard-history.cc/)
 
 ## A second brain for your clipboard
 
