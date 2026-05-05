@@ -54,13 +54,3 @@ Requires macOS 14 (Sonoma) or later. Apple Silicon or Intel. ~6 MB.
 
 Change ⇧⌘V in Settings.
 
-## What's next
-
-Optional iCloud sync for starred clips across Macs — opt-in, off by default. Not shipping yet.
-
-## For developers
-
-```
-git clone https://github.com/gug007/clipboard-history.git
-open "Clipboard History/Clipboard History.xcodeproj"
-```
