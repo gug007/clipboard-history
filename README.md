@@ -66,7 +66,3 @@ Requires macOS 14+, Xcode 15+, Swift 5.9+. SwiftPM resolves GRDB, KeyboardShortc
 ## Roadmap
 
 iCloud sync via CKSyncEngine on the user's private database — opt-in, not yet shipping.
-
-## License
-
-See [LICENSE](LICENSE).
