@@ -1,4 +1,4 @@
-/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, FeatureGrid, PrivacySection, StorageSection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
+/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, FeatureGrid, PrivacySection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
 const { useState, useEffect } = React;
 
 function Nav({ theme, setTheme }) {
@@ -49,7 +49,7 @@ function Hero() {
       <div className="container">
         <h1>Never lose what you <em>copy</em>.</h1>
         <p className="hero-sub">
-          Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press <span className="kbd-combo"><span className="kbd">⇧</span><span className="kbd">⌘</span><span className="kbd">V</span></span> and bring any of it back.
+          Press <span className="kbd-combo"><span className="kbd">⇧</span><span className="kbd">⌘</span><span className="kbd">V</span></span> and bring back anything you've copied — text, links, screenshots, files.
         </p>
         <div className="hero-actions">
           <a href={downloadUrl} className="btn btn-primary btn-lg">
@@ -59,7 +59,7 @@ function Hero() {
             <Icon.github/> View on GitHub
           </a>
         </div>
-        <div className="hero-meta">Works on any Mac running macOS 14 or later. No sign-up, ever.</div>
+        <div className="hero-meta">Free and open source. Works on macOS 14 or later.</div>
       </div>
       <div className="hero-stage">
         <DesktopMock/>
@@ -95,19 +95,24 @@ function App() {
     <>
       <Nav theme={theme} setTheme={setTheme}/>
       <Hero/>
+      <section id="why">
+        <div className="container">
+          <div className="section-eyebrow">Before &amp; after</div>
+          <h2 className="section-title">One shortcut between gone and saved.</h2>
+          <p className="section-lede">
+            Copy a new thing, lose the last one. Or copy three things in a row and need them all. ⇧⌘V — it's all still there.
+          </p>
+          <BeforeAfterDemo/>
+        </div>
+      </section>
       <section id="features">
         <div className="container">
           <div className="section-eyebrow">What it does</div>
-          <h2 className="section-title">A second brain for your clipboard.</h2>
-          <p className="section-lede">
-            Every time you copy something new, the last thing is gone. Clipboard History remembers it all — quietly in the background — so you can paste any of it back, anytime.
-          </p>
-          <BeforeAfterDemo/>
+          <h2 className="section-title">Everything you copy, kept.</h2>
           <FeatureGrid/>
         </div>
       </section>
       <div id="privacy"><PrivacySection/></div>
-      <StorageSection/>
       <div id="shortcuts"><CheatsheetSection/></div>
       <div id="faq"><FAQSection/></div>
       <div id="download"><DownloadSection/></div>
