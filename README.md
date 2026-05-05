@@ -10,7 +10,11 @@ Free. Open source. Works offline. Skips passwords automatically.
 
 [Download for Mac](https://github.com/gug007/clipboard-history/releases) · [Website](https://clipboard-history.cc/)
 
-![Clipboard History demo](website/uploads/clipboard-history-demo.gif)
+<img src="website/uploads/clipboard-history-before-after.png" width="800" alt="Without Clipboard History clips disappear; with Clipboard History they stay and are accessible with ⇧⌘V">
+
+*See it open with ⇧⌘V:*
+
+<img src="website/uploads/clipboard-history-demo.gif" width="800" alt="Clipboard History demo">
 
 ## What it does
 
