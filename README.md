@@ -1,43 +1,58 @@
 # Clipboard History
 
-A local-first clipboard manager for macOS, built to stay out of your way.
+**Never lose what you copy.**
 
-It lives in your menu bar and surfaces recent copies behind ⇧⌘V — pick an item and it pastes straight into the focused app. Built in Swift for macOS 14+, with on-device SQLite storage, full-text search, and rules that skip password managers and secure fields.
+Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press ⇧⌘V and bring any of it back.
 
-## Features
+Free. Open source. Works offline. Skips passwords automatically.
 
-- Overlay on ⇧⌘V, non-activating; arrow keys and Enter to paste into the previously focused app.
-- Captures plain text, rich text, URLs, images, and single- or multi-file selections.
-- File copies stored as URL + security-scoped bookmark + 64×64 icon, so a 5 GB file occupies kilobytes.
-- Search via SQLite FTS5 with bm25 ranking and recency decay, targeting sub-30 ms keystroke latency.
-- Favorited items survive retention sweeps; named groups collect related clips.
-- Retention capped at 1,000 entries by default, adjustable in Settings alongside per-file size and per-app exclusions.
-- Skip-rules exclude password managers (1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, LastPass), concealed and transient pasteboard types, and pause capture during secure input.
-- 30-second dedup window: re-copying the same content bumps the existing row instead of inserting a duplicate.
-- Menu-bar pause toggle, launch-at-login via `SMAppService`, and EdDSA-signed Sparkle 2 auto-updates over HTTPS.
+[Download for Mac](https://github.com/gug007/clipboard-history/releases) · [Website](https://clipboard-history.app/)
+
+## A second brain for your clipboard
+
+Every time you copy something new, the last thing is gone. Clipboard History remembers it all — quietly in the background — so you can paste any of it back, anytime.
+
+- **Find anything you've ever copied.** Type a word or two and the matching clip jumps to the top — even something you copied last week. It searches inside text, links, and filenames. Instant.
+- **One shortcut, anywhere.** Press ⇧⌘V in any app. Pick what you want with the arrow keys. Hit Return. It pastes right where you were typing.
+- **Everything you copy.** Plain text, formatted text, links, photos, screenshots, and files. Even a whole folder of files. It all comes back.
+- **Save your favorites.** Star the clips you reuse — your address, your bank details, that one Slack emoji. Or sort related clips into named groups. They never get cleaned up.
+- **No clutter.** Copy the same thing twice in a row? It doesn't make a duplicate. Your list stays clean and easy to scan.
+- **Barely any space.** Copy a 5 GB file and it costs a few kilobytes — the app remembers *where* the file lives, not the file itself. By default it keeps your last 1,000 clips; you can crank that up to 10,000.
+
+## Your clipboard. Yours alone.
+
+Your clipboard has private things in it — passwords half-typed, a friend's address, a credit card number. The app treats it that way.
+
+- **Stays on your Mac. Always.** Your clipboard history never leaves your computer. No account. Nothing uploaded. No telemetry.
+- **Ignores your password manager.** When you copy from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, or LastPass, the app pretends it didn't see it. You can add other apps to the list.
+- **Doesn't watch password fields.** Whenever you're typing into a password box, a sudo prompt, or the Mac lock screen, recording pauses automatically.
+- **Safe to install.** Signed and notarized by Apple, so macOS opens it without warnings. Updates are checked over a secure connection and verified before installing.
 
 ## Install
 
-- Requires macOS 14 or later.
-- Download `ClipboardHistory-<version>.dmg` from [Releases](https://github.com/gug007/clipboard-history/releases), open it, and drag the app to Applications.
-- Launch it. A clipboard icon appears in the menu bar; there is no Dock icon.
-- The first time you paste an item, macOS will prompt for Accessibility permission (needed for auto-paste). Decline and the item still lands on your clipboard — press ⌘V manually.
+1. Download the latest `ClipboardHistory-<version>.dmg` from [Releases](https://github.com/gug007/clipboard-history/releases).
+2. Open the DMG and drag the app to Applications.
+3. Launch it. A clipboard icon appears in the menu bar — there's no Dock icon.
+4. The first time you paste, macOS will ask for Accessibility permission (needed for auto-paste). If you decline, the item still lands on your clipboard — just press ⌘V manually.
 
-## Usage
+Works on any Mac running macOS 14 (Sonoma) or later, on both Apple Silicon and Intel. About 6 MB.
 
-- Press ⇧⌘V to open the overlay.
-- Type to filter, ↑/↓ to select, Enter to paste.
-- ⌘D favorites the selected item, ⌘⌫ deletes, Esc closes. Right-click for more actions.
-- Pause or resume recording from the menu-bar menu.
+## Keyboard shortcuts
 
-## Privacy
+| Action | Keys |
+| --- | --- |
+| Open your clipboard history | ⇧⌘V |
+| Move up or down the list | ↑ ↓ |
+| Paste the highlighted item | ⏎ |
+| Pick the 1st–9th item directly | ⌘1–9 |
+| Switch between groups | ⌥1–9 |
+| Star or un-star a clip | ⌘D |
+| Delete a clip | ⌘⌫ |
+| Show file in Finder | ⌘R |
+| Jump to your starred clips | ⇧F |
+| Close the window | ⎋ |
 
-Everything stays on your Mac. History lives in a single SQLite file at `~/Library/Application Support/Clipboard History/clipboard.sqlite` — no account, no cloud, no telemetry, no analytics SDKs.
-
-- App Sandbox and Hardened Runtime, notarized, distributed as a Developer ID DMG.
-- Capture pauses while macOS reports secure input (password fields) and drops `Concealed` / `Transient` / `AutoGenerated` pasteboard types; password managers are excluded by default.
-- Copied files are stored as a URL + security-scoped bookmark + 64×64 icon — file bytes are never copied into the database.
-- Auto-updates ship via Sparkle with an EdDSA public key pinned in `Info.plist`, served over HTTPS.
+You can rebind ⇧⌘V in Settings.
 
 ## Build from source
 
