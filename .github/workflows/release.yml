@@ -304,13 +304,22 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # The workflow checks out the tag, but main may have advanced past it.
+          # Re-apply the new appcast on top of the latest main so the push fast-forwards.
+          NEW_APPCAST=$(mktemp)
+          cp appcast.xml "$NEW_APPCAST"
+          git fetch origin main
+          git checkout -B main origin/main
+          cp "$NEW_APPCAST" appcast.xml
+          rm -f "$NEW_APPCAST"
+
           git add appcast.xml
           if git diff --staged --quiet; then
             echo "appcast.xml unchanged"
           else
             git commit -m "release: ${{ steps.version.outputs.version }} appcast"
-            # Push to default branch
-            git push origin HEAD:main
+            git push origin main
           fi
 
       - name: Upload to GitHub Release
