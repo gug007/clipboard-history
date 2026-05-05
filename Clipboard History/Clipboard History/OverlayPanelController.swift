@@ -71,12 +71,13 @@ final class OverlayPanelController {
     }
 
     private func centerPanelOnActiveScreen() {
-        // Pick the screen the user is currently on (cursor location), falling back
-        // to the key window's screen, then the main screen.
-        let mouseLocation = NSEvent.mouseLocation
-        let screen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+        // NSScreen.main = screen with keyboard focus, i.e. the active app's
+        // window — including when that app is fullscreen on a non-primary
+        // display. Mouse location is unreliable here because pressing a
+        // hotkey doesn't move the cursor.
+        let screen = NSScreen.main
+            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
             ?? NSApp.keyWindow?.screen
-            ?? NSScreen.main
             ?? NSScreen.screens.first
         guard let visible = screen?.visibleFrame else {
             panel.center()
