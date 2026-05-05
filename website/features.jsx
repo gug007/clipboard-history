@@ -108,13 +108,15 @@ function FeatureSearchDemo() {
 }
 
 function ShortcutVisual() {
+  // Just the keys, big and confident. No app rail decoration.
   return (
-    <div style={{height:"100%", display:"grid", placeItems:"center"}}>
-      <div style={{display:"flex", gap: 10, alignItems:"center"}}>
-        <span className="key-cap" style={{fontSize: 22, padding: "14px 18px", minWidth: 56, height: 56, borderRadius: 10}}>⇧</span>
-        <span className="key-cap" style={{fontSize: 22, padding: "14px 18px", minWidth: 56, height: 56, borderRadius: 10}}>⌘</span>
-        <span className="key-cap" style={{fontSize: 22, padding: "14px 18px", minWidth: 56, height: 56, borderRadius: 10}}>V</span>
+    <div className="shortcut-visual">
+      <div className="sv-keys">
+        <span className="key-cap sv-key">⇧</span>
+        <span className="key-cap sv-key">⌘</span>
+        <span className="key-cap sv-key">V</span>
       </div>
+      <div className="sv-anywhere">in any app</div>
     </div>
   );
 }
@@ -135,20 +137,22 @@ function DedupVisual() {
 }
 
 function KindsVisual() {
-  const kinds = [
-    { c: "url",   i: <Icon.link/>,  label: "URL" },
-    { c: "text",  i: <Icon.text/>,  label: "Text" },
-    { c: "code",  i: <Icon.code/>,  label: "Code" },
-    { c: "image", i: <Icon.image/>, label: "Image" },
-    { c: "file",  i: <Icon.doc/>,   label: "File" },
-    { c: "url",   i: <Icon.link/>,  label: "URL" },
+  // Stack of real-looking captured items, one per kind
+  const items = [
+    { c: "url",   i: <Icon.link/>,  label: "URL",        text: "github.com/anthropics/anthropic-sdk" },
+    { c: "image", i: <Icon.image/>, label: "Image",      text: "Screenshot 2026-05-04.png" },
+    { c: "code",  i: <Icon.code/>,  label: "Code",       text: "new Anthropic({ apiKey })", mono: true },
+    { c: "file",  i: <Icon.doc/>,   label: "Folder",     text: "Mocks · 24 files" },
   ];
   return (
-    <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap: 14, padding: 24, height:"100%", alignContent:"center"}}>
-      {kinds.map((k, i) => (
-        <div key={i} style={{display:"flex", flexDirection:"column", alignItems:"center", gap: 6}}>
-          <div className={"entry-icon " + k.c} style={{width: 38, height: 38}}>{k.i}</div>
-          <span style={{fontSize: 10, color: "var(--text-3)", fontWeight: 500}}>{k.label}</span>
+    <div className="kinds-visual">
+      {items.map((k, i) => (
+        <div key={i} className="kind-row">
+          <div className={"entry-icon " + k.c} style={{width: 26, height: 26, flexShrink: 0}}>{k.i}</div>
+          <div className="kind-meta">
+            <div className="kind-label">{k.label}</div>
+            <div className={"kind-text" + (k.mono ? " mono" : "")}>{k.text}</div>
+          </div>
         </div>
       ))}
     </div>
@@ -156,18 +160,123 @@ function KindsVisual() {
 }
 
 function GroupsVisual() {
+  const folders = [
+    { name: "Favorites",  icon: <Icon.starOutline/>, count: 12, active: true },
+    { name: "Snippets",   icon: <Icon.code/>,        count: 8 },
+    { name: "Addresses",  icon: <Icon.text/>,        count: 4 },
+  ];
+  const starred = [
+    { text: "1247 Oak St, Berkeley CA",   kind: "text", icon: <Icon.text/> },
+    { text: "claude_api_key=sk-ant-…",     kind: "code", icon: <Icon.code/>, mono: true },
+    { text: ":shipit: 🚀",                  kind: "text", icon: <Icon.text/> },
+  ];
   return (
-    <div style={{padding: 24, height:"100%", display:"flex", alignItems:"center", justifyContent:"center"}}>
-      <div style={{display:"flex", flexWrap:"wrap", gap: 8, width:"100%", justifyContent:"center"}}>
-        <span className="tab-pill active" style={{fontSize: 12, padding: "6px 12px"}}>All</span>
-        <span className="tab-pill" style={{fontSize: 12, padding: "6px 12px", background:"var(--hairline)", color: "var(--text)"}}><Icon.starOutline style={{width:10,height:10}}/> Favorites</span>
-        <span className="tab-pill" style={{fontSize: 12, padding: "6px 12px", background:"var(--hairline)", color: "var(--text)"}}>Snippets</span>
-        <span className="tab-pill" style={{fontSize: 12, padding: "6px 12px", background:"var(--hairline)", color: "var(--text)"}}>Launch</span>
-        <span className="tab-pill" style={{fontSize: 12, padding: "6px 12px", background:"var(--hairline)", color: "var(--text)"}}>Onboarding</span>
-        <span className="tab-pill" style={{fontSize: 12, padding: "6px 12px", color:"var(--text-3)"}}>+</span>
+    <div className="groups-visual">
+      <div className="gv-sidebar">
+        {folders.map((f, i) => (
+          <div key={i} className={"gv-folder" + (f.active ? " active" : "")}>
+            <span className="gv-folder-icon">{f.icon}</span>
+            <span className="gv-folder-name">{f.name}</span>
+            <span className="gv-folder-count">{f.count}</span>
+          </div>
+        ))}
+      </div>
+      <div className="gv-list">
+        {starred.map((s, i) => (
+          <div key={i} className="gv-item">
+            <span className="gv-star"><Icon.star/></span>
+            <span className={"gv-text" + (s.mono ? " mono" : "")}>{s.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeforeAfterDemo() {
+  // Animated demo: two parallel "Mac" mini-screens, one without the app, one with.
+  // Cycles through copying 4 items; left side shows only the most recent;
+  // right side shows the full growing stack.
+  const items = [
+    { kind: "url",   icon: <Icon.link/>,  text: "github.com/anthropics/anthropic-cookbook" },
+    { kind: "image", icon: <Icon.image/>, text: "Screenshot 2026-05-04.png" },
+    { kind: "text",  icon: <Icon.text/>,  text: "Mom's address — 1247 Oak St, Berkeley CA" },
+    { kind: "code",  icon: <Icon.code/>,  text: "claude_api_key=sk-ant-…" },
+  ];
+
+  const [step, setStep] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setStep(s => (s + 1) % items.length), 1800);
+    return () => clearInterval(id);
+  }, []);
+
+  const current = items[step];
+
+  return (
+    <div className="ba-demo">
+      <div className="ba-card ba-without">
+        <div className="ba-head">
+          <span className="ba-dot ba-dot-no"/>
+          <span>Without Clipboard History</span>
+        </div>
+        <div className="ba-body">
+          <div className="ba-current">
+            <span className="ba-current-label">On your clipboard right now</span>
+            <div className="ba-row ba-row-current">
+              <span className={"entry-icon " + current.kind} style={{width:28, height:28, flexShrink:0}}>{current.icon}</span>
+              <span className="ba-text">{current.text}</span>
+            </div>
+          </div>
+          <div className="ba-lost">
+            <span className="ba-lost-label">Earlier today</span>
+            <div className="ba-lost-stack">
+              {items.filter((_, i) => i !== step).map((it, i) => (
+                <div key={i} className="ba-row ba-row-lost">
+                  <span className={"entry-icon " + it.kind} style={{width:24, height:24, flexShrink:0, opacity:0.4}}>{it.icon}</span>
+                  <span className="ba-text" style={{textDecoration:"line-through", color:"var(--text-3)"}}>{it.text}</span>
+                </div>
+              ))}
+              <div className="ba-gone">All gone. Forever.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="ba-arrow" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="40" height="40"><path d="M8 20 L32 20 M22 10 L32 20 L22 30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+
+      <div className="ba-card ba-with">
+        <div className="ba-head">
+          <span className="ba-dot ba-dot-yes"/>
+          <span>With Clipboard History</span>
+        </div>
+        <div className="ba-body">
+          <div className="ba-current">
+            <span className="ba-current-label">On your clipboard right now</span>
+            <div className="ba-row ba-row-current">
+              <span className={"entry-icon " + current.kind} style={{width:28, height:28, flexShrink:0}}>{current.icon}</span>
+              <span className="ba-text">{current.text}</span>
+            </div>
+          </div>
+          <div className="ba-saved">
+            <span className="ba-saved-label">
+              <Icon.check/> Still there when you need them
+            </span>
+            <div className="ba-saved-stack">
+              {items.filter((_, i) => i !== step).map((it, i) => (
+                <div key={i} className="ba-row ba-row-saved">
+                  <span className={"entry-icon " + it.kind} style={{width:24, height:24, flexShrink:0}}>{it.icon}</span>
+                  <span className="ba-text">{it.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 window.FeatureGrid = FeatureGrid;
+window.BeforeAfterDemo = BeforeAfterDemo;

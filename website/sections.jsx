@@ -15,7 +15,7 @@ function PrivacySection() {
     {
       icon: <Icon.shield/>,
       title: "Doesn't watch password fields",
-      body: <>Whenever you're typing into a password box, a sudo prompt, or the Mac lock screen, recording pauses automatically. Anything an app marks as “don't save” is also skipped.</>,
+      body: <>Whenever you're typing into a password box, a sudo prompt, or the Mac lock screen, recording pauses automatically. Anything an app marks as "don't save" is also skipped.</>,
     },
     {
       icon: <Icon.cloud/>,
@@ -25,55 +25,126 @@ function PrivacySection() {
   ];
 
   const skipped = [
-    { name: "1Password",         bid: "com.1password.1password",       color: "#0572ec", letter: "1" },
-    { name: "Bitwarden",         bid: "com.bitwarden.desktop",         color: "#175ddc", letter: "B" },
-    { name: "Dashlane",          bid: "com.dashlane.dashlanephonefinal", color: "#007c89", letter: "D" },
-    { name: "KeePassXC",         bid: "org.keepassxc.keepassxc",       color: "#3c4d5c", letter: "K" },
-    { name: "Passwords",         bid: "com.apple.Passwords",           color: "#9aa0a6", letter: "P" },
-    { name: "Keychain Access",   bid: "com.apple.keychainaccess",      color: "#3a3a3c", letter: "K" },
-    { name: "LastPass",          bid: "com.lastpass.LastPass",         color: "#d32d27", letter: "L" },
+    { name: "1Password",       color: "#0572ec", letter: "1" },
+    { name: "Bitwarden",       color: "#175ddc", letter: "B" },
+    { name: "Dashlane",        color: "#007c89", letter: "D" },
+    { name: "KeePassXC",       color: "#3c4d5c", letter: "K" },
+    { name: "Apple Passwords", color: "#9aa0a6", letter: "P" },
+    { name: "Keychain",        color: "#3a3a3c", letter: "K" },
+    { name: "LastPass",        color: "#d32d27", letter: "L" },
   ];
 
   return (
     <section className="privacy">
       <div className="container">
-        <div className="privacy-grid">
-          <div>
+        <div className="privacy-top">
+          <div className="privacy-copy">
             <div className="section-eyebrow">Privacy</div>
-            <h2 className="section-title">Your clipboard. Yours alone.</h2>
+            <h2 className="section-title">Your clipboard.<br/>Yours alone.</h2>
             <p className="section-lede">
-              Your clipboard has private things in it — passwords you half-typed, a friend's address, a credit card number. We treat it that way.
+              Your clipboard has private things in it — passwords half-typed, a friend's address, a credit card number. We treat it that way.
             </p>
-            <div className="privacy-points">
-              {points.map((p, i) => (
-                <div key={i} className="privacy-point">
-                  <div className="pp-icon">{p.icon}</div>
-                  <div>
-                    <h4>{p.title}</h4>
-                    <p>{p.body}</p>
+            <ul className="privacy-checks">
+              <li><Icon.check/> No cloud uploads</li>
+              <li><Icon.check/> No account needed</li>
+              <li><Icon.check/> No analytics or tracking</li>
+              <li><Icon.check/> Open and inspectable</li>
+            </ul>
+          </div>
+
+          <div className="privacy-flow">
+            <div className="pf-row pf-row-source">
+              <div className="pf-icon"><Icon.clipboard/></div>
+              <div className="pf-row-text">
+                <div className="pf-row-title">You copy something</div>
+                <div className="pf-row-sub">Text, image, code, file — anything.</div>
+              </div>
+            </div>
+
+            <div className="pf-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 40" preserveAspectRatio="none">
+                <path d="M12 0 L12 32" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 4"/>
+                <path d="M6 28 L12 40 L18 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            <div className="pf-mac">
+              <div className="pf-mac-screen">
+                <div className="pf-mac-bezel">
+                  <div className="pf-mac-window">
+                    <div className="pf-mac-bar">
+                      <span/><span/><span/>
+                    </div>
+                    <div className="pf-mac-app">
+                      <div className="pf-mac-clip">
+                        <div className="pf-mac-clip-icon" style={{background:"#0aa658"}}>{<Icon.link/>}</div>
+                        <div className="pf-mac-clip-text">github.com/anthropics/…</div>
+                      </div>
+                      <div className="pf-mac-clip">
+                        <div className="pf-mac-clip-icon" style={{background:"#7a5af8"}}>{<Icon.image/>}</div>
+                        <div className="pf-mac-clip-text">Screenshot 2026-05-04.png</div>
+                      </div>
+                      <div className="pf-mac-clip">
+                        <div className="pf-mac-clip-icon" style={{background:"#f5a623"}}>{<Icon.text/>}</div>
+                        <div className="pf-mac-clip-text">1247 Oak St, Berkeley CA</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="pf-mac-hinge"/>
+              <div className="pf-mac-base"/>
             </div>
+
+            <div className="pf-deny">
+              <div className="pf-deny-item">
+                <span className="pf-deny-x" aria-hidden="true"/>
+                <Icon.cloud/>
+                <span>Never the cloud</span>
+              </div>
+              <div className="pf-deny-item">
+                <span className="pf-deny-x" aria-hidden="true"/>
+                <Icon.shield/>
+                <span>Never tracked</span>
+              </div>
+              <div className="pf-deny-item">
+                <span className="pf-deny-x" aria-hidden="true"/>
+                <Icon.database/>
+                <span>Never collected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="privacy-grid">
+          <div className="privacy-points">
+            {points.map((p, i) => (
+              <div key={i} className="privacy-point">
+                <div className="pp-icon">{p.icon}</div>
+                <div>
+                  <h4>{p.title}</h4>
+                  <p>{p.body}</p>
+                </div>
+              </div>
+            ))}
           </div>
           <div>
             <div className="skip-card">
               <div className="skip-card-head">
-                <Icon.shield/> Apps it ignores from day one
+                <Icon.shield/> Password managers it ignores from day one
               </div>
-              <div className="skip-list">
+              <div className="skip-grid">
                 {skipped.map((a, i) => (
-                  <div key={i} className="skip-item">
+                  <div key={i} className="skip-chip">
                     <div className="app-icon" style={{background: a.color}}>{a.letter}</div>
-                    <div>{a.name}</div>
-                    <div className="bid">{a.bid}</div>
+                    <span>{a.name}</span>
                   </div>
                 ))}
               </div>
+              <div className="skip-card-foot">
+                Add or remove any app from Settings.
+              </div>
             </div>
-            <p style={{fontSize: 12, color: "var(--text-3)", marginTop: 14, textAlign:"center"}}>
-              You can add or remove any app in Settings.
-            </p>
           </div>
         </div>
       </div>
@@ -128,17 +199,18 @@ function StorageSection() {
 }
 
 function CheatsheetSection() {
+  // Each key: { k: symbol, w: optional 'wide' for word keys }
   const shortcuts = [
-    { label: "Open your clipboard history",     keys: ["⇧", "⌘", "V"] },
-    { label: "Move up or down the list",        keys: ["↑", "↓"] },
-    { label: "Paste the highlighted item",      keys: ["⏎"] },
-    { label: "Pick the 1st–9th item directly",  keys: ["⌘", "1–9"] },
-    { label: "Switch between groups",           keys: ["⌥", "1–9"] },
-    { label: "Star or un-star a clip",          keys: ["⌘", "D"] },
-    { label: "Delete a clip",                   keys: ["⌘", "⌫"] },
-    { label: "Show file in Finder",             keys: ["⌘", "R"] },
-    { label: "Jump to your starred clips",      keys: ["⇧", "F"] },
-    { label: "Close the window",                keys: ["⎋"] },
+    { label: "Open your clipboard history",     keys: [{k:"⇧"}, {k:"⌘"}, {k:"V"}] },
+    { label: "Move up or down the list",        keys: [{k:"↑"}, {k:"↓"}] },
+    { label: "Paste the highlighted item",      keys: [{k:"⏎ Return", w:true}] },
+    { label: "Pick the 1st–9th item directly",  keys: [{k:"⌘"}, {k:"1–9", w:true}] },
+    { label: "Switch between groups",           keys: [{k:"⌥"}, {k:"1–9", w:true}] },
+    { label: "Star or un-star a clip",          keys: [{k:"⌘"}, {k:"D"}] },
+    { label: "Delete a clip",                   keys: [{k:"⌘"}, {k:"⌫"}] },
+    { label: "Show file in Finder",             keys: [{k:"⌘"}, {k:"R"}] },
+    { label: "Jump to your starred clips",      keys: [{k:"⇧"}, {k:"F"}] },
+    { label: "Close the window",                keys: [{k:"⎋ Esc", w:true}] },
   ];
 
   return (
@@ -149,13 +221,26 @@ function CheatsheetSection() {
         <p className="section-lede">
           You never have to touch the mouse. Every action has a single key.
         </p>
+        <div className="key-legend">
+          <div className="key-legend-item"><span className="key-cap">⇧</span><span>Shift</span></div>
+          <div className="key-legend-item"><span className="key-cap">⌘</span><span>Command</span></div>
+          <div className="key-legend-item"><span className="key-cap">⌥</span><span>Option</span></div>
+          <div className="key-legend-item"><span className="key-cap">⏎</span><span>Return</span></div>
+          <div className="key-legend-item"><span className="key-cap">⌫</span><span>Delete</span></div>
+          <div className="key-legend-item"><span className="key-cap">⎋</span><span>Esc</span></div>
+        </div>
         <div className="cheatsheet">
           <div className="shortcut-grid">
             {shortcuts.map((s, i) => (
               <div key={i} className="shortcut-row">
                 <span className="label">{s.label}</span>
                 <span className="keys">
-                  {s.keys.map((k, j) => <span key={j} className="key-cap">{k}</span>)}
+                  {s.keys.map((key, j) => (
+                    <React.Fragment key={j}>
+                      {j > 0 && <span className="plus">+</span>}
+                      <span className={"key-cap" + (key.w ? " wide" : "")}>{key.k}</span>
+                    </React.Fragment>
+                  ))}
                 </span>
               </div>
             ))}

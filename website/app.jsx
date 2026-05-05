@@ -1,4 +1,4 @@
-/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, FeatureGrid, PrivacySection, StorageSection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor */
+/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, FeatureGrid, PrivacySection, StorageSection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor */
 const { useState, useEffect } = React;
 
 function Nav({ theme, setTheme }) {
@@ -51,7 +51,7 @@ function Hero() {
         </div>
         <h1>Never lose what you <em>copy</em>.</h1>
         <p className="hero-sub">
-          Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press <span style={{fontFamily:"var(--mono)", padding:"1px 6px", borderRadius:5, background:"var(--hairline)", fontSize:"0.95em", whiteSpace:"nowrap"}}>⇧ ⌘ V</span> and bring any of it back.
+          Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press <span className="kbd-combo"><span className="kbd">⇧</span><span className="kbd">⌘</span><span className="kbd">V</span></span> and bring any of it back.
         </p>
         <div className="hero-actions">
           <a href="#download" className="btn btn-primary btn-lg">
@@ -100,10 +100,11 @@ function App() {
       <section id="features">
         <div className="container">
           <div className="section-eyebrow">What it does</div>
-          <h2 className="section-title">Your Mac forgets what you copied. This app remembers.</h2>
+          <h2 className="section-title">A second brain for your clipboard.</h2>
           <p className="section-lede">
-            Normally, when you copy something new, the last thing you copied is gone forever. Clipboard History keeps a list of everything — quietly, in the background — so you can paste any of it back whenever you need it.
+            Every time you copy something new, the last thing is gone. Clipboard History remembers it all — quietly in the background — so you can paste any of it back, anytime.
           </p>
+          <BeforeAfterDemo/>
           <FeatureGrid/>
         </div>
       </section>
