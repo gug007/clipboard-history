@@ -2,7 +2,11 @@
 
 **Never lose what you copy.**
 
-Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press ⇧⌘V and bring any of it back.
+> That moment you copy a new thing and realize the old thing is gone forever. Or you copy three things in a row and need all of them.
+>
+> ⇧⌘V — it's all still there. Paste them in any order.
+
+Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file.
 
 Free. Open source. Works offline. Skips passwords automatically.
 
