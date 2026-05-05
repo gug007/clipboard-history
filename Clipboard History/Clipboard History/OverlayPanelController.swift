@@ -1,6 +1,11 @@
 import AppKit
 import SwiftUI
 
+private final class KeyablePanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 final class OverlayPanelController {
     private let panel: NSPanel
     private var hostingView: NSHostingView<OverlayView>!
@@ -15,7 +20,7 @@ final class OverlayPanelController {
         self.state = state
 
         let size = NSSize(width: 720, height: 480)
-        panel = NSPanel(
+        panel = KeyablePanel(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel, .resizable],
             backing: .buffered,
