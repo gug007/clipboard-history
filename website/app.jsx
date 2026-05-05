@@ -45,10 +45,6 @@ function Hero() {
   return (
     <header className="hero" id="top">
       <div className="container">
-        <div className="eyebrow">
-          <span className="dot"/>
-          <span>Free for Mac · No account, no cloud</span>
-        </div>
         <h1>Never lose what you <em>copy</em>.</h1>
         <p className="hero-sub">
           Clipboard History remembers everything you copy on your Mac — every link, every paragraph, every screenshot, every file. Press <span className="kbd-combo"><span className="kbd">⇧</span><span className="kbd">⌘</span><span className="kbd">V</span></span> and bring any of it back.
