@@ -12,6 +12,8 @@ Works offline. Skips passwords automatically. Stays on your Mac.
 
 ![Free open-source clipboard manager for Mac showing clipboard history opened with Shift-Command-V](website/uploads/clipboard-history-demo.gif)
 
+![Mac clipboard manager comparison: without Clipboard History old clips disappear forever; with Clipboard History every clip stays and is accessible via Shift-Command-V](website/uploads/clipboard-history-before-after.png)
+
 ## What it does: your clipboard history on Mac
 
 Clipboard History remembers everything you copy — text, links, screenshots, files — so you can paste any of it back later. Copy multiple items in a row and grab whichever one you need.
