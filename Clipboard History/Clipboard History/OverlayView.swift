@@ -370,14 +370,18 @@ struct OverlayView: View {
 
     @ViewBuilder
     private func rowView(for item: ClipItem, at idx: Int) -> some View {
+        let isSelected = idx == selectionIndex
+        let rowBackground: Color = isSelected ? Color.accentColor.opacity(0.25) : Color.clear
+        let traits: AccessibilityTraits = isSelected ? [.isButton, .isSelected] : .isButton
+        let favoriteActionName: String = item.entry.isPinned ? "Remove from favorites" : "Add to favorites"
+        let canReveal = item.entry.kind == .file || item.entry.kind == .multiFile
+
         EntryRow(
             item: item,
             onToggleFavorite: { onToggleFavorite(item.entry) },
             onDelete: { onDelete(item.entry) }
         )
-        .listRowBackground(
-            idx == selectionIndex ? Color.accentColor.opacity(0.25) : Color.clear
-        )
+        .listRowBackground(rowBackground)
         .listRowSeparator(.hidden)
         .id(idx)
         .contentShape(Rectangle())
@@ -386,15 +390,11 @@ struct OverlayView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(rowAccessibilityLabel(for: item))
         .accessibilityHint("Press Return to paste")
-        .accessibilityAddTraits(idx == selectionIndex ? [.isButton, .isSelected] : .isButton)
-        .accessibilityAction(named: item.entry.isPinned ? "Remove from favorites" : "Add to favorites") {
-            onToggleFavorite(item.entry)
-        }
+        .accessibilityAddTraits(traits)
+        .accessibilityAction(named: favoriteActionName) { onToggleFavorite(item.entry) }
         .accessibilityAction(named: "Delete") { onDelete(item.entry) }
         .accessibilityAction(named: "Reveal in Finder") {
-            if item.entry.kind == .file || item.entry.kind == .multiFile {
-                onReveal(item.entry)
-            }
+            if canReveal { onReveal(item.entry) }
         }
     }
 

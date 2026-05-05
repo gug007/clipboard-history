@@ -68,6 +68,7 @@ jobs:
       - name: Build Release
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
+          set -o pipefail
           xcodebuild \
             -project "$PROJECT_FILE" \
             -scheme "$SCHEME" \
@@ -83,7 +84,14 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
             MARKETING_VERSION=${{ steps.version.outputs.version }} \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
-            | tail -20
+            | tee xcodebuild.log | tail -20
+
+          APP_BIN="build/Build/Products/Release/$APP_NAME.app/Contents/MacOS/$APP_NAME"
+          if [ ! -f "$APP_BIN" ]; then
+            echo "::error::Build produced no executable at $APP_BIN — see xcodebuild.log"
+            tail -200 xcodebuild.log
+            exit 1
+          fi
 
       - name: Re-sign Sparkle frameworks
         working-directory: ${{ env.PROJECT_DIR }}
