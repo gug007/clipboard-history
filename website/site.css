@@ -1233,7 +1233,7 @@ section {
 
 .download {
   text-align: center;
-  padding: 140px 0;
+  padding: 120px 0;
   position: relative;
 }
 .download::before {
@@ -1242,47 +1242,49 @@ section {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 55% at 50% 50%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
+    radial-gradient(ellipse 55% 50% at 50% 50%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
   z-index: 0;
 }
 .download .container { position: relative; z-index: 1; }
 .download-card {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
   background: linear-gradient(180deg, var(--bg-elev), var(--bg));
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
-  padding: 56px 40px;
+  padding: 56px 48px 48px;
   position: relative;
   overflow: hidden;
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--text) 4%, transparent),
-    0 24px 60px -32px color-mix(in srgb, var(--accent) 30%, transparent),
-    0 12px 28px -20px color-mix(in srgb, var(--text) 14%, transparent);
+    0 1px 0 color-mix(in srgb, var(--text) 3%, transparent),
+    0 20px 50px -30px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 10px 24px -18px color-mix(in srgb, var(--text) 10%, transparent);
 }
 .download-card h2 {
-  font-size: clamp(32px, 4vw, 44px);
+  font-size: clamp(30px, 3.6vw, 40px);
   font-weight: 600; letter-spacing: -0.028em;
-  margin: 0 0 16px; line-height: 1.05;
+  margin: 0 0 14px; line-height: 1.05;
 }
 .download-card p {
-  font-size: 16px; color: var(--text-2);
-  margin: 0 0 32px;
+  font-size: 15.5px; color: var(--text-2);
+  margin: 0 auto 28px;
+  max-width: 540px;
+  line-height: 1.5;
 }
 .download-meta {
   display: flex; align-items: center; justify-content: center;
-  gap: 10px;
-  margin-top: 28px;
+  gap: 8px;
+  margin: 40px 0 0;
   flex-wrap: wrap;
 }
 .download-meta-item {
   --dm-tone: var(--accent);
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 7px 12px 7px 8px;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 11px 6px 6px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-2);
   transition: border-color 180ms ease, color 180ms ease;
@@ -1291,18 +1293,18 @@ section {
   .download-meta-item { transition: none; }
 }
 .download-meta-item:hover {
-  border-color: color-mix(in srgb, var(--dm-tone) 38%, var(--hairline));
+  border-color: color-mix(in srgb, var(--dm-tone) 32%, var(--hairline));
   color: var(--text);
 }
 .download-meta-item .dm-icon {
-  width: 22px; height: 22px;
-  border-radius: 7px;
+  width: 18px; height: 18px;
+  border-radius: 6px;
   display: grid; place-items: center;
-  background: color-mix(in srgb, var(--dm-tone) 14%, transparent);
+  background: color-mix(in srgb, var(--dm-tone) 12%, transparent);
   color: var(--dm-tone);
   flex-shrink: 0;
 }
-.download-meta-item .dm-icon svg { width: 13px; height: 13px; }
+.download-meta-item .dm-icon svg { width: 11px; height: 11px; }
 .download-meta-item[data-tone="blue"]   { --dm-tone: #0a84ff; }
 .download-meta-item[data-tone="green"]  { --dm-tone: #30d158; }
 .download-meta-item[data-tone="amber"]  { --dm-tone: #ff9f0a; }
@@ -1619,10 +1621,11 @@ noscript { display: none !important; }
   .key-legend-item { font-size: 12px; }
 
   /* Download */
-  .download { padding: 96px 0; }
-  .download-card { padding: 56px 24px; }
-  .download-card h2 { font-size: clamp(28px, 7vw, 36px); }
-  .download-meta { gap: 14px 20px; font-size: 12px; }
+  .download { padding: 80px 0; }
+  .download-card { padding: 40px 22px 36px; }
+  .download-card h2 { font-size: clamp(26px, 6.4vw, 32px); }
+  .download-card p { font-size: 14.5px; margin-bottom: 24px; }
+  .download-meta { gap: 8px; margin-top: 32px; font-size: 11.5px; }
 
   /* FAQ */
   .faq-item summary { padding: 16px 18px; font-size: 15px; }
@@ -2000,8 +2003,10 @@ details:focus-visible {
 .download-meta {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
+.features-grid,
+.privacy-points,
+.skip-grid { margin: 0; }
 
 /* Higher-contrast bump for body link/text under prefers-contrast. */
 @media (prefers-contrast: more) {
