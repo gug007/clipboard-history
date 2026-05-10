@@ -2,60 +2,68 @@
 
 function FeatureGrid() {
   return (
-    <div className="features-grid">
+    <ul className="features-grid" aria-label="Features">
       {/* Big card: live overlay surface */}
-      <div className="feature-card span-8">
-        <div className="visual">
+      <li className="feature-card span-8" data-tone="blue">
+        <div className="visual" aria-hidden="true">
           <FeatureSearchDemo/>
         </div>
-        <div className="feature-icon"><Icon.search/></div>
-        <h3>Find anything you've ever copied</h3>
-        <p>Type a word or two and the matching clip jumps to the top — even something you copied last week. It searches inside the text, links, and filenames. Try "invoice", "Airbnb", or your friend's name. It's instant.</p>
-      </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.search/></div>
+        <h3>Find that link from Tuesday in two keystrokes</h3>
+        <p>Type a word or two and the right clip jumps to the top — even one from last week. It looks inside text, links, and filenames. Try "invoice", "Airbnb", or your friend's name. Results come back as you type.</p>
+      </li>
 
-      <div className="feature-card span-4">
-        <div className="visual">
+      <li className="feature-card span-4" data-tone="amber">
+        <div className="visual" aria-hidden="true">
           <ShortcutVisual/>
         </div>
-        <div className="feature-icon"><Icon.bolt/></div>
-        <h3>One shortcut, anywhere</h3>
-        <p>Press <span className="kbd">⇧</span> <span className="kbd">⌘</span> <span className="kbd">V</span> in any app. Pick what you want with the arrow keys. Hit Return. It pastes right where you were typing.</p>
-      </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
+        <h3>The shortcut works in every app</h3>
+        <p>Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span> <span className="kbd" aria-hidden="true">⌘</span> <span className="kbd" aria-hidden="true">V</span></span> wherever you are. Arrow keys to pick. Return to paste. The cursor never leaves where you were typing.</p>
+      </li>
 
-      <div className="feature-card span-4">
-        <div className="visual">
+      <li className="feature-card span-4" data-tone="purple">
+        <div className="visual" aria-hidden="true">
           <DedupVisual/>
         </div>
-        <div className="feature-icon"><Icon.sparkle/></div>
-        <h3>No clutter</h3>
-        <p>Copy the same thing twice in a row? It doesn't make a duplicate. Your list stays clean and easy to scan.</p>
-      </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.sparkle/></div>
+        <h3>No piles of duplicates</h3>
+        <p>Copy the same thing twice and the list doesn't grow. Your history stays clean enough to scan in a glance.</p>
+      </li>
 
-      <div className="feature-card span-4">
-        <div className="visual">
+      <li className="feature-card span-4" data-tone="teal">
+        <div className="visual" aria-hidden="true">
           <KindsVisual/>
         </div>
-        <div className="feature-icon"><Icon.clipboard/></div>
-        <h3>Everything you copy</h3>
-        <p>Plain text, formatted text, links, photos, screenshots, and files. Even a whole folder of files. It all comes back.</p>
-      </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
+        <h3>Text, links, screenshots, files — all of it</h3>
+        <p>Plain text, formatted text, URLs, images, screenshots, files. Even a whole folder dragged in from Finder. It all comes back exactly as you copied it.</p>
+      </li>
 
-      <div className="feature-card span-4">
-        <div className="visual">
+      <li className="feature-card span-4" data-tone="pink">
+        <div className="visual" aria-hidden="true">
           <GroupsVisual/>
         </div>
-        <div className="feature-icon"><Icon.folder/></div>
-        <h3>Save your favorites</h3>
-        <p>Star the clips you reuse — your address, your bank details, that one Slack emoji. Or sort related clips into named groups. They never get cleaned up.</p>
-      </div>
-    </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.star/></div>
+        <h3>Star the clips you reach for daily</h3>
+        <p>Your address, your IBAN, that one Slack emoji — star them and they're one keystroke away forever. Group related clips into named tabs. Starred clips never get cleaned up.</p>
+      </li>
+    </ul>
   );
+}
+
+// WCAG 2.2.2: skip auto-rotating intervals when the user prefers reduced motion.
+function prefersReducedMotionF() {
+  return typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function FeatureSearchDemo() {
   const [phase, setPhase] = React.useState(0);
   // 0: empty, 1: typing 'sup', 2: typing 'supabase'
   React.useEffect(() => {
+    if (prefersReducedMotionF()) return;
     const seq = [600, 1400, 2400, 3800];
     let i = 0;
     const tick = () => {
@@ -206,6 +214,7 @@ function BeforeAfterDemo() {
 
   const [step, setStep] = React.useState(0);
   React.useEffect(() => {
+    if (prefersReducedMotionF()) return;
     const id = setInterval(() => setStep(s => (s + 1) % items.length), 1800);
     return () => clearInterval(id);
   }, []);
@@ -213,8 +222,8 @@ function BeforeAfterDemo() {
   const current = items[step];
 
   return (
-    <div className="ba-demo">
-      <div className="ba-card ba-without">
+    <div className="ba-demo" role="img" aria-label="Comparison: without Clipboard History the previous clipboard items are lost; with Clipboard History they are still saved.">
+      <div className="ba-card ba-without" aria-hidden="true">
         <div className="ba-head">
           <span className="ba-dot ba-dot-no"/>
           <span>Without Clipboard History</span>
@@ -246,7 +255,7 @@ function BeforeAfterDemo() {
         <svg viewBox="0 0 40 40" width="40" height="40"><path d="M8 20 L32 20 M22 10 L32 20 L22 30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </div>
 
-      <div className="ba-card ba-with">
+      <div className="ba-card ba-with" aria-hidden="true">
         <div className="ba-head">
           <span className="ba-dot ba-dot-yes"/>
           <span>With Clipboard History</span>

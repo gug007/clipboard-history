@@ -1,0 +1,18 @@
+# Clipboard History
+
+> Free, open-source clipboard manager for Mac — recalls any text, link, image, or file you've ever copied with Shift+Command+V. Works offline. Skips passwords automatically.
+
+## Docs
+
+- [Home](https://clipboard-history.cc/) — product overview, features, and FAQ
+- [Features](https://clipboard-history.cc/#features) — full list of capabilities
+- [FAQ](https://clipboard-history.cc/#faq) — common questions about privacy, compatibility, and cost
+
+## Download
+
+- [Download](https://clipboard-history.cc/#download) — free download for macOS 14 (Sonoma) or later
+- [GitHub Releases](https://github.com/gug007/clipboard-history/releases) — all release builds and changelogs
+
+## Source
+
+- [GitHub Repository](https://github.com/gug007/clipboard-history) — open-source code, issues, and contributions

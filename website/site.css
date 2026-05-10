@@ -9,7 +9,7 @@
   --surface: rgba(255, 255, 255, 0.78);
   --text: #0b0b0c;
   --text-2: #45464a;
-  --text-3: #86868b;
+  --text-3: #6e6e73;
   --text-4: #b4b4b8;
   --hairline: rgba(0, 0, 0, 0.08);
   --hairline-strong: rgba(0, 0, 0, 0.14);
@@ -27,6 +27,27 @@
   --max: 1120px;
   --gutter: 32px;
   --desktop-bg: linear-gradient(135deg, #d6e4f5 0%, #f6c5cf 50%, #ffd9b3 100%);
+
+  /* Spacing scale — 4px base, used for section/component rhythm. */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 72px;
+  --s-9: 120px;
+
+  /* Focus ring — exposed for a11y-engineer; defaults to the accent color. */
+  --focus-ring: var(--accent);
+  --focus-ring-soft: color-mix(in srgb, var(--accent) 25%, transparent);
+
+  /* Layered z-index scale to keep overlays predictable. */
+  --z-nav: 100;
+  --z-sticky: 90;
+  --z-overlay: 200;
+  --z-tweaks: 300;
 }
 
 [data-theme="dark"] {
@@ -673,6 +694,7 @@ section {
   gap: 20px;
 }
 .feature-card {
+  --ft-tone: var(--accent);
   background: var(--bg-elev);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
@@ -680,9 +702,16 @@ section {
   display: flex; flex-direction: column;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.feature-card:hover { border-color: var(--hairline-strong); }
+@media (prefers-reduced-motion: reduce) {
+  .feature-card { transition: none; }
+}
+.feature-card:hover {
+  border-color: color-mix(in srgb, var(--ft-tone) 38%, var(--hairline));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--ft-tone) 55%, transparent);
+}
 .feature-card.span-6 { grid-column: span 6; }
 .feature-card.span-4 { grid-column: span 4; }
 .feature-card.span-8 { grid-column: span 8; }
@@ -695,18 +724,43 @@ section {
   overflow: hidden;
   border-bottom: 1px solid var(--hairline);
   background-image:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--ft-tone) 9%, transparent), transparent 70%);
+}
+.feature-card .visual::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 36px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg-elev) 70%, transparent));
+  pointer-events: none;
 }
 .feature-card .visual.tall { height: 280px; }
 .feature-icon {
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   display: grid; place-items: center;
-  border-radius: 9px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  margin-bottom: 14px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--ft-tone) 14%, transparent);
+  color: var(--ft-tone);
+  margin-bottom: 16px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
-.feature-icon svg { width: 18px; height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .feature-icon { transition: none; }
+}
+.feature-card:hover .feature-icon {
+  background: color-mix(in srgb, var(--ft-tone) 22%, transparent);
+}
+.feature-icon svg { width: 22px; height: 22px; }
+.feature-card[data-tone="blue"]   { --ft-tone: #0a84ff; }
+.feature-card[data-tone="amber"]  { --ft-tone: #ff9f0a; }
+.feature-card[data-tone="purple"] { --ft-tone: #af52de; }
+.feature-card[data-tone="teal"]   { --ft-tone: #5ac8fa; }
+.feature-card[data-tone="pink"]   { --ft-tone: #ff375f; }
+[data-theme="dark"] .feature-card[data-tone="blue"]   { --ft-tone: #409cff; }
+[data-theme="dark"] .feature-card[data-tone="amber"]  { --ft-tone: #ffb340; }
+[data-theme="dark"] .feature-card[data-tone="purple"] { --ft-tone: #c279e6; }
+[data-theme="dark"] .feature-card[data-tone="teal"]   { --ft-tone: #70d4ff; }
+[data-theme="dark"] .feature-card[data-tone="pink"]   { --ft-tone: #ff5f7a; }
 .feature-card h3 {
   font-size: 19px; font-weight: 600;
   letter-spacing: -0.018em;
@@ -921,38 +975,69 @@ section {
 .privacy-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  gap: 56px;
   align-items: start;
 }
 .privacy-points {
   display: flex; flex-direction: column;
-  gap: 28px;
+  gap: 8px;
 }
 .privacy-point {
-  display: flex; gap: 16px;
+  display: flex; gap: 18px;
+  padding: 16px;
+  margin: 0 -16px;
+  border-radius: 14px;
+  transition: background-color 180ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .privacy-point { transition: none; }
+}
+.privacy-point:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 .privacy-point .pp-icon {
-  width: 32px; height: 32px;
+  --pp-tone: var(--accent);
+  width: 40px; height: 40px;
   flex-shrink: 0;
   display: grid; place-items: center;
-  border-radius: 8px;
-  background: var(--bg);
-  border: 1px solid var(--hairline);
-  color: var(--accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pp-tone) 14%, transparent);
+  color: var(--pp-tone);
+  transition: transform 180ms ease, background-color 180ms ease;
 }
-.privacy-point .pp-icon svg { width: 16px; height: 16px; }
-.privacy-point h4 {
-  font-size: 15px; font-weight: 600; margin: 0 0 4px;
-  letter-spacing: -0.012em;
+@media (prefers-reduced-motion: reduce) {
+  .privacy-point .pp-icon { transition: none; }
+}
+.privacy-point:hover .pp-icon {
+  background: color-mix(in srgb, var(--pp-tone) 22%, transparent);
+}
+.privacy-point .pp-icon svg { width: 20px; height: 20px; }
+.privacy-point[data-tone="blue"]   .pp-icon { --pp-tone: #0a84ff; }
+.privacy-point[data-tone="purple"] .pp-icon { --pp-tone: #af52de; }
+.privacy-point[data-tone="amber"]  .pp-icon { --pp-tone: #ff9f0a; }
+.privacy-point[data-tone="green"]  .pp-icon { --pp-tone: #30d158; }
+[data-theme="dark"] .privacy-point[data-tone="blue"]   .pp-icon { --pp-tone: #409cff; }
+[data-theme="dark"] .privacy-point[data-tone="purple"] .pp-icon { --pp-tone: #c279e6; }
+[data-theme="dark"] .privacy-point[data-tone="amber"]  .pp-icon { --pp-tone: #ffb340; }
+[data-theme="dark"] .privacy-point[data-tone="green"]  .pp-icon { --pp-tone: #4cd964; }
+.privacy-point h3 {
+  font-size: 16px; font-weight: 600; margin: 4px 0 6px;
+  letter-spacing: -0.014em;
 }
 .privacy-point p {
-  font-size: 14px; line-height: 1.5; color: var(--text-2);
+  font-size: 14px; line-height: 1.55; color: var(--text-2);
   margin: 0;
 }
 .privacy-point code {
   font-family: var(--mono); font-size: 12.5px;
   background: var(--bg); border: 1px solid var(--hairline);
   padding: 1px 6px; border-radius: 5px;
+}
+@media (min-width: 901px) {
+  .privacy-aside {
+    position: sticky;
+    top: 24px;
+  }
 }
 
 /* The "skipped apps" visual — now a chip grid with red ✕ */
@@ -1013,12 +1098,19 @@ section {
   color: white;
   flex-shrink: 0;
 }
-.skip-card-foot {
-  font-size: 12px;
+.skip-chip-add {
+  background: transparent;
+  border: 1px dashed var(--hairline);
+  color: var(--text-2);
+  padding-right: 12px;
+}
+.skip-chip-add::after { display: none; }
+.skip-chip-add .app-icon-add {
+  background: transparent;
+  border: 1px dashed var(--hairline);
   color: var(--text-3);
-  padding: 12px 20px;
-  border-top: 1px solid var(--hairline);
-  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* ─── Cheatsheet ──────────────────────────────────────── */
@@ -1142,7 +1234,18 @@ section {
 .download {
   text-align: center;
   padding: 140px 0;
+  position: relative;
 }
+.download::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 50%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
+  z-index: 0;
+}
+.download .container { position: relative; z-index: 1; }
 .download-card {
   max-width: 720px;
   margin: 0 auto;
@@ -1152,6 +1255,10 @@ section {
   padding: 56px 40px;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--text) 4%, transparent),
+    0 24px 60px -32px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 12px 28px -20px color-mix(in srgb, var(--text) 14%, transparent);
 }
 .download-card h2 {
   font-size: clamp(32px, 4vw, 44px);
@@ -1163,14 +1270,47 @@ section {
   margin: 0 0 32px;
 }
 .download-meta {
-  display: flex; align-items: center; justify-content: center; gap: 24px;
-  margin-top: 24px;
-  font-size: 12px;
-  color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
   flex-wrap: wrap;
 }
-.download-meta-item { display: inline-flex; align-items: center; gap: 6px; }
-.download-meta-item svg { width: 12px; height: 12px; }
+.download-meta-item {
+  --dm-tone: var(--accent);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px 7px 8px;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .download-meta-item { transition: none; }
+}
+.download-meta-item:hover {
+  border-color: color-mix(in srgb, var(--dm-tone) 38%, var(--hairline));
+  color: var(--text);
+}
+.download-meta-item .dm-icon {
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--dm-tone) 14%, transparent);
+  color: var(--dm-tone);
+  flex-shrink: 0;
+}
+.download-meta-item .dm-icon svg { width: 13px; height: 13px; }
+.download-meta-item[data-tone="blue"]   { --dm-tone: #0a84ff; }
+.download-meta-item[data-tone="green"]  { --dm-tone: #30d158; }
+.download-meta-item[data-tone="amber"]  { --dm-tone: #ff9f0a; }
+.download-meta-item[data-tone="purple"] { --dm-tone: #af52de; }
+[data-theme="dark"] .download-meta-item[data-tone="blue"]   { --dm-tone: #409cff; }
+[data-theme="dark"] .download-meta-item[data-tone="green"]  { --dm-tone: #4cd964; }
+[data-theme="dark"] .download-meta-item[data-tone="amber"]  { --dm-tone: #ffb340; }
+[data-theme="dark"] .download-meta-item[data-tone="purple"] { --dm-tone: #c279e6; }
 
 /* ─── Footer ──────────────────────────────────────────── */
 
@@ -1185,6 +1325,209 @@ section {
 }
 .foot-links { display: flex; gap: 24px; }
 .foot-links a:hover { color: var(--text); }
+
+/* ─── Social proof (hero) ─────────────────────────────── */
+
+.social-proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2) var(--s-3);
+  margin-top: var(--s-5);
+}
+.sp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--hairline);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  line-height: 1;
+  transition: border-color 0.18s ease-out, transform 0.18s ease-out, background-color 0.18s ease-out;
+}
+.sp-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+.sp-pill-icon svg { width: 14px; height: 14px; }
+.sp-pill-static {
+  cursor: default;
+}
+.sp-pill-stars {
+  cursor: pointer;
+  text-decoration: none;
+}
+.sp-pill-stars:hover {
+  border-color: var(--hairline-strong);
+  background: var(--bg);
+  transform: translateY(-1px);
+}
+.sp-pill-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--hairline);
+  margin: 0 2px;
+}
+.sp-pill-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text);
+  font-weight: 600;
+}
+.sp-pill-count .sp-star {
+  color: #f5b400;
+  display: inline-flex;
+  align-items: center;
+}
+.sp-pill-count .sp-star svg { width: 12px; height: 12px; }
+.sp-pill-count .sp-num { min-width: 1.5ch; text-align: left; }
+.sp-pill-badge-img {
+  display: block;
+  height: 20px;
+  width: auto;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] .sp-pill {
+  background: var(--bg-elev);
+  border-color: var(--hairline);
+  color: var(--text-2);
+}
+[data-theme="dark"] .sp-pill-stars:hover {
+  background: color-mix(in srgb, var(--bg-elev) 50%, var(--bg));
+}
+
+/* ─── Before/After showcase (static image) ────────────── */
+
+.ba-showcase {
+  margin: var(--s-7) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+}
+.ba-showcase-frame {
+  width: 100%;
+  max-width: 1080px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-deep);
+  border: 1px solid var(--hairline);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.5) inset,
+    0 24px 64px rgba(0,0,0,0.10),
+    0 8px 20px rgba(0,0,0,0.06);
+  position: relative;
+}
+[data-theme="dark"] .ba-showcase-frame {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 30px 80px rgba(0,0,0,0.55),
+    0 10px 24px rgba(0,0,0,0.35);
+}
+.ba-showcase-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ba-showcase-caption {
+  font-size: 14px;
+  color: var(--text-3);
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.5;
+  margin: 0;
+}
+.ba-showcase-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg));
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-right: var(--s-2);
+  vertical-align: 2px;
+}
+[data-theme="dark"] .ba-showcase-tag {
+  background: color-mix(in srgb, var(--accent) 30%, var(--bg));
+  color: var(--text);
+}
+
+/* ─── Sticky download bar (mobile-only base) ───────────── */
+/* Hidden on every breakpoint by default. Shown only inside the
+ * <=768px media query below. Visibility transition lives next to the
+ * interactions-designer's reveal block; this just defines layout. */
+
+.sticky-download-bar {
+  display: none;
+}
+.sticky-dl-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 10px 14px;
+  max-width: 720px;
+  margin: 0 auto;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 14px;
+  border: 1px solid var(--hairline-strong);
+  box-shadow:
+    0 -1px 0 rgba(255,255,255,0.4) inset,
+    0 14px 30px rgba(0,0,0,0.15),
+    0 4px 8px rgba(0,0,0,0.08);
+}
+[data-theme="dark"] .sticky-dl-inner {
+  background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
+  box-shadow:
+    0 -1px 0 rgba(255,255,255,0.04) inset,
+    0 18px 36px rgba(0,0,0,0.5),
+    0 4px 10px rgba(0,0,0,0.3);
+}
+.sticky-dl-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.sticky-dl-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.sticky-dl-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.sticky-dl-cta {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 8px 14px;
+}
+.sticky-dl-cta svg { width: 14px; height: 14px; }
 
 /* Hide noscript content when JS is on — preview iframes sometimes render its body as text */
 noscript { display: none !important; }
@@ -1288,6 +1631,30 @@ noscript { display: none !important; }
   /* Footer */
   .foot-inner { flex-direction: column; align-items: flex-start; gap: 14px; text-align: left; }
   .foot-links { gap: 18px; flex-wrap: wrap; }
+
+  /* Social proof — slightly tighter on mobile */
+  .social-proof { gap: 6px 8px; margin-top: 20px; }
+  .sp-pill { font-size: 11.5px; height: 30px; padding: 0 10px 0 8px; }
+  .sp-pill-icon { width: 14px; height: 14px; }
+  .sp-pill-icon svg { width: 12px; height: 12px; }
+
+  /* Before/After showcase — pull frame edge-to-edge on small screens */
+  .ba-showcase { margin-top: 32px; }
+  .ba-showcase-frame { border-radius: var(--radius); }
+
+  /* Sticky download bar — visible only on mobile.
+   * Padding-bottom prevents overlap with footer / FAQ tail. */
+  .sticky-download-bar {
+    display: block;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: var(--z-sticky);
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .sticky-download-bar.is-visible { pointer-events: auto; }
+  body { padding-bottom: 0; }
+  body:has(.sticky-download-bar.is-visible) { padding-bottom: 76px; }
 }
 
 /* Small phones: 480px */
@@ -1334,9 +1701,157 @@ input, textarea, select { font-size: 16px; }
   input, textarea, select { font-size: inherit; }
 }
 
-/* prefers-reduced-motion */
+/* ─── Scroll-triggered reveals ────────────────────────── */
+/* Wrapped in no-preference so reduced-motion users get content immediately. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 280ms ease-out, transform 280ms ease-out;
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Stagger children of a .reveal-stagger container */
+  .reveal-stagger > .reveal:nth-child(1).is-visible { transition-delay: 0ms; }
+  .reveal-stagger > .reveal:nth-child(2).is-visible { transition-delay: 60ms; }
+  .reveal-stagger > .reveal:nth-child(3).is-visible { transition-delay: 120ms; }
+  .reveal-stagger > .reveal:nth-child(4).is-visible { transition-delay: 180ms; }
+  .reveal-stagger > .reveal:nth-child(5).is-visible { transition-delay: 240ms; }
+  .reveal-stagger > .reveal:nth-child(6).is-visible { transition-delay: 300ms; }
+}
+
+/* ─── Hover micro-interactions ────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* Buttons — gentle lift + softer shadow */
+  .btn-primary {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: transform 0.18s ease-out, background-color 0.18s ease-out, box-shadow 0.22s ease-out;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  }
+  [data-theme="dark"] .btn-primary:hover {
+    box-shadow: 0 6px 22px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .btn-ghost {
+    transition: transform 0.18s ease-out, background-color 0.18s ease-out, color 0.18s ease-out;
+  }
+  .btn-ghost:hover { transform: translateY(-1px); }
+
+  /* Feature cards — subtle border + shadow shift */
+  .feature-card {
+    transition: border-color 0.22s ease-out, transform 0.22s ease-out, box-shadow 0.28s ease-out;
+  }
+  .feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 14px 36px rgba(0,0,0,0.08);
+  }
+  [data-theme="dark"] .feature-card:hover {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 14px 36px rgba(0,0,0,0.5);
+  }
+
+  /* FAQ items — gentle background tint */
+  .faq-item summary {
+    transition: background-color 0.18s ease-out;
+  }
+  .faq-item:not([open]):hover summary {
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+  }
+  .faq-item[open] {
+    transition: border-color 0.22s ease-out, background-color 0.22s ease-out;
+  }
+
+  /* Skip chips — small lift */
+  .skip-chip {
+    transition: transform 0.18s ease-out, border-color 0.18s ease-out;
+  }
+  .skip-chip:hover {
+    transform: translateY(-1px);
+    border-color: var(--hairline-strong);
+  }
+}
+
+/* ─── FAQ smooth expand/collapse ──────────────────────── */
+/* Native <details>: smooth color transition on the +/− marker, plus a
+ * smooth height animation using ::details-content where supported
+ * (Safari 18.2+, Chrome 131+). Older browsers snap — still calm, no jank. */
+@media (prefers-reduced-motion: no-preference) {
+  .faq-item summary::after {
+    transition: color 0.18s ease-out;
+  }
+  .faq-item::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 240ms ease-out, content-visibility 240ms ease-out allow-discrete;
+  }
+  .faq-item[open]::details-content {
+    block-size: auto;
+  }
+  @supports (interpolate-size: allow-keywords) {
+    :root { interpolate-size: allow-keywords; }
+  }
+}
+
+/* ─── Sticky download bar reveal ──────────────────────── */
+/* ui-polish styles the bar; we just toggle the visible state. */
+.sticky-download-bar {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 240ms ease-out, transform 240ms ease-out;
+}
+.sticky-download-bar.is-visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .sticky-download-bar { transform: none; }
+}
+
+/* ─── prefers-reduced-motion override ─────────────────── */
+/* Reset all motion to none, including the looping hero/demo animations.
+ * WCAG 2.2.2 (Pause, Stop, Hide): the three auto-rotating demos
+ *   - hero overlay carousel (.overlay .entry, 2.2s interval)
+ *   - feature search demo (.search-demo, 1.5s interval)
+ *   - before/after comparison (.ba-demo, 1.8s interval)
+ * also have their JS setIntervals short-circuited in hero.jsx / features.jsx
+ * when this media query matches, so no state mutation occurs at all. The
+ * CSS rules below additionally neutralize any in-flight transitions and
+ * keyframes so static state renders instantly without motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition: none !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+
+  /* Hero overlay carousel (2.2s) — kill entrance + selected highlight animation */
+  .overlay { opacity: 1 !important; transform: translate(-50%, -50%) !important; animation: none !important; }
+  .overlay .entry,
+  .overlay .entry.selected { transition: none !important; animation: none !important; }
+
+  /* Search demo (1.5s) — kill caret blink and any phase transition */
+  .search-demo .caret { animation: none !important; visibility: hidden !important; }
+  .search-demo .search-row,
+  .search-demo .search-results { transition: none !important; animation: none !important; }
+  .search-demo mark { transition: none !important; }
+
+  /* Before/After demo (1.8s) — kill ba-pulse re-entry on every step */
+  .ba-row,
+  .ba-row-current,
+  .ba-row-saved,
+  .ba-row-lost { animation: none !important; transition: none !important; transform: none !important; opacity: 1 !important; }
 }
 
 
@@ -1391,4 +1906,115 @@ input, textarea, select { font-size: 16px; }
   font-size: 16px;
   line-height: 1.6;
   max-width: 68ch;
+}
+
+/* ─── Accessibility: focus rings, skip link, screen-reader helpers ─ */
+
+/* Strip default focus on mouse, but always show :focus-visible (keyboard).
+ * Ring uses the accent token + a contrasting backdrop ring so it's visible
+ * on accent-colored buttons and dark/light backgrounds. */
+:focus { outline: none; }
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+details:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Pill / capsule buttons keep their rounded shape on focus. */
+.btn:focus-visible,
+.tab-pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Theme toggle is square-rounded — match the button radius. */
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* FAQ <summary> focus ring matches its rounded card. */
+.faq-item:has(> summary:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.faq-item summary:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Skip link — visible on focus, hidden by default. */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -100px;
+  z-index: 1000;
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.18s ease-out;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 12px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Screen-reader-only text (for invisible labels). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Honor list role swap — strip default UA list styles where we used <ul>/<li>
+ * for grouping (features grid, privacy points, etc.). */
+.features-grid,
+.privacy-points,
+.skip-grid,
+.download-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Higher-contrast bump for body link/text under prefers-contrast. */
+@media (prefers-contrast: more) {
+  :root {
+    --text-2: #2a2a2e;
+    --text-3: #4a4a4f;
+    --hairline: rgba(0, 0, 0, 0.22);
+    --hairline-strong: rgba(0, 0, 0, 0.32);
+  }
+  [data-theme="dark"] {
+    --text-2: #ededf0;
+    --text-3: #c0c0c4;
+    --hairline: rgba(255, 255, 255, 0.22);
+    --hairline-strong: rgba(255, 255, 255, 0.34);
+  }
 }

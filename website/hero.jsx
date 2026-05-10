@@ -1,11 +1,19 @@
 /* global React, Icon */
 const { useState: useStateH, useEffect: useEffectH, useRef: useRefH } = React;
 
+// WCAG 2.2.2: skip auto-rotating intervals when the user prefers reduced motion.
+function prefersReducedMotion() {
+  return typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function HeroOverlay({ variant = "default" }) {
   // The animated overlay panel — the star of the hero.
   const [selected, setSelected] = useStateH(0);
 
   useEffectH(() => {
+    if (prefersReducedMotion()) return;
     const id = setInterval(() => {
       setSelected((s) => (s + 1) % 5);
     }, 2200);
@@ -21,23 +29,23 @@ function HeroOverlay({ variant = "default" }) {
   ];
 
   return (
-    <div className="overlay" role="dialog" aria-label="Clipboard History overlay">
-      <div className="overlay-search">
+    <div className="overlay" role="img" aria-label="Clipboard History overlay preview showing recent clipboard entries">
+      <div className="overlay-search" aria-hidden="true">
         <Icon.search/>
-        <input readOnly value="" placeholder="Search clipboard history…" tabIndex={-1}/>
+        <input readOnly value="" placeholder="Search clipboard history…" tabIndex={-1} aria-hidden="true"/>
       </div>
-      <div className="overlay-tabs">
-        <button className="tab-pill active">All</button>
-        <button className="tab-pill"><Icon.starOutline/> Favorites</button>
-        <button className="tab-pill">Snippets</button>
-        <button className="tab-pill">Launch</button>
-        <button className="tab-pill" style={{color:"var(--text-3)"}}>+</button>
+      <div className="overlay-tabs" aria-hidden="true">
+        <button className="tab-pill active" type="button" tabIndex={-1}>All</button>
+        <button className="tab-pill" type="button" tabIndex={-1}><Icon.starOutline/> Favorites</button>
+        <button className="tab-pill" type="button" tabIndex={-1}>Snippets</button>
+        <button className="tab-pill" type="button" tabIndex={-1}>Launch</button>
+        <button className="tab-pill" type="button" tabIndex={-1} style={{color:"var(--text-3)"}}>+</button>
       </div>
-      <div className="overlay-list">
+      <div className="overlay-list" aria-hidden="true">
         {entries.map((e, i) => (
           <div key={i} className={"entry " + (i === selected ? "selected" : "")}>
             <div className={"entry-icon " + e.kind + (e.thumb ? " has-thumb" : "")}>
-              {e.thumb ? <img src={e.thumb} alt="" loading="lazy"/> : e.icon}
+              {e.thumb ? <img src={e.thumb} alt="" width="36" height="36" fetchpriority="high" decoding="async"/> : e.icon}
             </div>
             <div className="entry-body">
               <div className={"entry-title" + (e.body ? " body-text" : "")}>{e.title}</div>
@@ -51,7 +59,7 @@ function HeroOverlay({ variant = "default" }) {
           </div>
         ))}
       </div>
-      <div className="overlay-foot">
+      <div className="overlay-foot" aria-hidden="true">
         <span className="kbd-hint"><span className="kbd">↑↓</span> navigate</span>
         <span className="kbd-hint"><span className="kbd">⏎</span> paste</span>
         <span className="kbd-hint"><span className="kbd">⌘D</span> favorite</span>
