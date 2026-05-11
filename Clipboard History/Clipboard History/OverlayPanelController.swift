@@ -76,12 +76,13 @@ final class OverlayPanelController {
     }
 
     private func centerPanelOnActiveScreen() {
-        // NSScreen.main = screen with keyboard focus, i.e. the active app's
-        // window — including when that app is fullscreen on a non-primary
-        // display. Mouse location is unreliable here because pressing a
-        // hotkey doesn't move the cursor.
-        let screen = NSScreen.main
-            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
+        // For an accessory (menu bar) app, NSScreen.main can report the
+        // screen of a fullscreen app on a non-primary display even when the
+        // user is typing in a regular window elsewhere. The cursor's screen
+        // is a more reliable signal for "where the user is working".
+        let mouseLocation = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+            ?? NSScreen.main
             ?? NSApp.keyWindow?.screen
             ?? NSScreen.screens.first
         guard let visible = screen?.visibleFrame else {
