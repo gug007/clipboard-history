@@ -18,6 +18,8 @@ struct OverlayView: View {
     @State private var selectedFilter: HistoryStore.Filter = .all
     @State private var isCreatingGroup = false
     @FocusState private var searchFocused: Bool
+    @Environment(\.colorScheme) private var colorScheme
+    private let settings = AppSettings.shared
 
     private var displayed: [ClipItem] {
         let q = query.trimmingCharacters(in: .whitespaces)
@@ -43,6 +45,7 @@ struct OverlayView: View {
                             onPaste(displayed[selectionIndex].entry)
                         }
                     }
+                themeToggleButton
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
@@ -101,12 +104,19 @@ struct OverlayView: View {
             .padding(.vertical, 8)
         }
         .frame(width: 720, height: 480)
-        .background(.ultraThinMaterial)
+        .background {
+            if colorScheme == .light {
+                Color.white
+            } else {
+                Color(red: 0.165, green: 0.165, blue: 0.165)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
         )
+        .preferredColorScheme(settings.appearance.colorScheme)
         .task {
             searchFocused = true
         }
@@ -488,6 +498,24 @@ struct OverlayView: View {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .full
         return f.localizedString(for: date, relativeTo: Date())
+    }
+
+    private var themeToggleButton: some View {
+        let theme = settings.appearance
+        return Button {
+            settings.appearance = theme.next
+        } label: {
+            Image(systemName: theme.iconName)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Appearance: \(theme.label) — click to switch")
+        .accessibilityLabel("Appearance")
+        .accessibilityValue(theme.label)
+        .accessibilityHint("Cycles between System, Light, and Dark")
     }
 
     private func hint(_ key: String, _ label: String) -> some View {

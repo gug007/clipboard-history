@@ -66,13 +66,37 @@ final class OverlayPanelController {
             onDelete: { [weak self] entry in self?.delete(entry) },
             onReveal: { [weak self] entry in self?.revealInFinder(entry) }
         )
+
+        applyAppearance()
+        observeAppearance()
     }
 
     func toggle() { panel.isVisible ? hide() : show() }
 
     func show() {
+        applyAppearance()
         centerPanelOnActiveScreen()
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    private func applyAppearance() {
+        switch AppSettings.shared.appearance {
+        case .system: panel.appearance = nil
+        case .light:  panel.appearance = NSAppearance(named: .aqua)
+        case .dark:   panel.appearance = NSAppearance(named: .darkAqua)
+        }
+    }
+
+    private func observeAppearance() {
+        // withObservationTracking is one-shot — re-register after each fire.
+        withObservationTracking {
+            _ = AppSettings.shared.appearance
+        } onChange: { [weak self] in
+            DispatchQueue.main.async {
+                self?.applyAppearance()
+                self?.observeAppearance()
+            }
+        }
     }
 
     private func centerPanelOnActiveScreen() {
