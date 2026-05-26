@@ -78,10 +78,12 @@ final class OverlayPanelController {
     private func centerPanelOnActiveScreen() {
         // For an accessory (menu bar) app, NSScreen.main can report the
         // screen of a fullscreen app on a non-primary display even when the
-        // user is typing in a regular window elsewhere. The cursor's screen
-        // is a more reliable signal for "where the user is working".
-        let mouseLocation = NSEvent.mouseLocation
-        let screen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+        // user is typing in a regular window elsewhere. Ask the frontmost
+        // app for its focused window via Accessibility and use that
+        // window's screen. Falls back to cursor → NSScreen.main if AX is
+        // unavailable (no permission, or app has no focused window).
+        let screen = Self.screenOfFrontmostFocusedWindow()
+            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
             ?? NSScreen.main
             ?? NSApp.keyWindow?.screen
             ?? NSScreen.screens.first
@@ -95,6 +97,53 @@ final class OverlayPanelController {
             y: visible.minY + (visible.height - panelSize.height) / 2
         )
         panel.setFrameOrigin(origin)
+    }
+
+    private static func screenOfFrontmostFocusedWindow() -> NSScreen? {
+        guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
+        let axApp = AXUIElementCreateApplication(app.processIdentifier)
+
+        var windowRef: CFTypeRef?
+        guard
+            AXUIElementCopyAttributeValue(
+                axApp, kAXFocusedWindowAttribute as CFString, &windowRef
+            ) == .success,
+            let windowValue = windowRef
+        else { return nil }
+        let window = windowValue as! AXUIElement
+
+        var positionRef: CFTypeRef?
+        var sizeRef: CFTypeRef?
+        guard
+            AXUIElementCopyAttributeValue(
+                window, kAXPositionAttribute as CFString, &positionRef
+            ) == .success,
+            AXUIElementCopyAttributeValue(
+                window, kAXSizeAttribute as CFString, &sizeRef
+            ) == .success,
+            let positionValue = positionRef,
+            let sizeValue = sizeRef
+        else { return nil }
+
+        var position = CGPoint.zero
+        var size = CGSize.zero
+        guard
+            AXValueGetValue(positionValue as! AXValue, .cgPoint, &position),
+            AXValueGetValue(sizeValue as! AXValue, .cgSize, &size),
+            let primary = NSScreen.screens.first
+        else { return nil }
+
+        // AX uses top-left origin anchored to the primary screen; NSScreen
+        // uses bottom-left. Flip Y to find the matching NSScreen.
+        let centerAX = CGPoint(
+            x: position.x + size.width / 2,
+            y: position.y + size.height / 2
+        )
+        let centerNS = NSPoint(
+            x: centerAX.x,
+            y: primary.frame.maxY - centerAX.y
+        )
+        return NSScreen.screens.first(where: { $0.frame.contains(centerNS) })
     }
 
     func hide() {
