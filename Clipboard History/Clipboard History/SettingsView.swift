@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @State private var selection: Tab = .general
+    @State private var settings = AppSettings.shared
 
     enum Tab: Hashable {
         case general, storage, privacy, about
@@ -50,6 +51,7 @@ struct SettingsView: View {
             .navigationTitle(detailTitle)
         }
         .frame(width: 700, height: 480)
+        .preferredColorScheme(settings.appearance.colorScheme)
         .onDisappear {
             NSApp.setActivationPolicy(.accessory)
         }
@@ -60,6 +62,7 @@ struct SettingsView: View {
 
 private struct GeneralSettingsTab: View {
     @State private var launch = LaunchAtLogin.shared
+    @State private var settings = AppSettings.shared
 
     var body: some View {
         ScrollView {
@@ -107,6 +110,33 @@ private struct GeneralSettingsTab: View {
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }
+                }
+
+                Divider().opacity(0.35)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Appearance")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        Picker("", selection: Binding(
+                            get: { settings.appearance },
+                            set: { settings.appearance = $0 }
+                        )) {
+                            ForEach(AppearanceTheme.allCases, id: \.self) { theme in
+                                Label(theme.label, systemImage: theme.iconName)
+                                    .tag(theme)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .controlSize(.small)
+                        .labelsHidden()
+                        .fixedSize()
+                        .accessibilityLabel("Appearance")
+                    }
+                    Text("Match the system look, or force Light or Dark mode.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
                 }
             }
             .padding(.horizontal, 28)
