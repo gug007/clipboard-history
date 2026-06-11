@@ -96,7 +96,7 @@ final class AppSettings {
            let theme = AppearanceTheme(rawValue: raw) {
             appearance = theme
         } else {
-            appearance = .system
+            appearance = .light
         }
     }
 }
