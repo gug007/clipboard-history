@@ -12,6 +12,8 @@ final class OverlayPanelController {
     private let store: HistoryStore
     private let state: PanelState
     private var lastPasteAt: Date?
+    private var focusLossObserver: NSObjectProtocol?
+    private var outsideClickMonitor: Any?
 
     var isVisible: Bool { panel.isVisible }
 
@@ -69,13 +71,48 @@ final class OverlayPanelController {
 
         applyAppearance()
         observeAppearance()
+        observeFocusLoss()
     }
 
-    func toggle() { panel.isVisible ? hide() : show() }
+    func toggle() {
+        guard panel.isVisible else {
+            show()
+            return
+        }
+        // A modal alert (New Group…, rename) is running on top of the
+        // panel — hiding it from under the alert would strand the alert.
+        guard NSApp.modalWindow == nil else { return }
+        // The cursor sitting on the panel means the user sees it: dismiss.
+        if panel.frame.contains(NSEvent.mouseLocation) {
+            hide()
+            return
+        }
+        // Visible but on a different screen than the user (e.g. left open on
+        // another display): the user pressed the hotkey because they can't
+        // see it — summon it instead of silently hiding it. While the panel
+        // itself holds the keyboard, the AX focused-window signal points at
+        // whatever app had focus before it opened — stale — so only a recent
+        // mouse position can argue the user has moved to another screen;
+        // otherwise this press is a plain dismiss.
+        let target = panel.isKeyWindow
+            ? (Self.mouseRecentlyUsed() ? Self.screen(nearest: NSEvent.mouseLocation) : nil)
+            : Self.userScreen()
+        if let target, panel.screen?.frame != target.frame {
+            applyAppearance()
+            center(on: target)
+            panel.makeKeyAndOrderFront(nil)
+        } else {
+            hide()
+        }
+    }
 
     func show() {
         applyAppearance()
-        centerPanelOnActiveScreen()
+        if let target = Self.userScreen() {
+            center(on: target)
+        } else {
+            panel.center()
+        }
         panel.makeKeyAndOrderFront(nil)
     }
 
@@ -99,22 +136,106 @@ final class OverlayPanelController {
         }
     }
 
-    private func centerPanelOnActiveScreen() {
-        // For an accessory (menu bar) app, NSScreen.main can report the
-        // screen of a fullscreen app on a non-primary display even when the
-        // user is typing in a regular window elsewhere. Ask the frontmost
-        // app for its focused window via Accessibility and use that
-        // window's screen. Falls back to cursor → NSScreen.main if AX is
-        // unavailable (no permission, or app has no focused window).
-        let screen = Self.screenOfFrontmostFocusedWindow()
-            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
-            ?? NSScreen.main
-            ?? NSApp.keyWindow?.screen
-            ?? NSScreen.screens.first
-        guard let visible = screen?.visibleFrame else {
-            panel.center()
-            return
+    private func observeFocusLoss() {
+        // Spotlight-style dismissal: hide when the user's focus leaves the
+        // app, so a forgotten panel can't sit on another display (where the
+        // next hotkey press would toggle it *hidden*) or float over a
+        // fullscreen Space the user switches into later.
+        focusLossObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didResignKeyNotification,
+            object: panel,
+            queue: .main
+        ) { [weak self] _ in
+            // Defer one runloop turn so key-window state has settled, then
+            // keep the panel if focus moved to another window of this app —
+            // the NSAlert.runModal flows (New Group…, rename) take key
+            // status while the panel must stay up behind them.
+            DispatchQueue.main.async {
+                guard let self else { return }
+                guard self.panel.isVisible, !self.panel.isKeyWindow else { return }
+                if NSApp.modalWindow != nil || NSApp.keyWindow != nil { return }
+                self.hide()
+            }
         }
+
+        // The resign-key observer fires only for the panel itself, so a key
+        // detour through another window of ours (alert, popover, status
+        // menu) consumes it and the panel would linger after focus leaves
+        // the app from there. Global monitors only see events delivered to
+        // OTHER apps — clicks on our own windows never trigger this — so
+        // any outside click while the panel is up means the user moved on.
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+        ) { [weak self] _ in
+            guard let self, self.panel.isVisible else { return }
+            if NSApp.modalWindow != nil { return }
+            self.hide()
+        }
+    }
+
+    deinit {
+        if let focusLossObserver {
+            NotificationCenter.default.removeObserver(focusLossObserver)
+        }
+        if let outsideClickMonitor {
+            NSEvent.removeMonitor(outsideClickMonitor)
+        }
+    }
+
+    /// The screen the user is most plausibly looking at right now.
+    ///
+    /// Two signals are available and each one alone has shipped as a bug:
+    /// the keyboard-focused window (wrong when a fullscreen app on another
+    /// display still holds focus because focus follows clicks, not the
+    /// mouse) and the cursor (wrong when the user types on one display with
+    /// the mouse parked on another). When they disagree, trust whichever
+    /// input device the user touched last: cursor if the mouse was used in
+    /// the past few seconds, keyboard focus otherwise — which is also where
+    /// the auto-paste ⌘V will land.
+    private static func userScreen() -> NSScreen? {
+        let cursorScreen = screen(nearest: NSEvent.mouseLocation)
+        let focusScreen = screenOfFrontmostFocusedWindow()
+        guard let focusScreen else {
+            return cursorScreen ?? NSScreen.main ?? NSScreen.screens.first
+        }
+        guard let cursorScreen, cursorScreen.frame != focusScreen.frame else {
+            return focusScreen
+        }
+        return mouseRecentlyUsed() ? cursorScreen : focusScreen
+    }
+
+    private static func mouseRecentlyUsed(within seconds: TimeInterval = 5) -> Bool {
+        let types: [CGEventType] = [
+            .mouseMoved, .leftMouseDown, .rightMouseDown, .otherMouseDown,
+            .leftMouseDragged, .rightMouseDragged, .otherMouseDragged, .scrollWheel,
+        ]
+        return types.contains {
+            CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: $0) < seconds
+        }
+    }
+
+    /// Screen containing the point, tolerating the shared-edge exclusion of
+    /// NSRect.contains (a cursor parked at the top edge after using the menu
+    /// bar reports y == frame.maxY) and arrangement gaps, by falling back to
+    /// the nearest screen.
+    private static func screen(nearest point: NSPoint) -> NSScreen? {
+        let screens = NSScreen.screens
+        if let exact = screens.first(where: { NSMouseInRect(point, $0.frame, false) }) {
+            return exact
+        }
+        return screens.min(by: {
+            distanceSquared(from: point, to: $0.frame) < distanceSquared(from: point, to: $1.frame)
+        })
+    }
+
+    private static func distanceSquared(from point: NSPoint, to rect: NSRect) -> CGFloat {
+        let dx = max(rect.minX - point.x, 0, point.x - rect.maxX)
+        let dy = max(rect.minY - point.y, 0, point.y - rect.maxY)
+        return dx * dx + dy * dy
+    }
+
+    private func center(on screen: NSScreen) {
+        let visible = screen.visibleFrame
         let panelSize = panel.frame.size
         let origin = NSPoint(
             x: visible.minX + (visible.width - panelSize.width) / 2,
@@ -124,7 +245,10 @@ final class OverlayPanelController {
     }
 
     private static func screenOfFrontmostFocusedWindow() -> NSScreen? {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
+        guard
+            let app = NSWorkspace.shared.frontmostApplication,
+            app.processIdentifier != ProcessInfo.processInfo.processIdentifier
+        else { return nil }
         let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
         var windowRef: CFTypeRef?

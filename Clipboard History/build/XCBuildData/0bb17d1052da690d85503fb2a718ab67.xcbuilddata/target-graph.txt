@@ -1,0 +1,20 @@
+Target dependency graph (9 targets)
+Target 'Clipboard History' in project 'Clipboard History'
+➜ Explicit dependency on target 'Sparkle' in project 'Sparkle'
+➜ Explicit dependency on target 'GRDB' in project 'GRDB'
+➜ Explicit dependency on target 'KeyboardShortcuts' in project 'KeyboardShortcuts'
+Target 'KeyboardShortcuts' in project 'KeyboardShortcuts'
+➜ Explicit dependency on target 'KeyboardShortcuts' in project 'KeyboardShortcuts'
+➜ Explicit dependency on target 'KeyboardShortcuts_KeyboardShortcuts' in project 'KeyboardShortcuts'
+Target 'KeyboardShortcuts' in project 'KeyboardShortcuts'
+➜ Explicit dependency on target 'KeyboardShortcuts_KeyboardShortcuts' in project 'KeyboardShortcuts'
+Target 'KeyboardShortcuts_KeyboardShortcuts' in project 'KeyboardShortcuts' (no dependencies)
+Target 'GRDB' in project 'GRDB'
+➜ Explicit dependency on target 'GRDB' in project 'GRDB'
+➜ Explicit dependency on target 'GRDB_GRDB' in project 'GRDB'
+Target 'GRDB' in project 'GRDB'
+➜ Explicit dependency on target 'GRDB_GRDB' in project 'GRDB'
+➜ Explicit dependency on target 'GRDBSQLite' in project 'GRDB'
+Target 'GRDBSQLite' in project 'GRDB' (no dependencies)
+Target 'GRDB_GRDB' in project 'GRDB' (no dependencies)
+Target 'Sparkle' in project 'Sparkle' (no dependencies)
