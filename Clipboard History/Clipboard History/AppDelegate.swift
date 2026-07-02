@@ -14,6 +14,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updaterDelegate: nil,
         userDriverDelegate: nil
     )
+    #if DEBUG
+    private var toggleSignalSource: DispatchSourceSignal?
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -84,6 +87,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hotkey = HotkeyService { [weak overlay] in overlay?.toggle() }
         self.hotkey = hotkey
         print("[Startup] All systems ready — global hotkey registered (paused=\(initialPaused))")
+
+        #if DEBUG
+        // Test hook: `kill -USR1 <pid>` drives the same path as the global
+        // hotkey, so the overlay can be exercised from scripts without
+        // Accessibility/event-posting permissions.
+        signal(SIGUSR1, SIG_IGN)
+        let source = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
+        source.setEventHandler { [weak self] in
+            print("[Debug] SIGUSR1 → overlay.toggle()")
+            self?.overlay?.toggle()
+        }
+        source.resume()
+        toggleSignalSource = source
+        #endif
     }
 
     private func handlePauseToggle() {

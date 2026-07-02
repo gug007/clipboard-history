@@ -1,9 +1,19 @@
 import AppKit
 import SwiftUI
 
+private func dlog(_ message: @autoclosure () -> String) {
+    #if DEBUG
+    let t = String(format: "%.3f", Date().timeIntervalSince1970.truncatingRemainder(dividingBy: 1000))
+    print("[Overlay \(t)] \(message())")
+    #endif
+}
+
 private final class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    // canBecomeMain stays false (the NSPanel default): a hotkey palette only
+    // needs key status to take typing, and main-window status gives the
+    // panel activation-like behavior that fullscreen Spaces punish — none of
+    // the proven overlay panels (Maccy, Ice) opt into it.
 }
 
 final class OverlayPanelController {
@@ -32,7 +42,10 @@ final class OverlayPanelController {
         panel.backgroundColor = .clear
         panel.hasShadow = true
         panel.level = .floating
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        // .stationary is an Exposé/Mission-Control flag with no role for a
+        // transient palette, and it's a named suspect for panels being
+        // suppressed over fullscreen Spaces on macOS 26.
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isReleasedWhenClosed = false
         panel.becomesKeyOnlyIfNeeded = false
         panel.hidesOnDeactivate = false
@@ -75,6 +88,7 @@ final class OverlayPanelController {
     }
 
     func toggle() {
+        dlog("toggle() visible=\(panel.isVisible) key=\(panel.isKeyWindow) onActiveSpace=\(panel.isOnActiveSpace) frontmost=\(NSWorkspace.shared.frontmostApplication?.localizedName ?? "?")")
         guard panel.isVisible else {
             show()
             return
@@ -84,6 +98,7 @@ final class OverlayPanelController {
         guard NSApp.modalWindow == nil else { return }
         // The cursor sitting on the panel means the user sees it: dismiss.
         if panel.frame.contains(NSEvent.mouseLocation) {
+            dlog("toggle(): cursor on panel → hide")
             hide()
             return
         }
@@ -98,22 +113,45 @@ final class OverlayPanelController {
             ? (Self.mouseRecentlyUsed() ? Self.screen(nearest: NSEvent.mouseLocation) : nil)
             : Self.userScreen()
         if let target, panel.screen?.frame != target.frame {
+            dlog("toggle(): summon to \(target.frame)")
             applyAppearance()
             center(on: target)
-            panel.makeKeyAndOrderFront(nil)
+            orderFront()
         } else {
+            dlog("toggle(): plain dismiss")
             hide()
         }
     }
 
     func show() {
+        dlog("show() begin axTrusted=\(AXIsProcessTrusted())")
         applyAppearance()
+        let t0 = Date()
         if let target = Self.userScreen() {
+            dlog("show(): userScreen=\(target.frame) took \(Int(Date().timeIntervalSince(t0) * 1000))ms")
             center(on: target)
         } else {
+            dlog("show(): userScreen=nil took \(Int(Date().timeIntervalSince(t0) * 1000))ms")
             panel.center()
         }
-        panel.makeKeyAndOrderFront(nil)
+        orderFront()
+        dlog("show() done: visible=\(panel.isVisible) key=\(panel.isKeyWindow) onActiveSpace=\(panel.isOnActiveSpace)")
+        #if DEBUG
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            dlog("show()+1s: visible=\(self.panel.isVisible) key=\(self.panel.isKeyWindow) onActiveSpace=\(self.panel.isOnActiveSpace) occlusionVisible=\(self.panel.occlusionState.contains(.visible))")
+        }
+        #endif
+    }
+
+    /// Order the panel front without activating the app. From a non-active
+    /// app, makeKeyAndOrderFront can order the window beneath the active
+    /// application's windows (documented since macOS 13.3); the regardless
+    /// variant is how Spotlight-style panels (e.g. Maccy) summon reliably,
+    /// including over fullscreen Spaces.
+    private func orderFront() {
+        panel.orderFrontRegardless()
+        panel.makeKey()
     }
 
     private func applyAppearance() {
@@ -146,14 +184,17 @@ final class OverlayPanelController {
             object: panel,
             queue: .main
         ) { [weak self] _ in
+            dlog("didResignKey fired")
             // Defer one runloop turn so key-window state has settled, then
             // keep the panel if focus moved to another window of this app —
             // the NSAlert.runModal flows (New Group…, rename) take key
             // status while the panel must stay up behind them.
             DispatchQueue.main.async {
                 guard let self else { return }
+                dlog("didResignKey deferred: visible=\(self.panel.isVisible) key=\(self.panel.isKeyWindow) modal=\(NSApp.modalWindow != nil) appKey=\(NSApp.keyWindow != nil)")
                 guard self.panel.isVisible, !self.panel.isKeyWindow else { return }
                 if NSApp.modalWindow != nil || NSApp.keyWindow != nil { return }
+                dlog("didResignKey → hide")
                 self.hide()
             }
         }
@@ -169,6 +210,7 @@ final class OverlayPanelController {
         ) { [weak self] _ in
             guard let self, self.panel.isVisible else { return }
             if NSApp.modalWindow != nil { return }
+            dlog("outsideClickMonitor → hide")
             self.hide()
         }
     }
@@ -192,16 +234,24 @@ final class OverlayPanelController {
     /// input device the user touched last: cursor if the mouse was used in
     /// the past few seconds, keyboard focus otherwise — which is also where
     /// the auto-paste ⌘V will land.
+    /// The AX query runs synchronously against the frontmost app on the main
+    /// thread, and an unresponsive app (observed: fullscreen Chrome) can sit
+    /// on each call for the system default timeout of 6 seconds — the hotkey
+    /// then appears dead and the panel materializes long after the user has
+    /// moved on. So consult AX only when it can change the outcome: with a
+    /// single display there is nothing to arbitrate, and with recent mouse
+    /// use the cursor screen wins any disagreement anyway.
     private static func userScreen() -> NSScreen? {
+        let screens = NSScreen.screens
+        guard screens.count > 1 else { return screens.first }
         let cursorScreen = screen(nearest: NSEvent.mouseLocation)
-        let focusScreen = screenOfFrontmostFocusedWindow()
-        guard let focusScreen else {
-            return cursorScreen ?? NSScreen.main ?? NSScreen.screens.first
+        if mouseRecentlyUsed() {
+            return cursorScreen ?? NSScreen.main ?? screens.first
         }
-        guard let cursorScreen, cursorScreen.frame != focusScreen.frame else {
-            return focusScreen
+        guard let focusScreen = screenOfFrontmostFocusedWindow() else {
+            return cursorScreen ?? NSScreen.main ?? screens.first
         }
-        return mouseRecentlyUsed() ? cursorScreen : focusScreen
+        return focusScreen
     }
 
     private static func mouseRecentlyUsed(within seconds: TimeInterval = 5) -> Bool {
@@ -244,7 +294,16 @@ final class OverlayPanelController {
         panel.setFrameOrigin(origin)
     }
 
+    /// Process-wide AX timeout, configured once before the first AX call:
+    /// a stalled target app costs at most ~0.25s per call instead of the
+    /// 6-second system default, keeping show() usable on the main thread.
+    private static let axTimeoutConfigured: Bool = {
+        AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 0.25)
+        return true
+    }()
+
     private static func screenOfFrontmostFocusedWindow() -> NSScreen? {
+        _ = axTimeoutConfigured
         guard
             let app = NSWorkspace.shared.frontmostApplication,
             app.processIdentifier != ProcessInfo.processInfo.processIdentifier

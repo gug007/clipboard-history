@@ -1,12 +1,10 @@
-/* global React, Icon, useDownloadUrl */
-
-const APP_VERSION = "0.0.21";
+/* global React, Icon, useLatestRelease */
 
 // Visibility is owned by interactions-designer (`useStickyBarReveal` in
 // app.jsx). They observe `.hero` and toggle `.is-visible` on this element.
 // We just render the structure and styles.
 function StickyDownloadBar() {
-  const downloadUrl = useDownloadUrl();
+  const { url, version } = useLatestRelease();
   return (
     <div
       className="sticky-download-bar"
@@ -17,10 +15,10 @@ function StickyDownloadBar() {
       <div className="sticky-dl-inner">
         <div className="sticky-dl-text">
           <span className="sticky-dl-title">Clipboard History</span>
-          <span className="sticky-dl-meta">Free · v{APP_VERSION} · macOS 14+</span>
+          <span className="sticky-dl-meta">Free · v{version} · macOS 14+</span>
         </div>
         <a
-          href={downloadUrl}
+          href={url}
           className="btn btn-primary sticky-dl-cta"
           onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'sticky-bar' } })}
         >

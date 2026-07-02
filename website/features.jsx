@@ -10,7 +10,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.search/></div>
         <h3>Find that link from Tuesday in two keystrokes</h3>
-        <p>Type a word or two and the right clip jumps to the top — even one from last week. It looks inside text, links, and filenames. Try "invoice", "Airbnb", or your friend's name. Results come back as you type.</p>
+        <p>The search field is already focused when the panel opens — just type. A word or two and the right clip jumps to the top, even one from last week. It looks inside text, links, and filenames. Try "invoice", "Airbnb", or your friend's name.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="amber">
@@ -18,17 +18,8 @@ function FeatureGrid() {
           <ShortcutVisual/>
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
-        <h3>The shortcut works in every app</h3>
-        <p>Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span> <span className="kbd" aria-hidden="true">⌘</span> <span className="kbd" aria-hidden="true">V</span></span> wherever you are. Arrow keys to pick. Return to paste. The cursor never leaves where you were typing.</p>
-      </li>
-
-      <li className="feature-card span-4" data-tone="purple">
-        <div className="visual" aria-hidden="true">
-          <DedupVisual/>
-        </div>
-        <div className="feature-icon" aria-hidden="true"><Icon.sparkle/></div>
-        <h3>No piles of duplicates</h3>
-        <p>Copy the same thing twice and the list doesn't grow. Your history stays clean enough to scan in a glance.</p>
+        <h3>One shortcut, every app</h3>
+        <p>Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span> <span className="kbd" aria-hidden="true">⌘</span> <span className="kbd" aria-hidden="true">V</span></span> wherever you are — even in a fullscreen app. Arrow keys to pick, Return to paste, and the cursor never leaves where you were typing. Not your shortcut? Record your own in Settings.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="teal">
@@ -36,8 +27,8 @@ function FeatureGrid() {
           <KindsVisual/>
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
-        <h3>Text, links, screenshots, files — all of it</h3>
-        <p>Plain text, formatted text, URLs, images, screenshots, files. Even a whole folder dragged in from Finder. It all comes back exactly as you copied it.</p>
+        <h3>Text, links, files — even whole folders</h3>
+        <p>Everything you copy as text, plus files and folders straight from Finder — with thumbnails, a click-to-peek preview, and <span className="kbd" aria-hidden="true">⌘R</span> to reveal the original. Files paste back as real files, not names.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="pink">
@@ -46,7 +37,43 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.star/></div>
         <h3>Star the clips you reach for daily</h3>
-        <p>Your address, your IBAN, that one Slack emoji — star them and they're one keystroke away forever. Group related clips into named tabs. Starred clips never get cleaned up.</p>
+        <p>Your address, your IBAN, that one Slack emoji — star them with <span className="kbd" aria-hidden="true">⌘D</span> or sort them into named group tabs (a clip can live in several). Starred and grouped clips are never cleaned up.</p>
+      </li>
+
+      <li className="feature-card span-4" data-tone="purple">
+        <div className="visual" aria-hidden="true">
+          <DedupVisual/>
+        </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.sparkle/></div>
+        <h3>No piles of duplicates</h3>
+        <p>Copy the same thing twice in a row and the list doesn't grow — the clip you already have just moves back to the top. Your history stays clean enough to scan at a glance.</p>
+      </li>
+
+      <li className="feature-card span-4" data-tone="blue">
+        <div className="visual" aria-hidden="true">
+          <ScreensVisual/>
+        </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
+        <h3>Opens where you're looking</h3>
+        <p>Two monitors? The panel appears on the screen you're actually using, not a random one. It floats above fullscreen apps too, and dismisses the moment you press <span className="kbd" aria-hidden="true">⎋</span> or click away.</p>
+      </li>
+
+      <li className="feature-card span-4" data-tone="amber">
+        <div className="visual" aria-hidden="true">
+          <ThemesVisual/>
+        </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.moon/></div>
+        <h3>Light, dark, or follow the Mac</h3>
+        <p>Pick System, Light, or Dark in Settings — or tap the sun-and-moon button right inside the panel. Whatever you're working in at 2 a.m., it won't blind you.</p>
+      </li>
+
+      <li className="feature-card span-4" data-tone="teal">
+        <div className="visual" aria-hidden="true">
+          <MenuBarVisual/>
+        </div>
+        <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
+        <h3>Lives quietly in your menu bar</h3>
+        <p>No Dock icon, no windows to manage. It starts with your Mac (switch that off in Settings if you like), and one click on Pause Recording keeps moments off the record until you resume.</p>
       </li>
     </ul>
   );
@@ -64,7 +91,6 @@ function FeatureSearchDemo() {
   // 0: empty, 1: typing 'sup', 2: typing 'supabase'
   React.useEffect(() => {
     if (prefersReducedMotionF()) return;
-    const seq = [600, 1400, 2400, 3800];
     let i = 0;
     const tick = () => {
       i = (i + 1) % 4;
@@ -124,7 +150,7 @@ function ShortcutVisual() {
         <span className="key-cap sv-key">⌘</span>
         <span className="key-cap sv-key">V</span>
       </div>
-      <div className="sv-anywhere">in any app</div>
+      <div className="sv-anywhere">in any app — or record your own</div>
     </div>
   );
 }
@@ -145,11 +171,11 @@ function DedupVisual() {
 }
 
 function KindsVisual() {
-  // Stack of real-looking captured items, one per kind
+  // Stack of real-looking captured items, one per kind the app records
   const items = [
-    { c: "url",   i: <Icon.link/>,  label: "URL",        text: "github.com/anthropics/anthropic-sdk" },
-    { c: "image", i: <Icon.image/>, label: "Image",      text: "Screenshot 2026-05-04.png" },
-    { c: "code",  i: <Icon.code/>,  label: "Code",       text: "new Anthropic({ apiKey })", mono: true },
+    { c: "url",   i: <Icon.link/>,  label: "Link",       text: "github.com/anthropics/anthropic-sdk" },
+    { c: "code",  i: <Icon.code/>,  label: "Text",       text: "new Anthropic({ apiKey })", mono: true },
+    { c: "file",  i: <Icon.image/>, label: "File",       text: "Screenshot 2026-06-30.png · 412 KB" },
     { c: "file",  i: <Icon.doc/>,   label: "Folder",     text: "Mocks · 24 files" },
   ];
   return (
@@ -175,7 +201,7 @@ function GroupsVisual() {
   ];
   const starred = [
     { text: "1247 Oak St, Berkeley CA",   kind: "text", icon: <Icon.text/> },
-    { text: "claude_api_key=sk-ant-…",     kind: "code", icon: <Icon.code/>, mono: true },
+    { text: "DE89 3704 0044 0532 0130 00", kind: "text", icon: <Icon.text/>, mono: true },
     { text: ":shipit: 🚀",                  kind: "text", icon: <Icon.text/> },
   ];
   return (
@@ -201,15 +227,86 @@ function GroupsVisual() {
   );
 }
 
+function ScreensVisual() {
+  // Two mini displays; the overlay panel sits on the one with the cursor.
+  return (
+    <div className="screens-visual">
+      <div className="scv-display">
+        <div className="scv-menubar"/>
+      </div>
+      <div className="scv-display scv-active">
+        <div className="scv-menubar"/>
+        <div className="scv-panel">
+          <div className="scv-panel-search"/>
+          <div className="scv-panel-row"/>
+          <div className="scv-panel-row"/>
+          <div className="scv-panel-row short"/>
+        </div>
+        <div className="scv-cursor" aria-hidden="true">↖</div>
+      </div>
+    </div>
+  );
+}
+
+function ThemesVisual() {
+  return (
+    <div className="themes-visual">
+      <div className="thv-card thv-light">
+        <div className="thv-bar"/>
+        <div className="thv-row"/>
+        <div className="thv-row short"/>
+        <span className="thv-label">Light</span>
+      </div>
+      <div className="thv-card thv-dark">
+        <div className="thv-bar"/>
+        <div className="thv-row"/>
+        <div className="thv-row short"/>
+        <span className="thv-label">Dark</span>
+      </div>
+      <div className="thv-card thv-system">
+        <div className="thv-half thv-light-half">
+          <div className="thv-bar"/>
+          <div className="thv-row"/>
+        </div>
+        <div className="thv-half thv-dark-half">
+          <div className="thv-bar"/>
+          <div className="thv-row"/>
+        </div>
+        <span className="thv-label">System</span>
+      </div>
+    </div>
+  );
+}
+
+function MenuBarVisual() {
+  return (
+    <div className="mbv">
+      <div className="mbv-bar">
+        <span className="mbv-spacer"/>
+        <span className="mbv-icon active"><Icon.clipboard/></span>
+        <span className="mbv-icon">📶</span>
+        <span className="mbv-time">Tue 09:41</span>
+      </div>
+      <div className="mbv-menu">
+        <div className="mbv-item"><span>Open Clipboard History</span><span className="mbv-kbd">⇧⌘V</span></div>
+        <div className="mbv-item highlight"><span>Pause Recording</span></div>
+        <div className="mbv-sep"/>
+        <div className="mbv-item"><span>Settings…</span><span className="mbv-kbd">⌘,</span></div>
+        <div className="mbv-item"><span>Check for Updates…</span></div>
+      </div>
+    </div>
+  );
+}
+
 function BeforeAfterDemo() {
   // Animated demo: two parallel "Mac" mini-screens, one without the app, one with.
   // Cycles through copying 4 items; left side shows only the most recent;
   // right side shows the full growing stack.
   const items = [
     { kind: "url",   icon: <Icon.link/>,  text: "github.com/anthropics/anthropic-cookbook" },
-    { kind: "image", icon: <Icon.image/>, text: "Screenshot 2026-05-04.png" },
+    { kind: "file",  icon: <Icon.doc/>,   text: "Screenshot 2026-06-30.png" },
     { kind: "text",  icon: <Icon.text/>,  text: "Mom's address — 1247 Oak St, Berkeley CA" },
-    { kind: "code",  icon: <Icon.code/>,  text: "claude_api_key=sk-ant-…" },
+    { kind: "text",  icon: <Icon.text/>,  text: "Tracking № 1Z 999 AA1 01 2345 6784" },
   ];
 
   const [step, setStep] = React.useState(0);

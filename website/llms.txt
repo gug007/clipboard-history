@@ -1,6 +1,14 @@
 # Clipboard History
 
-> Free, open-source clipboard manager for Mac — recalls any text, link, image, or file you've ever copied with Shift+Command+V. Works offline. Skips passwords automatically.
+> Free, open-source clipboard manager for macOS — brings back any text, link, or file you've recently copied with Shift+Command+V (customizable). Keeps your last 1,000 copies by default (up to 10,000). Works offline. Skips passwords automatically.
+
+Key facts:
+- Requires macOS 14 (Sonoma) or later; Apple Silicon and Intel. ~5 MB download, signed and notarized by Apple.
+- Captures text (including links and code) and files/folders copied in Finder. Files are stored by reference with thumbnails and previews, and paste back as real files. Images copied directly to the clipboard (e.g. screenshot-to-clipboard) are not captured yet.
+- Instant search across text, links, and filenames; star favorites; organize clips into groups — starred and grouped clips are never auto-removed.
+- Privacy: everything stays in a local SQLite file (~/Library/Application Support/Clipboard History/). No account, no sync, no telemetry. Copies from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass are skipped, as is anything any app marks concealed/transient on the clipboard. Recording can be paused from the menu bar.
+- Overlay opens on the screen you're using, even over fullscreen apps. System / Light / Dark appearance. Menu-bar app with no Dock icon; starts at login (can be turned off).
+- Shortcuts: ⇧⌘V open (default, customizable) · type to search · ↑↓ navigate · ⏎ paste · ⌘1–9 paste item directly · ⌥1–9 switch tabs · ⌘D star · ⌘⌫ delete · ⌘R reveal file in Finder · ⇧⌘F Favorites tab · ⎋ close.
 
 ## Docs
 

@@ -101,7 +101,7 @@ function Hero() {
       <div className="container">
         <h1>That moment you copy a new thing and the old one's <em>gone</em>.</h1>
         <p className="hero-sub">
-          Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to bring back anything you've copied — text, links, screenshots, files. Opens in under a tenth of a second.
+          Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to bring back anything you've copied — text, links, files, whole folders. Your last thousand copies, one keystroke away.
         </p>
         <div className="hero-actions">
           <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click')}>
@@ -121,6 +121,30 @@ function Hero() {
   );
 }
 
+function DemoVideo() {
+  // Autoplay only for users who haven't asked for reduced motion; everyone
+  // else gets a tap-to-play video with controls.
+  const reduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    <div className="demo-video-frame">
+      <video
+        className="demo-video"
+        src="uploads/clipboard-history-demo.mp4"
+        muted
+        loop
+        playsInline
+        controls
+        autoPlay={!reduced}
+        preload={reduced ? "metadata" : "auto"}
+        aria-label="Screen recording: pressing Shift Command V opens the clipboard history panel; an earlier clip is selected with the arrow keys and pasted with Return."
+      />
+    </div>
+  );
+}
+
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "theme": "light",
   "accent": "#0a84ff"
@@ -134,6 +158,10 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    // Keep browser chrome (mobile URL bar etc.) in sync with the toggled theme.
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      m.setAttribute("content", theme === "dark" ? "#0055cc" : "#0a84ff");
+    });
   }, [theme]);
 
   useEffect(() => {
@@ -163,6 +191,16 @@ function App() {
             <BeforeAfterDemo/>
           </div>
         </section>
+        <section id="demo" aria-labelledby="demo-heading">
+          <div className="container">
+            <div className="section-eyebrow">See it in action</div>
+            <h2 id="demo-heading" className="section-title">The real thing, in 38 seconds.</h2>
+            <p className="section-lede">
+              Copy a few things, press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span>, pick, paste. That's the whole app.
+            </p>
+            <DemoVideo/>
+          </div>
+        </section>
         <section id="features" aria-labelledby="features-heading">
           <div className="container">
             <div className="section-eyebrow">What it does</div>
@@ -173,7 +211,7 @@ function App() {
         <div id="privacy"><PrivacySection/></div>
         <div id="shortcuts"><CheatsheetSection/></div>
         <div id="faq"><FAQSection/></div>
-        <div id="download"><DownloadSection/></div>
+        <DownloadSection/>
       </main>
       <Footer/>
 

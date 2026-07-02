@@ -8,9 +8,8 @@
 
   <!-- Primary meta -->
   <title>Clipboard History for Mac — Never lose what you copy</title>
-  <meta name="description" content="Free clipboard manager for Mac. Press Shift+Command+V to recall any text, link, image, or file you've copied. Works offline. Skips passwords."/>
+  <meta name="description" content="Free, open-source clipboard manager for Mac. Press Shift+Command+V to bring back any text, link, or file you've copied. Works offline, skips passwords, keeps your last 1,000 copies."/>
   <meta name="robots" content="index,follow,max-image-preview:large"/>
-  <meta name="keywords" content="clipboard manager mac, clipboard history mac, mac clipboard app, free clipboard manager, copy paste history, mac productivity, clipboard manager macOS"/>
   <meta name="author" content="Clipboard History"/>
   <meta name="format-detection" content="telephone=no"/>
   <link rel="canonical" href="https://clipboard-history.cc/"/>
@@ -24,25 +23,25 @@
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://clipboard-history.cc/"/>
   <meta property="og:title" content="Clipboard History for Mac — Never lose what you copy"/>
-  <meta property="og:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Recall any text, link, image, or file you've copied with Shift + Command + V. Works offline."/>
+  <meta property="og:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Bring back any text, link, or file you've copied with Shift + Command + V. Works offline."/>
   <meta property="og:image" content="https://clipboard-history.cc/og.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, code, text, images, and files"/>
+  <meta property="og:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, text, and files"/>
   <meta property="og:locale" content="en_US"/>
   <meta property="og:site_name" content="Clipboard History"/>
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Clipboard History for Mac — Never lose what you copy"/>
-  <meta name="twitter:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Recall anything you've copied with Shift + Command + V."/>
+  <meta name="twitter:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Bring back anything you've copied with Shift + Command + V."/>
   <meta name="twitter:image" content="https://clipboard-history.cc/og.png"/>
+  <meta name="twitter:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, text, and files"/>
 
   <!-- Favicons -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a84ff'/%3E%3Cpath fill='white' d='M11 7h10v18H11z'/%3E%3Crect x='13' y='5' width='6' height='4' rx='1' fill='%230a84ff'/%3E%3C/svg%3E"/>
 
   <link rel="preload" as="image" href="screenshots/03-current.jpg" fetchpriority="high"/>
-  <link rel="preload" as="script" href="dist/app.js"/>
 
   <link rel="stylesheet" href="site.css"/>
 
@@ -55,16 +54,16 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Clipboard History",
-    "operatingSystem": "macOS 14",
+    "operatingSystem": "macOS 14.0 or later",
     "applicationCategory": "ProductivityApplication",
     "applicationSubCategory": "Clipboard Manager",
-    "description": "A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, images, files. Works offline. Skips passwords automatically.",
+    "description": "A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, files, whole folders. Works offline. Skips passwords automatically.",
     "url": "https://clipboard-history.cc/",
     "downloadUrl": "https://github.com/gug007/clipboard-history/releases",
-    "installUrl": "https://github.com/gug007/clipboard-history/releases/download/v0.0.21/ClipboardHistory-0.0.21.dmg",
-    "softwareVersion": "0.0.21",
+    "installUrl": "https://github.com/gug007/clipboard-history/releases/download/v0.0.26/ClipboardHistory-0.0.26.dmg",
+    "softwareVersion": "0.0.26",
     "releaseNotes": "https://github.com/gug007/clipboard-history/releases",
-    "fileSize": "6 MB",
+    "fileSize": "5 MB",
     "permissions": "Accessibility",
     "screenshot": [
       "https://clipboard-history.cc/screenshots/01-current.jpg",
@@ -85,11 +84,16 @@
       "url": "https://clipboard-history.cc/"
     },
     "featureList": [
-      "Recall any text, link, image, or file you've ever copied",
-      "Open with one keyboard shortcut",
-      "Works completely offline",
-      "Skips password managers automatically",
-      "Star and group your most-used clips",
+      "Bring back any text, link, or file you've copied with one shortcut",
+      "Instant search across text, links, and filenames",
+      "Star favorites and organize clips into groups — never auto-removed",
+      "Files and folders saved by reference with thumbnails and previews",
+      "Works completely offline — history never leaves your Mac",
+      "Skips password managers and confidential copies automatically",
+      "Pause recording any time from the menu bar",
+      "System, Light, and Dark appearance",
+      "Opens on the screen you're using, even over fullscreen apps",
+      "Customizable global keyboard shortcut",
       "Free and open source"
     ]
   }
@@ -125,13 +129,13 @@
   }
   </script>
 
-  <!-- Structured data: VideoObject -->
+  <!-- Structured data: VideoObject (video embedded in the "See it in action" section) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "VideoObject",
     "name": "Clipboard History demo — open with Shift + Command + V",
-    "description": "Short demo of Clipboard History on macOS: pressing Shift + Command + V opens the clipboard history overlay so you can paste anything you've recently copied.",
+    "description": "Short demo of Clipboard History on macOS: pressing Shift + Command + V opens the clipboard history overlay, an earlier clip is picked with the arrow keys and pasted with Return.",
     "thumbnailUrl": "https://clipboard-history.cc/og.png",
     "contentUrl": "https://clipboard-history.cc/uploads/clipboard-history-demo.mp4",
     "uploadDate": "2026-05-05",
@@ -143,7 +147,7 @@
   }
   </script>
 
-  <!-- Structured data: FAQ -->
+  <!-- Structured data: FAQ (kept in sync with sections.jsx FAQSection and the noscript block) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -162,7 +166,7 @@
         "name": "Will it record my passwords?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. The app skips anything copied from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass. It also pauses recording when you're typing in a password field or sitting at the lock screen. You can add other apps to the skip list in Settings."
+          "text": "No. Anything copied from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, or LastPass is skipped. Beyond that list, anything any app marks as concealed or transient on the clipboard — the standard convention password managers follow — is never recorded either. You can add more apps to the skip list in Settings → Privacy, or pause recording entirely from the menu bar."
         }
       },
       {
@@ -178,7 +182,7 @@
         "name": "Will it slow down my Mac?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. The app is about 6 MB and idle most of the time — it just listens for clipboard changes. Most people forget it's running."
+          "text": "No. The app is about 5 MB and spends its life doing one cheap thing: glancing at the clipboard twice a second. Most people forget it's running."
         }
       },
       {
@@ -186,7 +190,7 @@
         "name": "How is this different from the built-in macOS clipboard?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "macOS only remembers the last thing you copied. Copy something new and the previous one is gone. Clipboard History keeps the last 1,000 items by default (up to 10,000) so you can paste any of them back with Shift + Command + V."
+          "text": "macOS only remembers the last thing you copied. Copy something new and the previous one is gone. Clipboard History keeps your last 1,000 items by default (adjustable from 100 to 10,000 in Settings) so you can paste any of them back with Shift + Command + V. Starred clips and clips you've put in a group are never auto-removed."
         }
       },
       {
@@ -194,7 +198,7 @@
         "name": "How does it compare to Paste, Maccy, or Alfred's clipboard?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Honestly: it's free, open source, and tiny (~6 MB). Paste is paid and syncs across devices. Maccy is also free and open source — a great alternative if you prefer it. Alfred's clipboard comes bundled with the Powerpack. Clipboard History focuses on doing one thing well, with privacy as the default. If you need iCloud sync between Macs, pick something else."
+          "text": "Honestly: it's free, open source, and tiny (~5 MB). Paste is paid and syncs across devices. Maccy is also free and open source — a great alternative if you prefer it. Alfred's clipboard comes bundled with the Powerpack. Clipboard History focuses on doing one thing well, with privacy as the default. If you need iCloud sync between Macs, pick something else."
         }
       },
       {
@@ -210,23 +214,31 @@
         "name": "Where is my clipboard data stored?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "In a single SQLite file on your Mac at ~/Library/Application Support/Clipboard History/clipboard.sqlite. Nothing is uploaded anywhere. The file is usually a few hundred kilobytes since the app stores the location of large files and screenshots, not a copy."
+          "text": "In a single SQLite file on your Mac at ~/Library/Application Support/Clipboard History/clipboard.sqlite. Nothing is uploaded anywhere. The file is usually a few hundred kilobytes since the app stores the location of large files, not a copy."
         }
       },
       {
         "@type": "Question",
-        "name": "How do I uninstall Clipboard History?",
+        "name": "What about copied files and folders?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at ~/Library/Application Support/Clipboard History."
+          "text": "Files and folders you copy in Finder are saved by reference — the app remembers where each file lives, plus a small preview thumbnail, so a 5 GB video costs a few kilobytes. Return pastes the real file, Command + R reveals it in Finder, and clicking the thumbnail shows a quick preview. If the original gets moved or deleted, the clip is flagged so you're never surprised. One honest limitation: images copied straight to the clipboard — a screenshot captured to clipboard, or a browser's Copy Image — aren't recorded yet. Copy the image as a file and it works."
         }
       },
       {
         "@type": "Question",
-        "name": "What about screenshots and copied files?",
+        "name": "Can I change the shortcut? The theme?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Both are handled. For files you copy in Finder, the app stores the file's location, not a duplicate — so a 5 GB video costs a few kilobytes. Screenshots and images copied from the web are stored as images so you can paste them back into any app."
+          "text": "Both. Record any keyboard shortcut in Settings → General — Shift + Command + V is just the default. And the app follows your choice of System, Light, or Dark appearance: switch it in Settings or with the sun/moon button right inside the overlay."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it start automatically?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. It registers itself as a login item on first launch so your history is always being kept, and you can turn that off in Settings → General. The app lives in your menu bar — there's no Dock icon to clutter things up."
         }
       },
       {
@@ -242,7 +254,15 @@
         "name": "How do updates work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The app is signed and notarized by Apple, so you won't see the scary \"unidentified developer\" warning. Updates are checked in the background and verified by Apple before they install. You can also check manually from the menu bar."
+          "text": "The download is signed and notarized by Apple, so you won't see the scary \"unidentified developer\" warning. The app checks for updates in the background and every update is cryptographically verified before it installs (it uses Sparkle, the standard open-source updater for Mac apps). You can also check manually from the menu bar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I uninstall Clipboard History?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at ~/Library/Application Support/Clipboard History. You can also wipe your history without uninstalling: Settings → Storage → Clear all history."
         }
       }
     ]
@@ -257,7 +277,7 @@
     <main style="max-width:760px;margin:80px auto;padding:0 24px;font-family:system-ui;line-height:1.6;color:#222;">
       <header>
         <h1>Clipboard History for Mac — never lose what you copy</h1>
-        <p>Clipboard History is a free clipboard manager for macOS. It remembers every text, link, image, and file you copy, so you can paste any of it back later. Press <strong>Shift + Command + V</strong> to open your clipboard history.</p>
+        <p>Clipboard History is a free clipboard manager for macOS. It remembers the text, links, files, and folders you copy, so you can paste any of them back later. Press <strong>Shift + Command + V</strong> to open your clipboard history.</p>
         <p>
           <a href="https://github.com/gug007/clipboard-history/releases">Download free for Mac</a> ·
           <a href="https://github.com/gug007/clipboard-history">View on GitHub</a>
@@ -268,12 +288,17 @@
       <section aria-labelledby="ns-features-h">
         <h2 id="ns-features-h">What Clipboard History does</h2>
         <ul>
-          <li>Recalls any text, link, image, or file you've ever copied on your Mac.</li>
-          <li>Opens with one keyboard shortcut — Shift + Command + V by default.</li>
+          <li>Brings back any text, link, or file you've recently copied — your last 1,000 copies by default, configurable from 100 up to 10,000.</li>
+          <li>Opens with one keyboard shortcut — Shift + Command + V by default, changeable to anything in Settings.</li>
+          <li>Instant search: the field is focused the moment the panel opens; it matches text, links, and filenames.</li>
+          <li>Files and folders copied in Finder are saved by reference — with thumbnails, click-to-preview, and Reveal in Finder — and paste back as real files.</li>
+          <li>Star favorites and organize clips into named groups; starred and grouped clips are never auto-removed.</li>
           <li>Works completely offline. Your clipboard history never leaves your computer.</li>
-          <li>Automatically skips items copied from password managers (1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, LastPass).</li>
-          <li>Pauses recording when you're typing into a password field.</li>
-          <li>Lets you star and group your most-used clips.</li>
+          <li>Automatically skips password managers (1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, LastPass) and anything any app marks as confidential on the clipboard.</li>
+          <li>Pause recording any time from the menu bar; it stays paused until you resume.</li>
+          <li>System, Light, and Dark appearance.</li>
+          <li>Opens on the screen you're actually using — even over fullscreen apps.</li>
+          <li>Lives in the menu bar with no Dock icon; starts at login (you can turn that off).</li>
           <li>Free, open source, and ad-free.</li>
         </ul>
       </section>
@@ -283,27 +308,31 @@
         <h3>Is Clipboard History free?</h3>
         <p>Yes. Free, open source, no account, no trial, no ads. The code is on GitHub if you want to look at it.</p>
         <h3>Will it record my passwords?</h3>
-        <p>No. The app skips anything copied from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass. It also pauses recording when you're typing in a password field or sitting at the lock screen. You can add other apps to the skip list in Settings.</p>
+        <p>No. Anything copied from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, or LastPass is skipped. Beyond that list, anything any app marks as concealed or transient on the clipboard — the standard convention password managers follow — is never recorded either. You can add more apps to the skip list in Settings → Privacy, or pause recording entirely from the menu bar.</p>
         <h3>Which Macs does it work on?</h3>
         <p>Any Mac running macOS 14 (Sonoma) or newer. Apple Silicon and Intel both supported.</p>
         <h3>Will it slow down my Mac?</h3>
-        <p>No. The app is about 6 MB and idle most of the time — it just listens for clipboard changes. Most people forget it's running.</p>
+        <p>No. The app is about 5 MB and spends its life doing one cheap thing: glancing at the clipboard twice a second. Most people forget it's running.</p>
         <h3>How is this different from the built-in macOS clipboard?</h3>
-        <p>macOS only remembers the last thing you copied. Copy something new and the previous one is gone. Clipboard History keeps the last 1,000 items by default (up to 10,000) so you can paste any of them back with Shift + Command + V.</p>
+        <p>macOS only remembers the last thing you copied. Copy something new and the previous one is gone. Clipboard History keeps your last 1,000 items by default (adjustable from 100 to 10,000 in Settings) so you can paste any of them back with Shift + Command + V. Starred clips and clips you've put in a group are never auto-removed.</p>
         <h3>How does it compare to Paste, Maccy, or Alfred's clipboard?</h3>
-        <p>Honestly: it's free, open source, and tiny (~6 MB). Paste is paid and syncs across devices. Maccy is also free and open source — a great alternative if you prefer it. Alfred's clipboard comes bundled with the Powerpack. Clipboard History focuses on doing one thing well, with privacy as the default. If you need iCloud sync between Macs, pick something else.</p>
+        <p>Honestly: it's free, open source, and tiny (~5 MB). Paste is paid and syncs across devices. Maccy is also free and open source — a great alternative if you prefer it. Alfred's clipboard comes bundled with the Powerpack. Clipboard History focuses on doing one thing well, with privacy as the default. If you need iCloud sync between Macs, pick something else.</p>
         <h3>Does it sync between my Macs?</h3>
         <p>No, and it won't. Your clipboard often contains passwords, private messages, and tokens — sending that to a server (even Apple's) is a tradeoff we don't want to make on your behalf. Clipboard History stays on the Mac it's installed on.</p>
         <h3>Where is my clipboard data stored?</h3>
-        <p>In a single SQLite file on your Mac at <code>~/Library/Application Support/Clipboard History/clipboard.sqlite</code>. Nothing is uploaded anywhere. The file is usually a few hundred kilobytes since the app stores the location of large files and screenshots, not a copy.</p>
-        <h3>How do I uninstall Clipboard History?</h3>
-        <p>Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at <code>~/Library/Application Support/Clipboard History</code>.</p>
-        <h3>What about screenshots and copied files?</h3>
-        <p>Both are handled. For files you copy in Finder, the app stores the file's location, not a duplicate — so a 5 GB video costs a few kilobytes. Screenshots and images copied from the web are stored as images so you can paste them back into any app.</p>
+        <p>In a single SQLite file on your Mac at <code>~/Library/Application Support/Clipboard History/clipboard.sqlite</code>. Nothing is uploaded anywhere. The file is usually a few hundred kilobytes since the app stores the location of large files, not a copy.</p>
+        <h3>What about copied files and folders?</h3>
+        <p>Files and folders you copy in Finder are saved by reference — the app remembers where each file lives, plus a small preview thumbnail, so a 5 GB video costs a few kilobytes. Return pastes the real file, Command + R reveals it in Finder, and clicking the thumbnail shows a quick preview. If the original gets moved or deleted, the clip is flagged so you're never surprised. One honest limitation: images copied straight to the clipboard — a screenshot captured to clipboard, or a browser's Copy Image — aren't recorded yet. Copy the image as a file and it works.</p>
+        <h3>Can I change the shortcut? The theme?</h3>
+        <p>Both. Record any keyboard shortcut in Settings → General — Shift + Command + V is just the default. And the app follows your choice of System, Light, or Dark appearance: switch it in Settings or with the sun/moon button right inside the overlay.</p>
+        <h3>Does it start automatically?</h3>
+        <p>Yes. It registers itself as a login item on first launch so your history is always being kept, and you can turn that off in Settings → General. The app lives in your menu bar — there's no Dock icon to clutter things up.</p>
         <h3>Why does it need Accessibility permission?</h3>
         <p>So it can paste for you when you press Return on a clip. macOS requires Accessibility access for any app to send keystrokes to another app. If you decline, the clip still lands on your clipboard and you can paste it manually with Command + V.</p>
         <h3>How do updates work?</h3>
-        <p>The app is signed and notarized by Apple, so you won't see the scary "unidentified developer" warning. Updates are checked in the background and verified by Apple before they install. You can also check manually from the menu bar.</p>
+        <p>The download is signed and notarized by Apple, so you won't see the scary "unidentified developer" warning. The app checks for updates in the background and every update is cryptographically verified before it installs (it uses Sparkle, the standard open-source updater for Mac apps). You can also check manually from the menu bar.</p>
+        <h3>How do I uninstall Clipboard History?</h3>
+        <p>Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at <code>~/Library/Application Support/Clipboard History</code>. You can also wipe your history without uninstalling: Settings → Storage → Clear all history.</p>
       </section>
 
       <p><strong>This page uses JavaScript for interactive demos.</strong> The content above is the full feature and FAQ summary.</p>

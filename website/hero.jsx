@@ -21,11 +21,11 @@ function HeroOverlay({ variant = "default" }) {
   }, []);
 
   const entries = [
-    { kind: "url",   icon: <Icon.link/>,  title: "https://github.com/gug007", sub: "Safari · github.com", time: "now",   pinned: false, tag: null },
-    { kind: "code",  icon: <Icon.code/>,  title: "useEffect(() => { const id = setInterval(tick, 1000); return () => clearInterval(id); }, [])", sub: "VS Code · App.tsx", time: "2m",  pinned: true,  tag: "Snippets" },
-    { kind: "text",  icon: <Icon.text/>,  title: "Quick reminder — perf budget for ⇧⌘V → first paint is 80ms. Keep the panel pre-warmed.", sub: "Notes",       time: "12m", pinned: false, tag: null, body: true },
-    { kind: "image", icon: <Icon.image/>, title: "Screenshot 2026-05-04 at 14.22.png", sub: "1482 × 920 · PNG · 412 KB", time: "1h", pinned: false, tag: null, thumb: "screenshots/03-current.jpg" },
-    { kind: "file",  icon: <Icon.doc/>,   title: "Q2-launch-deck.key", sub: "~/Documents · 2.4 GB", time: "3h", pinned: false, tag: "Launch" },
+    { kind: "url",   icon: <Icon.link/>,  title: "https://github.com/gug007/clipboard-history", sub: "Safari", time: "now",   pinned: false, tag: null },
+    { kind: "text",  icon: <Icon.text/>,  title: "Quick reminder — send Dana the signed contract before 3, then book the Lisbon flight.", sub: "Notes", time: "12m", pinned: false, tag: null, body: true },
+    { kind: "file",  icon: <Icon.image/>, title: "Screenshot 2026-06-30 at 14.22.png", sub: "Finder · Desktop · 412 KB", time: "1h", pinned: false, tag: null, thumb: "screenshots/03-current.jpg" },
+    { kind: "file",  icon: <Icon.doc/>,   title: "logo.svg, brief.pdf +3 more", sub: "Finder · 5 items", time: "3h", pinned: false, tag: "Launch" },
+    { kind: "text",  icon: <Icon.text/>,  title: "1247 Oak St, Berkeley CA 94702", sub: "Messages", time: "1d", pinned: true, tag: null },
   ];
 
   return (
@@ -37,7 +37,6 @@ function HeroOverlay({ variant = "default" }) {
       <div className="overlay-tabs" aria-hidden="true">
         <button className="tab-pill active" type="button" tabIndex={-1}>All</button>
         <button className="tab-pill" type="button" tabIndex={-1}><Icon.starOutline/> Favorites</button>
-        <button className="tab-pill" type="button" tabIndex={-1}>Snippets</button>
         <button className="tab-pill" type="button" tabIndex={-1}>Launch</button>
         <button className="tab-pill" type="button" tabIndex={-1} style={{color:"var(--text-3)"}}>+</button>
       </div>
