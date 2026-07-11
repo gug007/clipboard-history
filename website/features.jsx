@@ -1,16 +1,16 @@
 /* global React, Icon */
 
-function FeatureGrid() {
+function FeatureGrid({ paused = false }) {
   return (
     <ul className="features-grid" aria-label="Features">
       {/* Big card: live overlay surface */}
       <li className="feature-card span-8" data-tone="blue">
         <div className="visual" aria-hidden="true">
-          <FeatureSearchDemo/>
+          <FeatureSearchDemo paused={paused}/>
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.search/></div>
         <h3>Find that link from Tuesday in two keystrokes</h3>
-        <p>The search field is already focused when the panel opens — just type. A word or two and the right clip jumps to the top, even one from last week. It looks inside text, links, and filenames. Try "invoice", "Airbnb", or your friend's name.</p>
+        <p>The search field is focused when the panel opens. Type a word or two to find text, links, and filenames — even from last week.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="amber">
@@ -19,7 +19,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
         <h3>One shortcut, every app</h3>
-        <p>Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span> <span className="kbd" aria-hidden="true">⌘</span> <span className="kbd" aria-hidden="true">V</span></span> wherever you are — even in a fullscreen app. Arrow keys to pick, Return to paste, and the cursor never leaves where you were typing. Not your shortcut? Record your own in Settings.</p>
+        <p>Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span> <span className="kbd" aria-hidden="true">⌘</span> <span className="kbd" aria-hidden="true">V</span></span> in any app. Pick with the arrow keys, press Return, and keep typing where you left off.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="teal">
@@ -28,7 +28,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
         <h3>Text, links, files — even whole folders</h3>
-        <p>Everything you copy as text, plus files and folders straight from Finder — with thumbnails, a click-to-peek preview, and <span className="kbd" aria-hidden="true">⌘R</span> to reveal the original. Files paste back as real files, not names.</p>
+        <p>Keep text plus files and folders from Finder, complete with thumbnails and previews. <span className="kbd" role="img" aria-label="Command R">⌘R</span> reveals the original.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="pink">
@@ -37,7 +37,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.star/></div>
         <h3>Star the clips you reach for daily</h3>
-        <p>Your address, your IBAN, that one Slack emoji — star them with <span className="kbd" aria-hidden="true">⌘D</span> or sort them into named group tabs (a clip can live in several). Starred and grouped clips are never cleaned up.</p>
+        <p>Star an address, IBAN, or favorite snippet with <span className="kbd" role="img" aria-label="Command D">⌘D</span>, or sort clips into named groups. They stay until you remove them.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="purple">
@@ -46,7 +46,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.sparkle/></div>
         <h3>No piles of duplicates</h3>
-        <p>Copy the same thing twice in a row and the list doesn't grow — the clip you already have just moves back to the top. Your history stays clean enough to scan at a glance.</p>
+        <p>Copy the same thing twice and its existing clip moves back to the top. Your history stays clean and easy to scan.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="blue">
@@ -55,7 +55,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
         <h3>Opens where you're looking</h3>
-        <p>Two monitors? The panel appears on the screen you're actually using, not a random one. It floats above fullscreen apps too, and dismisses the moment you press <span className="kbd" aria-hidden="true">⎋</span> or click away.</p>
+        <p>The panel follows you to the screen you're using, even over fullscreen apps. Press <span className="kbd" role="img" aria-label="Escape">⎋</span> or click away to dismiss it.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="amber">
@@ -64,7 +64,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.moon/></div>
         <h3>Light, dark, or follow the Mac</h3>
-        <p>Pick System, Light, or Dark in Settings — or tap the sun-and-moon button right inside the panel. Whatever you're working in at 2 a.m., it won't blind you.</p>
+        <p>Choose System, Light, or Dark in Settings, or switch from the panel. Late-night pasting stays easy on the eyes.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="teal">
@@ -73,7 +73,7 @@ function FeatureGrid() {
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
         <h3>Lives quietly in your menu bar</h3>
-        <p>No Dock icon, no windows to manage. It starts with your Mac (switch that off in Settings if you like), and one click on Pause Recording keeps moments off the record until you resume.</p>
+        <p>No Dock icon or windows to manage. Pause recording from the menu bar whenever a moment should stay off the record.</p>
       </li>
     </ul>
   );
@@ -86,11 +86,11 @@ function prefersReducedMotionF() {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function FeatureSearchDemo() {
+function FeatureSearchDemo({ paused = false }) {
   const [phase, setPhase] = React.useState(0);
   // 0: empty, 1: typing 'sup', 2: typing 'supabase'
   React.useEffect(() => {
-    if (prefersReducedMotionF()) return;
+    if (paused || prefersReducedMotionF()) return;
     let i = 0;
     const tick = () => {
       i = (i + 1) % 4;
@@ -98,7 +98,7 @@ function FeatureSearchDemo() {
     };
     const id = setInterval(tick, 1500);
     return () => clearInterval(id);
-  }, []);
+  }, [paused]);
 
   const queries = ["", "su", "supa", "supabase"];
   const q = queries[phase];
@@ -298,7 +298,7 @@ function MenuBarVisual() {
   );
 }
 
-function BeforeAfterDemo() {
+function BeforeAfterDemo({ paused = false }) {
   // Animated demo: two parallel "Mac" mini-screens, one without the app, one with.
   // Cycles through copying 4 items; left side shows only the most recent;
   // right side shows the full growing stack.
@@ -311,10 +311,10 @@ function BeforeAfterDemo() {
 
   const [step, setStep] = React.useState(0);
   React.useEffect(() => {
-    if (prefersReducedMotionF()) return;
+    if (paused || prefersReducedMotionF()) return;
     const id = setInterval(() => setStep(s => (s + 1) % items.length), 1800);
     return () => clearInterval(id);
-  }, []);
+  }, [paused]);
 
   const current = items[step];
 

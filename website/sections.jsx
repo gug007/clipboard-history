@@ -1,4 +1,4 @@
-/* global React, Icon */
+/* global React, Icon, useDownloadUrl */
 
 function PrivacySection() {
   const points = [
@@ -86,17 +86,17 @@ function PrivacySection() {
 
 function CheatsheetSection() {
   const shortcuts = [
-    { label: "Open clipboard history",            keys: [{k:"⇧"}, {k:"⌘"}, {k:"V"}] },
-    { label: "Search",                            keys: [{k:"Just type…", w:true}] },
-    { label: "Move up or down",                   keys: [{k:"↑"}, {k:"↓"}] },
-    { label: "Paste highlighted item",            keys: [{k:"⏎ Return", w:true}] },
-    { label: "Paste item 1–9 directly",           keys: [{k:"⌘"}, {k:"1–9", w:true}] },
-    { label: "Switch tabs — All, Favorites, groups", keys: [{k:"⌥"}, {k:"1–9", w:true}] },
-    { label: "Star or un-star",                   keys: [{k:"⌘"}, {k:"D"}] },
-    { label: "Delete",                            keys: [{k:"⌘"}, {k:"⌫"}] },
-    { label: "Reveal file in Finder",             keys: [{k:"⌘"}, {k:"R"}] },
-    { label: "Jump to Favorites",                 keys: [{k:"⇧"}, {k:"⌘"}, {k:"F"}] },
-    { label: "Close",                             keys: [{k:"⎋ Esc", w:true}] },
+    { label: "Open clipboard history",            spoken: "Shift Command V", keys: [{k:"⇧"}, {k:"⌘"}, {k:"V"}] },
+    { label: "Search",                            spoken: "Just type", keys: [{k:"Just type…", w:true}] },
+    { label: "Move up or down",                   spoken: "Up Arrow or Down Arrow", keys: [{k:"↑"}, {k:"↓"}] },
+    { label: "Paste highlighted item",            spoken: "Return", keys: [{k:"⏎ Return", w:true}] },
+    { label: "Paste item 1–9 directly",           spoken: "Command plus a number from 1 to 9", keys: [{k:"⌘"}, {k:"1–9", w:true}] },
+    { label: "Switch tabs — All, Favorites, groups", spoken: "Option plus a number from 1 to 9", keys: [{k:"⌥"}, {k:"1–9", w:true}] },
+    { label: "Star or un-star",                   spoken: "Command D", keys: [{k:"⌘"}, {k:"D"}] },
+    { label: "Delete",                            spoken: "Command Delete", keys: [{k:"⌘"}, {k:"⌫"}] },
+    { label: "Reveal file in Finder",             spoken: "Command R", keys: [{k:"⌘"}, {k:"R"}] },
+    { label: "Jump to Favorites",                 spoken: "Shift Command F", keys: [{k:"⇧"}, {k:"⌘"}, {k:"F"}] },
+    { label: "Close",                             spoken: "Escape", keys: [{k:"⎋ Esc", w:true}] },
   ];
 
   return (
@@ -112,11 +112,11 @@ function CheatsheetSection() {
             {shortcuts.map((s, i) => (
               <div key={i} className="shortcut-row">
                 <dt className="label">{s.label}</dt>
-                <dd className="keys">
+                <dd className="keys" aria-label={s.spoken}>
                   {s.keys.map((key, j) => (
                     <React.Fragment key={j}>
                       {j > 0 && <span className="plus" aria-hidden="true">+</span>}
-                      <span className={"key-cap" + (key.w ? " wide" : "")}>{key.k}</span>
+                      <span className={"key-cap" + (key.w ? " wide" : "")} aria-hidden="true">{key.k}</span>
                     </React.Fragment>
                   ))}
                 </dd>
@@ -152,11 +152,12 @@ function FAQSection() {
   }
 
   return (
-    <section aria-labelledby="faq-heading">
-      <div className="container" style={{maxWidth: 820}}>
+    <section className="faq-section" aria-labelledby="faq-heading">
+      <div className="container faq-container">
         <div className="section-eyebrow">Common questions</div>
         <h2 id="faq-heading" className="section-title">Questions, answered.</h2>
-        <div className="faq-list" style={{marginTop: 40}}>
+        <p className="section-lede">The practical details — privacy, compatibility, updates, storage, and what to expect after installing.</p>
+        <div className="faq-list">
           {faqs.map((f, i) => (
             <details key={i} className="faq-item" onToggle={onFaqToggle}>
               <summary>{f.q}</summary>
@@ -170,6 +171,7 @@ function FAQSection() {
 }
 
 function DownloadSection() {
+  const downloadUrl = useDownloadUrl();
   return (
     <section className="download" id="download" aria-labelledby="download-heading">
       <div className="container">
@@ -177,8 +179,8 @@ function DownloadSection() {
           <h2 id="download-heading">Stop losing what you copy.</h2>
           <p>Free, open source, offline. Two minutes to install. Uninstall just as fast if it's not for you.</p>
           <div className="hero-actions">
-            <a href="https://github.com/gug007/clipboard-history/releases" className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click')}>
-              <span aria-hidden="true"><Icon.apple/></span> Download for Mac
+            <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click')}>
+              <span aria-hidden="true"><Icon.apple/></span> Download free for Mac
             </a>
             <a href="https://github.com/gug007/clipboard-history" className="btn btn-ghost btn-lg">
               <span aria-hidden="true"><Icon.github/></span> View source on GitHub

@@ -1,4 +1,4 @@
-/* global React, ReactDOM, Icon, HeroOverlay, DesktopMock, BeforeAfterDemo, SocialProof, StickyDownloadBar, FeatureGrid, PrivacySection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
+/* global React, ReactDOM, Icon, DesktopMock, BeforeAfterDemo, SocialProof, StickyDownloadBar, FeatureGrid, PrivacySection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
 const { useState, useEffect } = React;
 
 // Scroll-triggered reveals: tag matching elements with .reveal and observe them.
@@ -35,20 +35,21 @@ function useScrollReveals() {
 
 // Sticky download bar: visible once the hero scrolls out of view.
 function useStickyBarReveal() {
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const bar = document.querySelector(".sticky-download-bar");
     const hero = document.querySelector(".hero");
-    if (!bar || !hero || !("IntersectionObserver" in window)) return;
+    if (!hero || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        bar.classList.toggle("is-visible", !entry.isIntersecting);
+        setVisible(!entry.isIntersecting);
       },
       { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
     );
     io.observe(hero);
     return () => io.disconnect();
   }, []);
+  return visible;
 }
 
 function Nav({ theme, setTheme }) {
@@ -90,15 +91,22 @@ function Nav({ theme, setTheme }) {
           </a>
         </div>
       </div>
+      <div className="container mobile-nav-links" role="group" aria-label="Page sections">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#shortcuts">Shortcuts</a>
+        <a href="#faq">FAQ</a>
+      </div>
     </nav>
   );
 }
 
-function Hero() {
+function Hero({ animationsPaused, onToggleAnimations }) {
   const downloadUrl = useDownloadUrl();
   return (
     <header className="hero" id="top">
       <div className="container">
+        <div className="hero-kicker"><span aria-hidden="true"/> The clipboard macOS should have</div>
         <h1>That moment you copy a new thing and the old one's <em>gone</em>.</h1>
         <p className="hero-sub">
           Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to bring back anything you've copied — text, links, files, whole folders. Your last thousand copies, one keystroke away.
@@ -114,8 +122,17 @@ function Hero() {
         <div className="hero-meta">Free and open source. Works on macOS 14 or later.</div>
         <SocialProof variant="hero"/>
       </div>
-      <div className="hero-stage" aria-hidden="true">
-        <DesktopMock/>
+      <div className="hero-stage">
+        <div aria-hidden="true"><DesktopMock paused={animationsPaused}/></div>
+        <button
+          type="button"
+          className="motion-toggle"
+          onClick={onToggleAnimations}
+          aria-pressed={animationsPaused}
+        >
+          <span aria-hidden="true">{animationsPaused ? "▶" : <Icon.pause/>}</span>
+          {animationsPaused ? "Play demos" : "Pause demos"}
+        </button>
       </div>
     </header>
   );
@@ -150,11 +167,23 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "accent": "#0a84ff"
 }/*EDITMODE-END*/;
 
+function initialTheme() {
+  if (typeof document === "undefined") return TWEAK_DEFAULTS.theme;
+  const theme = document.documentElement.getAttribute("data-theme");
+  return theme === "dark" ? "dark" : "light";
+}
+
 function App() {
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const theme = tweaks.theme;
+  const [theme, setThemeState] = useState(initialTheme);
+  const [animationsPaused, setAnimationsPaused] = useState(false);
+  const stickyBarVisible = useStickyBarReveal();
 
-  const setTheme = (t) => setTweak("theme", t);
+  const setTheme = (t) => {
+    setThemeState(t);
+    setTweak("theme", t);
+    try { window.localStorage.setItem("clipboard-history-theme", t); } catch (_) {}
+  };
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -172,40 +201,53 @@ function App() {
     document.documentElement.style.setProperty("--accent-soft", `rgba(${r},${g},${b},${theme==="dark"?0.18:0.12})`);
   }, [tweaks.accent, theme]);
 
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-animations-paused", animationsPaused);
+  }, [animationsPaused]);
+
   useScrollReveals();
-  useStickyBarReveal();
 
   return (
     <>
       <a href="#main" className="skip-link">Skip to main content</a>
       <Nav theme={theme} setTheme={setTheme}/>
       <main id="main">
-        <Hero/>
+        <Hero
+          animationsPaused={animationsPaused}
+          onToggleAnimations={() => setAnimationsPaused((paused) => !paused)}
+        />
         <section id="why" aria-labelledby="why-heading">
           <div className="container">
-            <div className="section-eyebrow">Before &amp; after</div>
-            <h2 id="why-heading" className="section-title">One shortcut between gone and saved.</h2>
-            <p className="section-lede">
-              Copy a new thing, lose the last one. Or copy three things in a row and need them all. <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> — it's all still there.
-            </p>
-            <BeforeAfterDemo/>
+            <div className="section-intro section-intro-center">
+              <div className="section-eyebrow">Before &amp; after</div>
+              <h2 id="why-heading" className="section-title">One shortcut between gone and saved.</h2>
+              <p className="section-lede">
+                Copy a new thing, lose the last one. Or copy three things in a row and need them all. <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> — it's all still there.
+              </p>
+            </div>
+            <BeforeAfterDemo paused={animationsPaused}/>
           </div>
         </section>
-        <section id="demo" aria-labelledby="demo-heading">
+        <section id="demo" className="demo-section" aria-labelledby="demo-heading">
           <div className="container">
-            <div className="section-eyebrow">See it in action</div>
-            <h2 id="demo-heading" className="section-title">The real thing, in 38 seconds.</h2>
-            <p className="section-lede">
-              Copy a few things, press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span>, pick, paste. That's the whole app.
-            </p>
+            <div className="section-intro section-intro-center">
+              <div className="section-eyebrow">See it in action</div>
+              <h2 id="demo-heading" className="section-title">The real thing, in 38 seconds.</h2>
+              <p className="section-lede">
+                Copy a few things, press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span>, pick, paste. That's the whole app.
+              </p>
+            </div>
             <DemoVideo/>
           </div>
         </section>
-        <section id="features" aria-labelledby="features-heading">
+        <section id="features" className="features-section" aria-labelledby="features-heading">
           <div className="container">
-            <div className="section-eyebrow">What it does</div>
-            <h2 id="features-heading" className="section-title">Everything you copy, kept.</h2>
-            <FeatureGrid/>
+            <div className="section-intro section-intro-center">
+              <div className="section-eyebrow">What it does</div>
+              <h2 id="features-heading" className="section-title">Everything you copy, kept.</h2>
+              <p className="section-lede">Search instantly, keep important clips close, and paste text, links, files, or folders without breaking your flow.</p>
+            </div>
+            <FeatureGrid paused={animationsPaused}/>
           </div>
         </section>
         <div id="privacy"><PrivacySection/></div>
@@ -215,14 +257,14 @@ function App() {
       </main>
       <Footer/>
 
-      <StickyDownloadBar/>
+      <StickyDownloadBar visible={stickyBarVisible}/>
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Appearance">
           <TweakRadio
             label="Theme"
-            value={tweaks.theme}
-            onChange={(v) => setTweak("theme", v)}
+            value={theme}
+            onChange={setTheme}
             options={[
               { value: "light", label: "Light" },
               { value: "dark", label: "Dark" },

@@ -8,17 +8,17 @@ function prefersReducedMotion() {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function HeroOverlay({ variant = "default" }) {
+function HeroOverlay({ variant = "default", paused = false }) {
   // The animated overlay panel — the star of the hero.
   const [selected, setSelected] = useStateH(0);
 
   useEffectH(() => {
-    if (prefersReducedMotion()) return;
+    if (paused || prefersReducedMotion()) return;
     const id = setInterval(() => {
       setSelected((s) => (s + 1) % 5);
     }, 2200);
     return () => clearInterval(id);
-  }, []);
+  }, [paused]);
 
   const entries = [
     { kind: "url",   icon: <Icon.link/>,  title: "https://github.com/gug007/clipboard-history", sub: "Safari", time: "now",   pinned: false, tag: null },
@@ -70,7 +70,7 @@ function HeroOverlay({ variant = "default" }) {
   );
 }
 
-function DesktopMock() {
+function DesktopMock({ paused = false }) {
   return (
     <div className="desktop">
       <div className="menubar">
@@ -110,7 +110,7 @@ function DesktopMock() {
           <div className="placeholder-line med"/>
         </div>
       </div>
-      <HeroOverlay/>
+      <HeroOverlay paused={paused}/>
     </div>
   );
 }

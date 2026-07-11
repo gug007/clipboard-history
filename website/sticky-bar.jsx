@@ -1,16 +1,17 @@
 /* global React, Icon, useLatestRelease */
 
-// Visibility is owned by interactions-designer (`useStickyBarReveal` in
-// app.jsx). They observe `.hero` and toggle `.is-visible` on this element.
-// We just render the structure and styles.
-function StickyDownloadBar() {
+// Visibility is owned by `useStickyBarReveal` in app.jsx. Keep the hidden
+// state out of the keyboard and accessibility trees until the bar is shown.
+function StickyDownloadBar({ visible = false }) {
   const { url, version } = useLatestRelease();
   return (
     <div
-      className="sticky-download-bar"
+      className={"sticky-download-bar" + (visible ? " is-visible" : "")}
       data-component="sticky-download-bar"
       role="region"
       aria-label="Download"
+      aria-hidden={!visible}
+      inert={visible ? undefined : ""}
     >
       <div className="sticky-dl-inner">
         <div className="sticky-dl-text">
@@ -20,6 +21,7 @@ function StickyDownloadBar() {
         <a
           href={url}
           className="btn btn-primary sticky-dl-cta"
+          tabIndex={visible ? 0 : -1}
           onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'sticky-bar' } })}
         >
           <span aria-hidden="true"><Icon.apple/></span>

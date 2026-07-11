@@ -43,6 +43,18 @@
 
   <link rel="preload" as="image" href="screenshots/03-current.jpg" fetchpriority="high"/>
 
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("clipboard-history-theme");
+        const theme = saved === "light" || saved === "dark"
+          ? saved
+          : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (_) {}
+    })();
+  </script>
+
   <link rel="stylesheet" href="site.css"/>
 
   <!-- Plausible: cookie-free, GDPR-compliant analytics. No PII. -->
