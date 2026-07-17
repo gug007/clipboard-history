@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clipboard History Privacy — Local &amp; Offline for Mac</title>
+  <meta name="description" content="Learn how Clipboard History protects copied text and files on Mac: local-only storage, no sync or telemetry, password-manager exclusions, and easy deletion."/>
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1"/>
+  <link rel="canonical" href="https://clipboard-history.cc/privacy/"/>
+  <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/privacy/"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Clipboard History"/>
+  <meta property="og:title" content="Clipboard History privacy — your clipboard stays on your Mac"/>
+  <meta property="og:description" content="Local-only clipboard storage, no sync, no app telemetry, and automatic password-manager exclusions."/>
+  <meta property="og:url" content="https://clipboard-history.cc/privacy/"/>
+  <meta property="og:image" content="https://clipboard-history.cc/og.png"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Clipboard History for Mac showing recent clipboard items"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Clipboard History privacy — local and offline"/>
+  <meta name="twitter:description" content="See what the Mac app stores, skips, and sends."/>
+  <meta name="twitter:image" content="https://clipboard-history.cc/og.png"/>
+  <meta name="theme-color" content="#0a84ff"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a84ff'/%3E%3Cpath fill='white' d='M11 7h10v18H11z'/%3E%3Crect x='13' y='5' width='6' height='4' rx='1' fill='%230a84ff'/%3E%3C/svg%3E"/>
+  <script>(()=>{try{const t=localStorage.getItem("clipboard-history-theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(_){}})();</script>
+  <link rel="stylesheet" href="../site.css"/>
+  <link rel="stylesheet" href="../content.css"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://clipboard-history.cc/privacy/#webpage",
+        "url": "https://clipboard-history.cc/privacy/",
+        "name": "Clipboard History Privacy — Local & Offline for Mac",
+        "description": "How Clipboard History stores, skips, transmits, and deletes clipboard data on macOS.",
+        "inLanguage": "en",
+        "dateModified": "2026-07-17",
+        "about": { "@id": "https://clipboard-history.cc/#software" },
+        "isPartOf": { "@id": "https://clipboard-history.cc/#website" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://clipboard-history.cc/" },
+          { "@type": "ListItem", "position": 2, "name": "Privacy", "item": "https://clipboard-history.cc/privacy/" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="article-site">
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <nav class="nav article-nav" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="Clipboard History home"><span class="brand-mark-text" aria-hidden="true">C</span><span>Clipboard History</span></a>
+      <div class="nav-links"><a href="/#features">Features</a><a href="/privacy/" aria-current="page">Privacy</a><a href="/keyboard-shortcuts/">Shortcuts</a><a href="/uninstall/">Uninstall</a></div>
+      <a class="btn btn-primary" href="https://github.com/gug007/clipboard-history/releases/latest">Download free</a>
+    </div>
+  </nav>
+  <main id="main" class="article-main">
+    <article class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Privacy</li></ol></nav>
+      <header class="article-hero">
+        <div class="article-eyebrow">Privacy overview</div>
+        <h1>Your clipboard stays on your Mac.</h1>
+        <p class="article-lede">Clipboard History stores your copy-and-paste history locally, does not sync it, and automatically ignores confidential clipboard content and supported password managers.</p>
+        <div class="article-meta"><span class="article-pill">No account</span><span class="article-pill">No cloud sync</span><span class="article-pill">No app telemetry</span><span class="article-pill">Updated July 17, 2026</span></div>
+      </header>
+      <div class="article-body">
+        <section aria-labelledby="stored"><h2 id="stored">What the app stores</h2><div class="answer-card"><p><strong>Short answer:</strong> copied text, links, and references to copied files or folders are kept in a local SQLite database on your Mac.</p></div><p>The default history limit is 1,000 items and can be changed from 100 to 10,000 in Settings. Starred clips and clips placed in a group are kept until you remove them.</p><p>Copied files are saved by reference. The app remembers the file location and a small preview thumbnail; it does not duplicate a large file into its database.</p><code class="path">~/Library/Application Support/Clipboard History/clipboard.sqlite</code></section>
+        <section aria-labelledby="skipped"><h2 id="skipped">What the app skips</h2><p>Clipboard History ignores copies from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass. You can add other applications to the skip list in <strong>Settings → Privacy</strong>.</p><p>It also honors the standard concealed and transient clipboard markers used by password managers and privacy-conscious apps. Content marked that way is not recorded, even when the source app is not on the built-in list.</p><div class="article-note neutral"><p>No clipboard manager can identify every secret from its text alone. The strongest protection is the source app marking sensitive copies correctly; you can also pause recording before copying anything private.</p></div></section>
+        <section aria-labelledby="network"><h2 id="network">What leaves your Mac</h2><p><strong>Your clipboard history is not uploaded or synced.</strong> The Mac app has no account system and no product telemetry. It connects for its software update check so it can find signed releases.</p><p>This website uses Plausible for aggregate, cookie-free traffic measurement. Website analytics are separate from the Mac app and never include the contents of your clipboard database.</p></section>
+        <section aria-labelledby="control"><h2 id="control">Your controls</h2><ul><li><strong>Pause recording:</strong> choose Pause Recording from the menu bar. The app stays paused across restarts until you resume.</li><li><strong>Clear history:</strong> open <strong>Settings → Storage → Clear all history</strong>.</li><li><strong>Remove stored data:</strong> quit and uninstall the app, then delete its Application Support folder if you want a complete removal.</li></ul><p>For exact removal steps, follow the <a href="/uninstall/">Clipboard History uninstall guide</a>.</p></section>
+        <aside class="article-cta"><h2>Private by default. Useful by design.</h2><p>Free, open source, and built for macOS 14 or later.</p><div class="article-actions"><a class="btn btn-primary btn-lg" href="https://github.com/gug007/clipboard-history/releases/latest">Download free for Mac</a><a class="btn btn-ghost btn-lg" href="https://github.com/gug007/clipboard-history">Inspect the source</a></div></aside>
+      </div>
+    </article>
+  </main>
+  <footer class="foot"><div class="container foot-inner"><div>© 2026 Clipboard History · MIT License</div><nav class="foot-links" aria-label="Footer"><a href="/">Home</a><a href="/keyboard-shortcuts/">Shortcuts</a><a href="/uninstall/">Uninstall</a><a href="https://github.com/gug007/clipboard-history">GitHub</a></nav></div></footer>
+</body>
+</html>

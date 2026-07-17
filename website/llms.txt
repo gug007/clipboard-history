@@ -15,6 +15,9 @@ Key facts:
 - [Home](https://clipboard-history.cc/) — product overview, features, and FAQ
 - [Features](https://clipboard-history.cc/#features) — full list of capabilities
 - [FAQ](https://clipboard-history.cc/#faq) — common questions about privacy, compatibility, and cost
+- [Privacy](https://clipboard-history.cc/privacy/) — local storage, password-manager exclusions, network behavior, and data controls
+- [Keyboard shortcuts](https://clipboard-history.cc/keyboard-shortcuts/) — complete shortcut reference and keyboard-only workflow
+- [Uninstall guide](https://clipboard-history.cc/uninstall/) — remove the app, stored clipboard database, and Accessibility permission
 
 ## Download
 

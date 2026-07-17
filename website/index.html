@@ -8,11 +8,15 @@
 
   <!-- Primary meta -->
   <title>Clipboard History for Mac — Never lose what you copy</title>
-  <meta name="description" content="Free, open-source clipboard manager for Mac. Press Shift+Command+V to bring back any text, link, or file you've copied. Works offline, skips passwords, keeps your last 1,000 copies."/>
+  <meta name="description" content="Free, open-source clipboard manager for Mac. Restore copied text, links, files, and folders with Shift-Command-V. Works offline and skips passwords."/>
   <meta name="robots" content="index,follow,max-image-preview:large"/>
+  <meta name="googlebot" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
   <meta name="author" content="Clipboard History"/>
   <meta name="format-detection" content="telephone=no"/>
   <link rel="canonical" href="https://clipboard-history.cc/"/>
+  <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/"/>
+  <link rel="alternate" hreflang="x-default" href="https://clipboard-history.cc/"/>
+  <link rel="alternate" type="text/plain" href="https://clipboard-history.cc/llms.txt" title="Clipboard History product information"/>
 
   <!-- Apple mobile -->
   <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -25,6 +29,8 @@
   <meta property="og:title" content="Clipboard History for Mac — Never lose what you copy"/>
   <meta property="og:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Bring back any text, link, or file you've copied with Shift + Command + V. Works offline."/>
   <meta property="og:image" content="https://clipboard-history.cc/og.png"/>
+  <meta property="og:image:secure_url" content="https://clipboard-history.cc/og.png"/>
+  <meta property="og:image:type" content="image/png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, text, and files"/>
@@ -65,18 +71,22 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": "https://clipboard-history.cc/#software",
     "name": "Clipboard History",
     "operatingSystem": "macOS 14.0 or later",
     "applicationCategory": "ProductivityApplication",
     "applicationSubCategory": "Clipboard Manager",
     "description": "A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, files, whole folders. Works offline. Skips passwords automatically.",
     "url": "https://clipboard-history.cc/",
+    "image": "https://clipboard-history.cc/og.png",
     "downloadUrl": "https://github.com/gug007/clipboard-history/releases",
     "installUrl": "https://github.com/gug007/clipboard-history/releases/download/v0.0.26/ClipboardHistory-0.0.26.dmg",
     "softwareVersion": "0.0.26",
     "releaseNotes": "https://github.com/gug007/clipboard-history/releases",
     "fileSize": "5 MB",
     "permissions": "Accessibility",
+    "isAccessibleForFree": true,
+    "softwareRequirements": "macOS 14 Sonoma or later; Apple Silicon or Intel Mac",
     "screenshot": [
       "https://clipboard-history.cc/screenshots/01-current.jpg",
       "https://clipboard-history.cc/screenshots/02-current.jpg",
@@ -88,7 +98,9 @@
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "USD"
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://github.com/gug007/clipboard-history/releases/latest"
     },
     "author": {
       "@type": "Organization",
@@ -116,6 +128,7 @@
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://clipboard-history.cc/#organization",
     "name": "Clipboard History",
     "url": "https://clipboard-history.cc/",
     "logo": "https://clipboard-history.cc/og.png",
@@ -130,6 +143,7 @@
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://clipboard-history.cc/#website",
     "name": "Clipboard History",
     "url": "https://clipboard-history.cc/",
     "inLanguage": "en",
@@ -284,15 +298,17 @@
   <script defer src="dist/app.js"></script>
 </head>
 <body>
-  <!-- SEO: full content visible to crawlers without JS execution -->
-  <noscript>
-    <main style="max-width:760px;margin:80px auto;padding:0 24px;font-family:system-ui;line-height:1.6;color:#222;">
+  <!-- Static first render: core content is crawlable and usable before JavaScript loads. -->
+  <div id="root">
+    <main class="seo-fallback">
       <header>
         <h1>Clipboard History for Mac — never lose what you copy</h1>
         <p>Clipboard History is a free clipboard manager for macOS. It remembers the text, links, files, and folders you copy, so you can paste any of them back later. Press <strong>Shift + Command + V</strong> to open your clipboard history.</p>
         <p>
           <a href="https://github.com/gug007/clipboard-history/releases">Download free for Mac</a> ·
-          <a href="https://github.com/gug007/clipboard-history">View on GitHub</a>
+          <a href="https://github.com/gug007/clipboard-history">View on GitHub</a> ·
+          <a href="/privacy/">Privacy details</a> ·
+          <a href="/keyboard-shortcuts/">Keyboard shortcuts</a>
         </p>
         <p><em>Requires macOS 14 (Sonoma) or later. Apple Silicon and Intel Macs supported. Free and open source.</em></p>
       </header>
@@ -347,10 +363,8 @@
         <p>Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at <code>~/Library/Application Support/Clipboard History</code>. You can also wipe your history without uninstalling: Settings → Storage → Clear all history.</p>
       </section>
 
-      <p><strong>This page uses JavaScript for interactive demos.</strong> The content above is the full feature and FAQ summary.</p>
+      <p><strong>This page uses JavaScript for interactive demos.</strong> The content above is the full feature and FAQ summary. See the <a href="/uninstall/">uninstall guide</a> if you need to remove the app or its stored history.</p>
     </main>
-  </noscript>
-
-  <div id="root"></div>
+  </div>
 </body>
 </html>

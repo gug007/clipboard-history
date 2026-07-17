@@ -124,6 +124,34 @@ button { font-family: inherit; }
   padding: 0 var(--gutter);
 }
 
+.section-more {
+  margin: 18px 0 0;
+  color: var(--accent-text);
+  font-size: 15px;
+  font-weight: 650;
+}
+.section-more a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Meaningful first render while the interactive homepage bundle loads. */
+.seo-fallback {
+  max-width: 760px;
+  margin: 80px auto;
+  padding: 0 24px;
+  color: var(--text);
+  line-height: 1.65;
+}
+.seo-fallback h1 {
+  max-width: 680px;
+  margin: 0 0 20px;
+  font-size: clamp(38px, 7vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+.seo-fallback h2 { margin-top: 48px; letter-spacing: -0.025em; }
+.seo-fallback h3 { margin: 28px 0 6px; }
+.seo-fallback p, .seo-fallback li { color: var(--text-2); }
+.seo-fallback a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; }
+
 /* ─── Nav ─────────────────────────────────────────────── */
 
 .nav {

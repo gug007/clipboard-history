@@ -46,6 +46,7 @@ function PrivacySection() {
         <p className="section-lede">
           Your clipboard has private things in it — an address, a card number, that message you almost sent. The app treats it that way.
         </p>
+        <p className="section-more"><a href="/privacy/">Read the complete privacy overview <span aria-hidden="true">→</span></a></p>
 
         <div className="privacy-grid">
           <ul className="privacy-points" aria-label="Privacy guarantees">
@@ -107,6 +108,7 @@ function CheatsheetSection() {
         <p className="section-lede">
           You never have to touch the mouse. And <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> is just the default — record any shortcut you like in Settings.
         </p>
+        <p className="section-more"><a href="/keyboard-shortcuts/">Open the keyboard shortcuts guide <span aria-hidden="true">→</span></a></p>
         <div className="cheatsheet">
           <dl className="shortcut-grid">
             {shortcuts.map((s, i) => (
@@ -206,8 +208,9 @@ function Footer() {
         <nav className="foot-links" aria-label="Footer">
           <a href="https://github.com/gug007/clipboard-history">GitHub</a>
           <a href="https://github.com/gug007/clipboard-history/releases">Releases</a>
-          <a href="https://github.com/gug007/clipboard-history/blob/main/README.md">Docs</a>
-          <a href="#privacy">Privacy</a>
+          <a href="/keyboard-shortcuts/">Shortcuts</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/uninstall/">Uninstall</a>
         </nav>
       </div>
     </footer>
