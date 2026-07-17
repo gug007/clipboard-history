@@ -90,6 +90,7 @@ if [ -f "$APPCAST" ]; then
     sed -i '' -E "s|const FALLBACK_VERSION = \"[^\"]*\"|const FALLBACK_VERSION = \"$VERSION\"|" "$CONCAT"
     sed -i '' -E "s|\"softwareVersion\": \"[^\"]*\"|\"softwareVersion\": \"$VERSION\"|" "$ROOT/index.html"
     if [ -n "$DMG_URL" ]; then
+      sed -i '' -E "s|const FALLBACK_DOWNLOAD_URL = \"[^\"]*\"|const FALLBACK_DOWNLOAD_URL = \"$DMG_URL\"|" "$CONCAT"
       sed -i '' -E "s|\"installUrl\": \"[^\"]*\"|\"installUrl\": \"$DMG_URL\"|" "$ROOT/index.html"
     fi
     if [ -n "$DMG_BYTES" ]; then
@@ -118,6 +119,12 @@ npx --yes --package=esbuild@0.28.0 esbuild "$BUILD/bundle.jsx" \
   --loader:.jsx=jsx \
   --define:process.env.NODE_ENV='"production"' \
   --outfile="$DIST/app.js" \
+  --legal-comments=none
+
+# Keep the readable stylesheet as source and ship a minified copy.
+npx --yes --package=esbuild@0.28.0 esbuild "$ROOT/site.css" \
+  --minify \
+  --outfile="$DIST/site.css" \
   --legal-comments=none
 
 SIZE=$(wc -c < "$DIST/app.js" | tr -d ' ')

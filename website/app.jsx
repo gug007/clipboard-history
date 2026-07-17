@@ -1,5 +1,5 @@
 /* global React, ReactDOM, Icon, DesktopMock, BeforeAfterDemo, SocialProof, StickyDownloadBar, FeatureGrid, PrivacySection, CheatsheetSection, FAQSection, DownloadSection, Footer, useTweaks, useDownloadUrl, TweaksPanel, TweakSection, TweakRadio, TweakColor */
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 // Scroll-triggered reveals: tag matching elements with .reveal and observe them.
 // Skipped entirely when the user prefers reduced motion.
@@ -86,7 +86,7 @@ function Nav({ theme, setTheme }) {
           >
             <span aria-hidden="true">{theme === "dark" ? <Icon.sun/> : <Icon.moon/>}</span>
           </button>
-          <a href={downloadUrl} className="btn btn-primary">
+          <a href={downloadUrl} className="btn btn-primary" onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'nav' } })}>
             <span aria-hidden="true"><Icon.download/></span> Download
           </a>
         </div>
@@ -106,17 +106,17 @@ function Hero({ animationsPaused, onToggleAnimations }) {
   return (
     <header className="hero" id="top">
       <div className="container">
-        <div className="hero-kicker"><span aria-hidden="true"/> The clipboard macOS should have</div>
-        <h1>That moment you copy a new thing and the old one's <em>gone</em>.</h1>
+        <div className="hero-kicker"><span aria-hidden="true"/> Free clipboard manager for Mac</div>
+        <h1><em>Never lose</em> what you copy on your Mac.</h1>
         <p className="hero-sub">
-          Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to bring back anything you've copied — text, links, files, whole folders. Your last thousand copies, one keystroke away.
+          Clipboard History keeps text, links, files, and folders ready to paste again. Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to find any of your last thousand copies instantly.
         </p>
         <div className="hero-actions">
-          <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click')}>
+          <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'hero' } })}>
             <span aria-hidden="true"><Icon.apple/></span> Download free for Mac
           </a>
-          <a href="https://github.com/gug007/clipboard-history" className="btn btn-ghost btn-lg">
-            <span aria-hidden="true"><Icon.github/></span> View on GitHub
+          <a href="#demo" className="btn btn-ghost btn-lg" onClick={() => window.plausible && window.plausible('Demo Intent')}>
+            <span aria-hidden="true"><Icon.bolt/></span> Watch 38-second demo
           </a>
         </div>
         <div className="hero-meta">Free and open source. Works on macOS 14 or later.</div>
@@ -138,24 +138,54 @@ function Hero({ animationsPaused, onToggleAnimations }) {
   );
 }
 
-function DemoVideo() {
+function DemoVideo({ paused = false }) {
   // Autoplay only for users who haven't asked for reduced motion; everyone
   // else gets a tap-to-play video with controls.
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const frameRef = useRef(null);
+  const videoRef = useRef(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || !("IntersectionObserver" in window)) {
+      setShouldLoad(true);
+      return;
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setShouldLoad(true);
+        io.disconnect();
+      }
+    }, { rootMargin: "240px 0px" });
+    io.observe(frame);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !shouldLoad) return;
+    if (paused) video.pause();
+    else if (!reduced) video.play().catch(() => {});
+  }, [paused, reduced, shouldLoad]);
+
   return (
-    <div className="demo-video-frame">
+    <div className="demo-video-frame" ref={frameRef}>
       <video
+        ref={videoRef}
         className="demo-video"
-        src="uploads/clipboard-history-demo.mp4"
+        src={shouldLoad ? "uploads/clipboard-history-demo.mp4" : undefined}
+        poster="uploads/clipboard-history-demo-poster.webp"
         muted
         loop
         playsInline
         controls
-        autoPlay={!reduced}
-        preload={reduced ? "metadata" : "auto"}
+        autoPlay={shouldLoad && !reduced && !paused}
+        preload={shouldLoad ? "metadata" : "none"}
+        onPlay={() => window.plausible && window.plausible('Demo Play')}
         aria-label="Screen recording: pressing Shift Command V opens the clipboard history panel; an earlier clip is selected with the arrow keys and pasted with Return."
       />
     </div>
@@ -216,18 +246,6 @@ function App() {
           animationsPaused={animationsPaused}
           onToggleAnimations={() => setAnimationsPaused((paused) => !paused)}
         />
-        <section id="why" aria-labelledby="why-heading">
-          <div className="container">
-            <div className="section-intro section-intro-center">
-              <div className="section-eyebrow">Before &amp; after</div>
-              <h2 id="why-heading" className="section-title">One shortcut between gone and saved.</h2>
-              <p className="section-lede">
-                Copy a new thing, lose the last one. Or copy three things in a row and need them all. <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> — it's all still there.
-              </p>
-            </div>
-            <BeforeAfterDemo paused={animationsPaused}/>
-          </div>
-        </section>
         <section id="demo" className="demo-section" aria-labelledby="demo-heading">
           <div className="container">
             <div className="section-intro section-intro-center">
@@ -237,7 +255,7 @@ function App() {
                 Copy a few things, press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span>, pick, paste. That's the whole app.
               </p>
             </div>
-            <DemoVideo/>
+            <DemoVideo paused={animationsPaused}/>
           </div>
         </section>
         <section id="features" className="features-section" aria-labelledby="features-heading">

@@ -22,7 +22,7 @@ function StickyDownloadBar({ visible = false }) {
           href={url}
           className="btn btn-primary sticky-dl-cta"
           tabIndex={visible ? 0 : -1}
-          onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'sticky-bar' } })}
+          onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'sticky' } })}
         >
           <span aria-hidden="true"><Icon.apple/></span>
           <span>Download</span>

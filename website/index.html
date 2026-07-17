@@ -12,6 +12,7 @@
   <meta name="robots" content="index,follow,max-image-preview:large"/>
   <meta name="googlebot" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
   <meta name="author" content="Clipboard History"/>
+  <meta name="application-name" content="Clipboard History"/>
   <meta name="format-detection" content="telephone=no"/>
   <link rel="canonical" href="https://clipboard-history.cc/"/>
   <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/"/>
@@ -28,8 +29,8 @@
   <meta property="og:url" content="https://clipboard-history.cc/"/>
   <meta property="og:title" content="Clipboard History for Mac — Never lose what you copy"/>
   <meta property="og:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Bring back any text, link, or file you've copied with Shift + Command + V. Works offline."/>
-  <meta property="og:image" content="https://clipboard-history.cc/og.png"/>
-  <meta property="og:image:secure_url" content="https://clipboard-history.cc/og.png"/>
+  <meta property="og:image" content="https://clipboard-history.cc/og-v2.png"/>
+  <meta property="og:image:secure_url" content="https://clipboard-history.cc/og-v2.png"/>
   <meta property="og:image:type" content="image/png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
@@ -41,7 +42,7 @@
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Clipboard History for Mac — Never lose what you copy"/>
   <meta name="twitter:description" content="Clipboard History for Mac: the free clipboard manager with full copy-paste history. Bring back anything you've copied with Shift + Command + V."/>
-  <meta name="twitter:image" content="https://clipboard-history.cc/og.png"/>
+  <meta name="twitter:image" content="https://clipboard-history.cc/og-v2.png"/>
   <meta name="twitter:image:alt" content="Clipboard History for Mac — overlay showing recent clipboard items including links, text, and files"/>
 
   <!-- Favicons -->
@@ -61,9 +62,10 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="site.css"/>
+  <link rel="stylesheet" href="dist/site.css"/>
 
   <!-- Plausible: cookie-free, GDPR-compliant analytics. No PII. -->
+  <link rel="preconnect" href="https://plausible.io" crossorigin/>
   <script defer data-domain="clipboard-history.cc" src="https://plausible.io/js/script.outbound-links.js"></script>
 
   <!-- Structured data: SoftwareApplication -->
@@ -78,7 +80,7 @@
     "applicationSubCategory": "Clipboard Manager",
     "description": "A free clipboard manager for Mac. Press Shift + Command + V to bring back anything you've copied — text, links, files, whole folders. Works offline. Skips passwords automatically.",
     "url": "https://clipboard-history.cc/",
-    "image": "https://clipboard-history.cc/og.png",
+    "image": "https://clipboard-history.cc/og-v2.png",
     "downloadUrl": "https://github.com/gug007/clipboard-history/releases",
     "installUrl": "https://github.com/gug007/clipboard-history/releases/download/v0.0.26/ClipboardHistory-0.0.26.dmg",
     "softwareVersion": "0.0.26",
@@ -162,7 +164,7 @@
     "@type": "VideoObject",
     "name": "Clipboard History demo — open with Shift + Command + V",
     "description": "Short demo of Clipboard History on macOS: pressing Shift + Command + V opens the clipboard history overlay, an earlier clip is picked with the arrow keys and pasted with Return.",
-    "thumbnailUrl": "https://clipboard-history.cc/og.png",
+    "thumbnailUrl": "https://clipboard-history.cc/uploads/clipboard-history-demo-poster.webp",
     "contentUrl": "https://clipboard-history.cc/uploads/clipboard-history-demo.mp4",
     "uploadDate": "2026-05-05",
     "publisher": {
@@ -309,6 +311,7 @@
           <a href="https://github.com/gug007/clipboard-history">View on GitHub</a> ·
           <a href="/privacy/">Privacy details</a> ·
           <a href="/keyboard-shortcuts/">Keyboard shortcuts</a>
+          · <a href="/faq/">Help and FAQ</a>
         </p>
         <p><em>Requires macOS 14 (Sonoma) or later. Apple Silicon and Intel Macs supported. Free and open source.</em></p>
       </header>

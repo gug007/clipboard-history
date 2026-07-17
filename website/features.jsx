@@ -40,15 +40,6 @@ function FeatureGrid({ paused = false }) {
         <p>Star an address, IBAN, or favorite snippet with <span className="kbd" role="img" aria-label="Command D">⌘D</span>, or sort clips into named groups. They stay until you remove them.</p>
       </li>
 
-      <li className="feature-card span-4" data-tone="purple">
-        <div className="visual" aria-hidden="true">
-          <DedupVisual/>
-        </div>
-        <div className="feature-icon" aria-hidden="true"><Icon.sparkle/></div>
-        <h3>No piles of duplicates</h3>
-        <p>Copy the same thing twice and its existing clip moves back to the top. Your history stays clean and easy to scan.</p>
-      </li>
-
       <li className="feature-card span-4" data-tone="blue">
         <div className="visual" aria-hidden="true">
           <ScreensVisual/>
@@ -56,15 +47,6 @@ function FeatureGrid({ paused = false }) {
         <div className="feature-icon" aria-hidden="true"><Icon.bolt/></div>
         <h3>Opens where you're looking</h3>
         <p>The panel follows you to the screen you're using, even over fullscreen apps. Press <span className="kbd" role="img" aria-label="Escape">⎋</span> or click away to dismiss it.</p>
-      </li>
-
-      <li className="feature-card span-4" data-tone="amber">
-        <div className="visual" aria-hidden="true">
-          <ThemesVisual/>
-        </div>
-        <div className="feature-icon" aria-hidden="true"><Icon.moon/></div>
-        <h3>Light, dark, or follow the Mac</h3>
-        <p>Choose System, Light, or Dark in Settings, or switch from the panel. Late-night pasting stays easy on the eyes.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="teal">

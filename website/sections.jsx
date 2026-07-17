@@ -86,46 +86,30 @@ function PrivacySection() {
 }
 
 function CheatsheetSection() {
-  const shortcuts = [
-    { label: "Open clipboard history",            spoken: "Shift Command V", keys: [{k:"⇧"}, {k:"⌘"}, {k:"V"}] },
-    { label: "Search",                            spoken: "Just type", keys: [{k:"Just type…", w:true}] },
-    { label: "Move up or down",                   spoken: "Up Arrow or Down Arrow", keys: [{k:"↑"}, {k:"↓"}] },
-    { label: "Paste highlighted item",            spoken: "Return", keys: [{k:"⏎ Return", w:true}] },
-    { label: "Paste item 1–9 directly",           spoken: "Command plus a number from 1 to 9", keys: [{k:"⌘"}, {k:"1–9", w:true}] },
-    { label: "Switch tabs — All, Favorites, groups", spoken: "Option plus a number from 1 to 9", keys: [{k:"⌥"}, {k:"1–9", w:true}] },
-    { label: "Star or un-star",                   spoken: "Command D", keys: [{k:"⌘"}, {k:"D"}] },
-    { label: "Delete",                            spoken: "Command Delete", keys: [{k:"⌘"}, {k:"⌫"}] },
-    { label: "Reveal file in Finder",             spoken: "Command R", keys: [{k:"⌘"}, {k:"R"}] },
-    { label: "Jump to Favorites",                 spoken: "Shift Command F", keys: [{k:"⇧"}, {k:"⌘"}, {k:"F"}] },
-    { label: "Close",                             spoken: "Escape", keys: [{k:"⎋ Esc", w:true}] },
+  const steps = [
+    { n: "01", title: "Copy normally", body: "Keep using Command + C in any Mac app. Clipboard History quietly remembers each copy." },
+    { n: "02", title: "Press Shift + Command + V", body: "The history panel opens over the app you're using, with search ready immediately." },
+    { n: "03", title: "Find it and press Return", body: "Type a word, choose with the arrow keys, and paste without breaking your flow." },
   ];
 
   return (
     <section aria-labelledby="shortcuts-heading">
       <div className="container">
-        <div className="section-eyebrow">Keyboard shortcuts</div>
-        <h2 id="shortcuts-heading" className="section-title">Built for fast hands.</h2>
+        <div className="section-eyebrow">How it works</div>
+        <h2 id="shortcuts-heading" className="section-title">Copy. Find. Paste.</h2>
         <p className="section-lede">
-          You never have to touch the mouse. And <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> is just the default — record any shortcut you like in Settings.
+          Three simple steps, entirely from the keyboard. The default shortcut is customizable whenever you want it to be.
         </p>
-        <p className="section-more"><a href="/keyboard-shortcuts/">Open the keyboard shortcuts guide <span aria-hidden="true">→</span></a></p>
-        <div className="cheatsheet">
-          <dl className="shortcut-grid">
-            {shortcuts.map((s, i) => (
-              <div key={i} className="shortcut-row">
-                <dt className="label">{s.label}</dt>
-                <dd className="keys" aria-label={s.spoken}>
-                  {s.keys.map((key, j) => (
-                    <React.Fragment key={j}>
-                      {j > 0 && <span className="plus" aria-hidden="true">+</span>}
-                      <span className={"key-cap" + (key.w ? " wide" : "")} aria-hidden="true">{key.k}</span>
-                    </React.Fragment>
-                  ))}
-                </dd>
-              </div>
-            ))}
-          </dl>
+        <div className="workflow-grid">
+          {steps.map((step) => (
+            <article className="workflow-step" key={step.n}>
+              <span className="workflow-number" aria-hidden="true">{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </article>
+          ))}
         </div>
+        <p className="section-more section-more-center"><a href="/keyboard-shortcuts/">See every keyboard shortcut <span aria-hidden="true">→</span></a></p>
       </div>
     </section>
   );
@@ -149,6 +133,8 @@ function FAQSection() {
     { q: "How do I uninstall Clipboard History?", a: "Quit the app from the menu bar, then drag Clipboard History from your Applications folder to the Trash. To remove your stored history too, delete the folder at ~/Library/Application Support/Clipboard History. You can also wipe your history without uninstalling: Settings → Storage → Clear all history." },
   ];
 
+  const [showAll, setShowAll] = React.useState(false);
+
   function onFaqToggle(e) {
     if (e.target.open) window.plausible && window.plausible('FAQ Expand');
   }
@@ -161,11 +147,15 @@ function FAQSection() {
         <p className="section-lede">The practical details — privacy, compatibility, updates, storage, and what to expect after installing.</p>
         <div className="faq-list">
           {faqs.map((f, i) => (
-            <details key={i} className="faq-item" onToggle={onFaqToggle}>
+            <details key={i} className="faq-item" onToggle={onFaqToggle} hidden={i >= 6 && !showAll}>
               <summary>{f.q}</summary>
               <p>{f.a}</p>
             </details>
           ))}
+        </div>
+        <div className="faq-actions">
+          {!showAll && <button type="button" className="btn btn-ghost" onClick={() => setShowAll(true)}>Show 8 more answers</button>}
+          <a className="section-more" href="/faq/">Open the complete help guide <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
@@ -181,7 +171,7 @@ function DownloadSection() {
           <h2 id="download-heading">Stop losing what you copy.</h2>
           <p>Free, open source, offline. Two minutes to install. Uninstall just as fast if it's not for you.</p>
           <div className="hero-actions">
-            <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click')}>
+            <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'closing' } })}>
               <span aria-hidden="true"><Icon.apple/></span> Download free for Mac
             </a>
             <a href="https://github.com/gug007/clipboard-history" className="btn btn-ghost btn-lg">
@@ -209,8 +199,10 @@ function Footer() {
           <a href="https://github.com/gug007/clipboard-history">GitHub</a>
           <a href="https://github.com/gug007/clipboard-history/releases">Releases</a>
           <a href="/keyboard-shortcuts/">Shortcuts</a>
+          <a href="/faq/">FAQ</a>
           <a href="/privacy/">Privacy</a>
           <a href="/uninstall/">Uninstall</a>
+          <a href="https://github.com/gug007/clipboard-history/issues">Support</a>
         </nav>
       </div>
     </footer>
