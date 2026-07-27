@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Is Clipboard History Safe? Security for Mac</title>
+  <meta name="description" content="See how Clipboard History for Mac stores copied data, skips passwords, uses Accessibility permission, checks for updates, and where its security limits are."/>
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1"/>
+  <link rel="canonical" href="https://clipboard-history.cc/security/"/>
+  <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/security/"/>
+  <link rel="alternate" hreflang="x-default" href="https://clipboard-history.cc/security/"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Clipboard History"/>
+  <meta property="og:title" content="Clipboard History security—what it protects and what it cannot"/>
+  <meta property="og:description" content="A transparent explanation of local storage, password exclusions, app permissions, update checks, and the limits of clipboard-manager security."/>
+  <meta property="og:url" content="https://clipboard-history.cc/security/"/>
+  <meta property="og:image" content="https://clipboard-history.cc/og-v2.png"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Clipboard History for Mac showing recent clipboard items"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Is Clipboard History safe?"/>
+  <meta name="twitter:description" content="Local storage and password exclusions explained, with the important limitations made clear."/>
+  <meta name="twitter:image" content="https://clipboard-history.cc/og-v2.png"/>
+  <meta name="theme-color" content="#0a84ff"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <script>(()=>{try{const t=localStorage.getItem("clipboard-history-theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(_){}})();</script>
+  <link rel="stylesheet" href="../dist/site.css"/>
+  <link rel="stylesheet" href="../content.css"/>
+  <link rel="stylesheet" href="/analytics-consent.css"/>
+  <script defer src="/analytics.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": "https://clipboard-history.cc/security/#article",
+        "headline": "Is Clipboard History Safe? Security for Mac",
+        "description": "Clipboard History's data storage, password exclusions, permissions, network use, update security, and limitations.",
+        "url": "https://clipboard-history.cc/security/",
+        "datePublished": "2026-07-27",
+        "dateModified": "2026-07-27",
+        "inLanguage": "en",
+        "author": { "@id": "https://clipboard-history.cc/#organization" },
+        "publisher": { "@id": "https://clipboard-history.cc/#organization" },
+        "image": "https://clipboard-history.cc/og-v2.png",
+        "about": { "@id": "https://clipboard-history.cc/#software" },
+        "mainEntityOfPage": "https://clipboard-history.cc/security/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://clipboard-history.cc/" },
+          { "@type": "ListItem", "position": 2, "name": "Security", "item": "https://clipboard-history.cc/security/" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="article-site">
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <nav class="nav article-nav" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="Clipboard History home"><span class="brand-mark-text" aria-hidden="true">C</span><span>Clipboard History</span></a>
+      <div class="nav-links"><a href="/mac-clipboard-history/">Mac guide</a><a href="/best-free-clipboard-managers-mac/">Compare</a><a href="/security/" aria-current="page">Security</a><a href="/faq/">FAQ</a></div>
+      <a class="btn btn-primary" href="/download/">Download free</a>
+    </div>
+  </nav>
+  <main id="main" class="article-main">
+    <article class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Security</li></ol></nav>
+      <header class="article-hero">
+        <div class="article-eyebrow">Security model</div>
+        <h1>Your clipboard is sensitive. Treat it that way.</h1>
+        <p class="article-lede">Clipboard History keeps data on your Mac, skips common secret-bearing copies, and publishes its source. No clipboard manager can make recording every copy risk-free.</p>
+        <div class="article-meta"><span class="article-pill">Local-only</span><span class="article-pill">Open source</span><span class="article-pill">No app telemetry</span><span class="article-pill">Updated July 27, 2026</span></div>
+      </header>
+      <div class="article-body">
+        <section aria-labelledby="short-answer">
+          <h2 id="short-answer">The short answer</h2>
+          <div class="answer-card"><p>Clipboard History is designed to reduce exposure: it has no account or cloud sync, stores history locally, ignores supported password managers and concealed clipboard types, and lets you pause or clear recording. But the local database is not a password vault, and Accessibility is a powerful permission.</p></div>
+          <p>Whether it is appropriate depends on your threat model. It is a practical fit for a personal Mac with a protected user account. On a shared, unmanaged, or high-security machine, consider using only the current clipboard—or keep history paused by default.</p>
+        </section>
+        <section aria-labelledby="stored">
+          <h2 id="stored">What is stored</h2>
+          <p>Copied text, links, and references to copied Finder files or folders are stored in a local SQLite database:</p>
+          <code class="path">~/Library/Application Support/Clipboard History/clipboard.sqlite</code>
+          <p>For Finder items, the database contains file metadata, a reference to the original location, and a small preview. It does not duplicate the complete source file. Learn exactly which formats work in the <a href="/clipboard-history-files-folders-mac/">files and folders guide</a>.</p>
+          <p><strong>The database is not separately encrypted by Clipboard History.</strong> It relies on the protections of your macOS user account and disk. If you want another layer of protection against someone accessing a lost Mac's storage, review Apple's guidance for <a href="https://support.apple.com/en-ie/guide/mac-help/-mh11785/mac">turning on FileVault</a>.</p>
+        </section>
+        <section aria-labelledby="skipped">
+          <h2 id="skipped">What is skipped automatically</h2>
+          <p>Copies from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass are excluded by default. You can add other applications in <strong>Settings → Privacy</strong>.</p>
+          <p>The app also ignores clipboard entries marked with common concealed, transient, or automatically generated pasteboard types. That honors the privacy signals used by compatible password managers and other applications.</p>
+          <div class="article-note neutral"><p><strong>Important limit:</strong> an app may copy a secret as ordinary text without marking it concealed or transient. Clipboard History cannot reliably infer that a random string is a password, token, medical detail, or private message. Add the source app to the skip list or pause recording before copying sensitive material.</p></div>
+        </section>
+        <section aria-labelledby="network">
+          <h2 id="network">What uses the network</h2>
+          <p>Your clipboard history is not uploaded or synchronized. The Mac app does not have an account system or product-analytics telemetry.</p>
+          <p>The app uses Sparkle to check its public GitHub-hosted update feed. Updates are signed and verified before installation. The <a href="https://github.com/gug007/clipboard-history">application source</a>, <a href="https://github.com/gug007/clipboard-history/blob/main/appcast.xml">update feed</a>, and release history are public for inspection.</p>
+          <p>Website measurement is separate from the Mac app. This site offers optional Google Analytics only after consent, and the homepage also uses aggregate Plausible measurement. Neither has access to clipboard content. The <a href="/privacy/">privacy overview</a> explains website analytics and how to change your choice.</p>
+        </section>
+        <section aria-labelledby="accessibility">
+          <h2 id="accessibility">Why Accessibility permission is requested</h2>
+          <p>Accessibility lets Clipboard History simulate the paste action after you select an item, returning it to the app you were using. macOS requires you to grant this permission explicitly.</p>
+          <p>If you decline, you can still select an item to put it on the system clipboard, then press Command + V yourself. Automatic pasting will not work.</p>
+          <p>Apple recommends granting Accessibility only to apps you know and trust. You can review or revoke access in <strong>System Settings → Privacy &amp; Security → Accessibility</strong>; see <a href="https://support.apple.com/en-ca/guide/mac-help/mh43185/mac">Apple's Accessibility permission guidance</a>.</p>
+        </section>
+        <section aria-labelledby="controls">
+          <h2 id="controls">Controls you can use now</h2>
+          <ul>
+            <li><strong>Pause recording</strong> from the menu bar before handling sensitive information. The pause state remains after restart.</li>
+            <li><strong>Exclude applications</strong> in Settings → Privacy when their copied content should never enter history.</li>
+            <li><strong>Delete one clip</strong> with Command + Delete from the history panel.</li>
+            <li><strong>Clear all history</strong> from Settings → Storage.</li>
+            <li><strong>Remove stored data</strong> with the steps in the <a href="/uninstall/">uninstall and data-removal guide</a>.</li>
+            <li><strong>Audit the code</strong> or report a concern through the public <a href="https://github.com/gug007/clipboard-history/issues">GitHub issue tracker</a>.</li>
+          </ul>
+        </section>
+        <section aria-labelledby="decision">
+          <h2 id="decision">A practical decision checklist</h2>
+          <ol>
+            <li>Use a strong Mac login password and lock the screen when away.</li>
+            <li>Enable FileVault if your risk profile calls for startup-disk protection.</li>
+            <li>Review the default app exclusions and add your work-specific private apps.</li>
+            <li>Set a history limit that matches how long you truly need copied data.</li>
+            <li>Clear old history periodically, especially before lending or transferring the Mac.</li>
+          </ol>
+          <p>Still deciding? Compare the privacy and workflow trade-offs in our <a href="/best-free-clipboard-managers-mac/">Mac clipboard-manager roundup</a>, or read the <a href="/faq/">full FAQ</a>.</p>
+        </section>
+        <aside class="article-cta">
+          <h2>Inspect it before you trust it.</h2>
+          <p>Clipboard History is free software under the MIT License.</p>
+          <div class="article-actions"><a class="btn btn-primary btn-lg" href="https://github.com/gug007/clipboard-history">View source on GitHub</a><a class="btn btn-ghost btn-lg" href="/download/">Download for Mac</a></div>
+        </aside>
+      </div>
+    </article>
+  </main>
+  <footer class="foot"><div class="container foot-inner"><div>© 2026 Clipboard History · MIT License</div><nav class="foot-links" aria-label="Footer"><a href="/">Home</a><a href="/mac-clipboard-history/">Mac guide</a><a href="/privacy/">Privacy</a><a href="/faq/">FAQ</a><a href="https://github.com/gug007/clipboard-history">GitHub</a></nav></div></footer>
+</body>
+</html>

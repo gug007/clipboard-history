@@ -73,6 +73,7 @@ function Nav({ theme, setTheme }) {
           <a href="#privacy">Privacy</a>
           <a href="#shortcuts">Shortcuts</a>
           <a href="#faq">FAQ</a>
+          <a href="/mac-clipboard-history/">Guides</a>
           <a href="https://github.com/gug007/clipboard-history">GitHub</a>
         </div>
         <div className="nav-actions">
@@ -96,6 +97,7 @@ function Nav({ theme, setTheme }) {
         <a href="#privacy">Privacy</a>
         <a href="#shortcuts">Shortcuts</a>
         <a href="#faq">FAQ</a>
+        <a href="/mac-clipboard-history/">Guides</a>
       </div>
     </nav>
   );
@@ -106,8 +108,8 @@ function Hero({ animationsPaused, onToggleAnimations }) {
   return (
     <header className="hero" id="top">
       <div className="container">
-        <div className="hero-kicker"><span aria-hidden="true"/> Free clipboard manager for Mac</div>
-        <h1><em>Never lose</em> what you copy on your Mac.</h1>
+        <div className="hero-kicker"><span aria-hidden="true"/> Free · open source · fully offline</div>
+        <h1><em>Free clipboard manager</em> for Mac — never lose what you copy.</h1>
         <p className="hero-sub">
           Clipboard History keeps text, links, files, and folders ready to paste again. Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to find any of your last thousand copies instantly.
         </p>

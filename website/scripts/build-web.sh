@@ -78,8 +78,9 @@ done
 
 # ── Sync release facts from appcast.xml ─────────────────────────────────────
 # The appcast is the source of truth for the shipped version. Bake it into the
-# bundle fallback (download.jsx), the JSON-LD in index.html, and bump the
-# sitemap lastmod, so those facts can't drift from the actual release again.
+# bundle fallback (download.jsx) and the JSON-LD in index.html, so those facts
+# can't drift from the actual release again. Sitemap lastmod values are kept
+# per page and updated only when that page's content actually changes.
 APPCAST="$ROOT/../appcast.xml"
 if [ -f "$APPCAST" ]; then
   VERSION=$(grep -o '<sparkle:shortVersionString>[^<]*' "$APPCAST" | head -1 | sed 's/.*>//')
@@ -97,8 +98,6 @@ if [ -f "$APPCAST" ]; then
       MB=$(( (DMG_BYTES + 524288) / 1048576 ))
       sed -i '' -E "s|\"fileSize\": \"[^\"]*\"|\"fileSize\": \"$MB MB\"|" "$ROOT/index.html"
     fi
-    TODAY=$(date +%Y-%m-%d)
-    sed -i '' -E "s|<lastmod>[^<]*</lastmod>|<lastmod>$TODAY</lastmod>|" "$ROOT/sitemap.xml"
   fi
 else
   echo "warning: appcast.xml not found at $APPCAST — skipping release-fact sync" >&2

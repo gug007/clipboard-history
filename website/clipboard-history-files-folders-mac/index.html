@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mac Clipboard History for Files &amp; Folders</title>
+  <meta name="description" content="Keep a searchable history of files and folders copied in Finder on Mac. Learn what Clipboard History supports, how references work, and its image limits."/>
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1"/>
+  <link rel="canonical" href="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
+  <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
+  <link rel="alternate" hreflang="x-default" href="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Clipboard History"/>
+  <meta property="og:title" content="Clipboard history for files and folders on Mac"/>
+  <meta property="og:description" content="Search, reveal, and paste files or folders you copied earlier in Finder—without duplicating them into a history database."/>
+  <meta property="og:url" content="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
+  <meta property="og:image" content="https://clipboard-history.cc/og-v2.png"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Clipboard History for Mac showing a copied file among recent items"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Mac clipboard history for files and folders"/>
+  <meta name="twitter:description" content="How copied Finder items are saved by reference, searched, revealed, and pasted again."/>
+  <meta name="twitter:image" content="https://clipboard-history.cc/og-v2.png"/>
+  <meta name="theme-color" content="#0a84ff"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <script>(()=>{try{const t=localStorage.getItem("clipboard-history-theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(_){}})();</script>
+  <link rel="stylesheet" href="../dist/site.css"/>
+  <link rel="stylesheet" href="../content.css"/>
+  <link rel="stylesheet" href="/analytics-consent.css"/>
+  <script defer src="/analytics.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": "https://clipboard-history.cc/clipboard-history-files-folders-mac/#article",
+        "headline": "Mac Clipboard History for Files and Folders",
+        "description": "How Clipboard History records, searches, reveals, and pastes Finder file and folder references on Mac.",
+        "url": "https://clipboard-history.cc/clipboard-history-files-folders-mac/",
+        "datePublished": "2026-07-27",
+        "dateModified": "2026-07-27",
+        "inLanguage": "en",
+        "author": { "@id": "https://clipboard-history.cc/#organization" },
+        "publisher": { "@id": "https://clipboard-history.cc/#organization" },
+        "image": "https://clipboard-history.cc/og-v2.png",
+        "about": { "@id": "https://clipboard-history.cc/#software" },
+        "mainEntityOfPage": "https://clipboard-history.cc/clipboard-history-files-folders-mac/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://clipboard-history.cc/" },
+          { "@type": "ListItem", "position": 2, "name": "Clipboard history for files and folders", "item": "https://clipboard-history.cc/clipboard-history-files-folders-mac/" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="article-site">
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <nav class="nav article-nav" aria-label="Primary">
+    <div class="container nav-inner">
+      <a class="brand" href="/" aria-label="Clipboard History home"><span class="brand-mark-text" aria-hidden="true">C</span><span>Clipboard History</span></a>
+      <div class="nav-links"><a href="/mac-clipboard-history/">Mac guide</a><a href="/best-free-clipboard-managers-mac/">Compare</a><a href="/security/">Security</a><a href="/faq/">FAQ</a></div>
+      <a class="btn btn-primary" href="/download/">Download free</a>
+    </div>
+  </nav>
+  <main id="main" class="article-main">
+    <article class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Files and folders</li></ol></nav>
+      <header class="article-hero">
+        <div class="article-eyebrow">Finder clipboard workflow</div>
+        <h1>Clipboard history for files and folders on Mac.</h1>
+        <p class="article-lede">Copy a file in Finder once, find it later by name, and paste it again as a real file. Clipboard History keeps a reference and small preview—not another full copy.</p>
+        <div class="article-meta"><span class="article-pill">Files &amp; folders</span><span class="article-pill">Saved by reference</span><span class="article-pill">Searchable filenames</span></div>
+      </header>
+      <div class="article-body">
+        <section aria-labelledby="answer">
+          <h2 id="answer">Yes, copied Finder items are supported</h2>
+          <div class="answer-card"><p>Clipboard History records files and folders copied in Finder. Press <strong>Shift + Command + V</strong>, search by filename, select the item, and press Return to paste it into the current destination.</p></div>
+          <p>The app saves the location of the original item and a small preview. It does not put the entire file into its SQLite history database. A large video, archive, or project folder therefore does not become a second full-sized copy inside the app.</p>
+        </section>
+        <section aria-labelledby="workflow">
+          <h2 id="workflow">How to retrieve a file you copied earlier</h2>
+          <ol class="steps">
+            <li><strong>Copy in Finder.</strong> Select one or more files or folders and press Command + C.</li>
+            <li><strong>Continue working.</strong> Copy other text, links, or Finder items as needed; the earlier item remains in history.</li>
+            <li><strong>Open Clipboard History.</strong> Press Shift + Command + V from Finder or another app.</li>
+            <li><strong>Search by name.</strong> Type part of the file or folder name and use the arrow keys to select it.</li>
+            <li><strong>Paste or reveal.</strong> Press Return to paste, or Command + R to show the original item in Finder.</li>
+          </ol>
+          <p>You can star a file reference with Command + D or place it in a group if it is part of a recurring workflow. Review all available actions in the <a href="/keyboard-shortcuts/">keyboard shortcut guide</a>.</p>
+        </section>
+        <section aria-labelledby="formats">
+          <h2 id="formats">What works—and what does not</h2>
+          <div style="overflow-x:auto">
+            <table class="shortcut-table">
+              <thead><tr><th scope="col">What you copy</th><th scope="col">Supported?</th><th scope="col">How it is handled</th></tr></thead>
+              <tbody>
+                <tr><td>File copied in Finder</td><td>Yes</td><td>Original location plus a small preview</td></tr>
+                <tr><td>Folder copied in Finder</td><td>Yes</td><td>Original location plus a small preview</td></tr>
+                <tr><td>Image file copied in Finder</td><td>Yes</td><td>Handled as a file reference</td></tr>
+                <tr><td>Several Finder items</td><td>Yes</td><td>Recorded as copied file references</td></tr>
+                <tr><td>Raw image or screenshot bitmap</td><td>No</td><td>Not recorded; save or copy the image file instead</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="article-note neutral"><p><strong>Screenshot example:</strong> a screenshot saved as a PNG on the Desktop works after you copy the PNG in Finder. A screenshot sent only to the clipboard, or an image copied directly inside a browser or editor, is raw image data and is not currently stored.</p></div>
+        </section>
+        <section aria-labelledby="references">
+          <h2 id="references">A reference is not a backup</h2>
+          <p>Because the app points back to the original file or folder, that original still matters. If it is deleted, disconnected on an external drive, or moved somewhere the stored reference can no longer resolve, Clipboard History cannot recreate the file from its preview.</p>
+          <p>Use a backup system for recovery and Clipboard History for faster reuse. Starred file references also do not freeze a version of a document; they continue to point to the item on disk.</p>
+          <p>References and previews remain local to this Mac. Clipboard History has no account and no cloud synchronization. Read the <a href="/security/">security model</a> for storage and access details.</p>
+        </section>
+        <section aria-labelledby="use-cases">
+          <h2 id="use-cases">Where file history saves time</h2>
+          <ul>
+            <li><strong>Attaching documents:</strong> retrieve the PDF or image you copied earlier without reopening its folder.</li>
+            <li><strong>Organizing projects:</strong> copy several source files, then paste them into destinations in a different order.</li>
+            <li><strong>Reusing assets:</strong> star frequently used logos, templates, or reference folders.</li>
+            <li><strong>Finding the source:</strong> use Command + R when you remember the filename but not its original folder.</li>
+          </ul>
+          <p>New to clipboard managers? Start with the <a href="/mac-clipboard-history/">Mac clipboard-history guide</a> or see how this format support compares in our <a href="/best-free-clipboard-managers-mac/">free clipboard-manager roundup</a>.</p>
+        </section>
+        <aside class="article-cta">
+          <h2>Bring back the file you copied before.</h2>
+          <p>Free and open source for Intel and Apple silicon Macs running macOS 14 or later.</p>
+          <div class="article-actions"><a class="btn btn-primary btn-lg" href="/download/">Download for Mac</a><a class="btn btn-ghost btn-lg" href="/faq/">Read the FAQ</a></div>
+        </aside>
+      </div>
+    </article>
+  </main>
+  <footer class="foot"><div class="container foot-inner"><div>© 2026 Clipboard History · MIT License</div><nav class="foot-links" aria-label="Footer"><a href="/">Home</a><a href="/mac-clipboard-history/">Mac guide</a><a href="/best-free-clipboard-managers-mac/">Compare</a><a href="/privacy/">Privacy</a><a href="https://github.com/gug007/clipboard-history">GitHub</a></nav></div></footer>
+</body>
+</html>

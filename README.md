@@ -18,7 +18,7 @@ Free. Open source. Works offline. Skips passwords automatically.
 
 ## What it does
 
-Clipboard History remembers everything you copy — text, links, screenshots, files — so you can paste any of it back later.
+Clipboard History remembers copied text, links, and files or folders from Finder so you can paste them back later. Raw bitmap clipboard images—such as “Copy Image” or screenshots sent directly to the clipboard—are not supported yet.
 
 - **Find anything.** Type a word or two; matching clips jump to the top. Searches inside text, links, and filenames.
 - **Paste anywhere.** ⇧⌘V works in every app. Arrow keys to pick, Return to paste.
@@ -57,4 +57,3 @@ Requires macOS 14 (Sonoma) or later. Apple Silicon or Intel. ~6 MB.
 | Close | ⎋ |
 
 Change ⇧⌘V in Settings.
-

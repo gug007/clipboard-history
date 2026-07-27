@@ -23,7 +23,7 @@ function HeroOverlay({ variant = "default", paused = false }) {
   const entries = [
     { kind: "url",   icon: <Icon.link/>,  title: "https://github.com/gug007/clipboard-history", sub: "Safari", time: "now",   pinned: false, tag: null },
     { kind: "text",  icon: <Icon.text/>,  title: "Quick reminder — send Dana the signed contract before 3, then book the Lisbon flight.", sub: "Notes", time: "12m", pinned: false, tag: null, body: true },
-    { kind: "file",  icon: <Icon.image/>, title: "Screenshot 2026-06-30 at 14.22.png", sub: "Finder · Desktop · 412 KB", time: "1h", pinned: false, tag: null, thumb: "screenshots/03-current.jpg" },
+    { kind: "file",  icon: <Icon.image/>, title: "Screenshot 2026-06-30 at 14.22.png", sub: "Finder · Desktop · 412 KB", time: "1h", pinned: false, tag: null, thumb: "screenshots/03-thumb.jpg" },
     { kind: "file",  icon: <Icon.doc/>,   title: "logo.svg, brief.pdf +3 more", sub: "Finder · 5 items", time: "3h", pinned: false, tag: "Launch" },
     { kind: "text",  icon: <Icon.text/>,  title: "1247 Oak St, Berkeley CA 94702", sub: "Messages", time: "1d", pinned: true, tag: null },
   ];

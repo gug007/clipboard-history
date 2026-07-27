@@ -252,7 +252,27 @@ kbd {
 .article-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 
 @media (max-width: 768px) {
-  .article-nav .nav-links { display: none; }
+  .article-nav .nav-inner {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    padding-bottom: 0;
+  }
+  .article-nav .nav-links {
+    display: flex;
+    order: 3;
+    flex: 0 0 100%;
+    gap: 18px;
+    padding: 8px 0 10px;
+    overflow-x: auto;
+    border-top: 1px solid var(--hairline);
+    font-size: 12px;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .article-nav .nav-links::-webkit-scrollbar { display: none; }
+  .article-nav .nav-links a { flex: 0 0 auto; }
   .article-shell { padding-top: 28px; padding-bottom: 80px; }
   .breadcrumbs { margin-bottom: 40px; }
   .article-body { font-size: 16px; }

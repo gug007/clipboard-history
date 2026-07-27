@@ -121,7 +121,7 @@ function FAQSection() {
     { q: "Will it record my passwords?", a: "No. Anything copied from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, or LastPass is skipped. Beyond that list, anything any app marks as concealed or transient on the clipboard — the standard convention password managers follow — is never recorded either. You can add more apps to the skip list in Settings → Privacy, or pause recording entirely from the menu bar." },
     { q: "Which Macs does it work on?", a: "Any Mac running macOS 14 (Sonoma) or newer. Apple Silicon and Intel both supported." },
     { q: "Will it slow down my Mac?", a: "No. The app is about 5 MB and spends its life doing one cheap thing: glancing at the clipboard twice a second. Most people forget it's running." },
-    { q: "How is this different from the built-in macOS clipboard?", a: "macOS only remembers the last thing you copied. Copy something new and the previous one is gone. Clipboard History keeps your last 1,000 items by default (adjustable from 100 to 10,000 in Settings) so you can paste any of them back with Shift + Command + V. Starred clips and clips you've put in a group are never auto-removed." },
+    { q: "How is this different from the built-in macOS clipboard?", a: "macOS 26 Tahoe includes recent clipboard history in Spotlight: press Command + Space, then Command + 4. Clipboard History also supports macOS 14 Sonoma and macOS 15 Sequoia, keeps 1,000 items by default (adjustable up to 10,000), opens directly with Shift + Command + V, saves Finder file and folder references, and keeps starred or grouped clips until you remove them." },
     { q: "How does it compare to Paste, Maccy, or Alfred's clipboard?", a: "Honestly: it's free, open source, and tiny (~5 MB). Paste is paid and syncs across devices. Maccy is also free and open source — a great alternative if you prefer it. Alfred's clipboard comes bundled with the Powerpack. Clipboard History focuses on doing one thing well, with privacy as the default. If you need iCloud sync between Macs, pick something else." },
     { q: "Does it sync between my Macs?", a: "No, and it won't. Your clipboard often contains passwords, private messages, and tokens — sending that to a server (even Apple's) is a tradeoff we don't want to make on your behalf. Clipboard History stays on the Mac it's installed on." },
     { q: "Where is my clipboard data stored?", a: "In a single SQLite file on your Mac at ~/Library/Application Support/Clipboard History/clipboard.sqlite. Nothing is uploaded anywhere. The file is usually a few hundred kilobytes since the app stores the location of large files, not a copy." },
@@ -200,6 +200,8 @@ function Footer() {
           <a href="https://github.com/gug007/clipboard-history/releases">Releases</a>
           <a href="/keyboard-shortcuts/">Shortcuts</a>
           <a href="/faq/">FAQ</a>
+          <a href="/mac-clipboard-history/">Guides</a>
+          <a href="/best-free-clipboard-managers-mac/">Compare</a>
           <a href="/privacy/">Privacy</a>
           <a href="/uninstall/">Uninstall</a>
           <a href="https://github.com/gug007/clipboard-history/issues">Support</a>

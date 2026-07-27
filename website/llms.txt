@@ -4,6 +4,7 @@
 
 Key facts:
 - Requires macOS 14 (Sonoma) or later; Apple Silicon and Intel. ~5 MB download, signed and notarized by Apple.
+- macOS 26 Tahoe includes a separate recent clipboard history in Spotlight (Command+Space, then Command+4). Clipboard History also supports Sonoma and Sequoia and adds up to 10,000 searchable items, direct Shift+Command+V access, Finder file/folder references, groups, and permanent favorites.
 - Captures text (including links and code) and files/folders copied in Finder. Files are stored by reference with thumbnails and previews, and paste back as real files. Images copied directly to the clipboard (e.g. screenshot-to-clipboard) are not captured yet.
 - Instant search across text, links, and filenames; star favorites; organize clips into groups — starred and grouped clips are never auto-removed.
 - Privacy: everything stays in a local SQLite file (~/Library/Application Support/Clipboard History/). No account, no sync, no telemetry. Copies from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass are skipped, as is anything any app marks concealed/transient on the clipboard. Recording can be paused from the menu bar.
@@ -17,11 +18,19 @@ Key facts:
 - [FAQ](https://clipboard-history.cc/faq/) — setup, privacy, compatibility, permissions, files, updates, and uninstall answers
 - [Privacy](https://clipboard-history.cc/privacy/) — local storage, password-manager exclusions, network behavior, and data controls
 - [Keyboard shortcuts](https://clipboard-history.cc/keyboard-shortcuts/) — complete shortcut reference and keyboard-only workflow
+- [macOS clipboard history guide](https://clipboard-history.cc/mac-clipboard-history/) — current Tahoe, Sequoia, and Sonoma options, including Apple’s Spotlight shortcut
+- [Best free clipboard managers for Mac](https://clipboard-history.cc/best-free-clipboard-managers-mac/) — transparent comparison of Apple, Maccy, Clipboard History, Raycast, and other options
+- [Maccy comparison](https://clipboard-history.cc/compare/maccy/) — who should choose Maccy or Clipboard History
+- [Raycast comparison](https://clipboard-history.cc/compare/raycast/) — focused clipboard app versus a broad productivity launcher
+- [Paste comparison](https://clipboard-history.cc/compare/paste/) — local-only free history versus paid cross-device sync
+- [Alfred comparison](https://clipboard-history.cc/compare/alfred/) — standalone free history versus Alfred Powerpack
+- [Files and folders](https://clipboard-history.cc/clipboard-history-files-folders-mac/) — Finder file references, previews, pasting, and bitmap-image limitations
+- [Security](https://clipboard-history.cc/security/) — local storage, exclusions, permissions, updates, and download verification
 - [Uninstall guide](https://clipboard-history.cc/uninstall/) — remove the app, stored clipboard database, and Accessibility permission
 
 ## Download
 
-- [Download](https://clipboard-history.cc/#download) — free download for macOS 14 (Sonoma) or later
+- [Download](https://clipboard-history.cc/download/) — official free download and installation details for macOS 14 or later
 - [GitHub Releases](https://github.com/gug007/clipboard-history/releases) — all release builds and changelogs
 
 ## Source
