@@ -1,0 +1,107 @@
+.analytics-consent {
+  position: fixed;
+  z-index: 2147483000;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  width: min(680px, calc(100vw - 2rem));
+  padding: 1rem;
+  gap: 1rem;
+  align-items: center;
+  color: #f5f5f7;
+  background: rgba(24, 24, 27, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+
+.analytics-consent__copy {
+  flex: 1 1 auto;
+}
+
+.analytics-consent__copy strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 15px;
+}
+
+.analytics-consent__copy p {
+  margin: 0;
+  color: rgba(245, 245, 247, 0.78);
+}
+
+.analytics-consent__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.analytics-consent__actions button,
+.analytics-preferences-button {
+  min-height: 36px;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.analytics-consent__allow {
+  color: #fff;
+  background: #0a84ff;
+  border-color: #0a84ff !important;
+}
+
+.analytics-consent__decline {
+  color: #f5f5f7;
+  background: transparent;
+}
+
+.analytics-consent__actions a {
+  padding: 0.4rem;
+  color: #79b8ff;
+  white-space: nowrap;
+}
+
+.analytics-consent__actions button:focus-visible,
+.analytics-consent__actions a:focus-visible,
+.analytics-preferences-button:focus-visible {
+  outline: 3px solid #64d2ff;
+  outline-offset: 2px;
+}
+
+.analytics-preferences-button {
+  color: inherit;
+  background: transparent;
+  border-color: currentColor;
+}
+
+@media (max-width: 680px) {
+  .analytics-consent {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    display: block;
+    width: auto;
+  }
+
+  .analytics-consent__actions {
+    margin-top: 0.85rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .analytics-consent {
+    animation: analytics-consent-in 180ms ease-out;
+  }
+
+  @keyframes analytics-consent-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
