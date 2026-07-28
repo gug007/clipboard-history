@@ -1,2 +1,27 @@
-docs
+# Generated documentation
+docs/
+
+# macOS
 .DS_Store
+
+# Xcode user state
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Xcode and Swift build output
+DerivedData/
+build/
+.build/
+*.xcresult
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+xcodebuild.log
+
+# Local release artifacts
+*.dmg
+*.ipa

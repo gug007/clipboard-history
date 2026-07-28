@@ -10,16 +10,33 @@
 		0844A60C2FA8CF69004C8FB2 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0844A60B2FA8CF69004C8FB2 /* GRDB */; };
 		0844A6212FA8F711004C8FB2 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 0844A6202FA8F711004C8FB2 /* KeyboardShortcuts */; };
 		0844A6242FA8FACC004C8FB2 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 0844A6232FA8FACC004C8FB2 /* Sparkle */; };
+		7A0000010000000000000001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0844A60B2FA8CF69004C8FB2 /* GRDB */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7A0000010000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0844A5E62FA8C5C9004C8FB2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0844A5ED2FA8C5C9004C8FB2;
+			remoteInfo = "Clipboard History";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0844A5EE2FA8C5C9004C8FB2 /* Clipboard History.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clipboard History.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A0000010000000000000003 /* Clipboard HistoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Clipboard HistoryTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0844A5F02FA8C5C9004C8FB2 /* Clipboard History */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Clipboard History";
+			sourceTree = "<group>";
+		};
+		7A0000010000000000000004 /* Clipboard HistoryTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Clipboard HistoryTests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -35,6 +52,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A0000010000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A0000010000000000000001 /* GRDB in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -42,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				0844A5F02FA8C5C9004C8FB2 /* Clipboard History */,
+				7A0000010000000000000004 /* Clipboard HistoryTests */,
 				0844A5EF2FA8C5C9004C8FB2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				0844A5EE2FA8C5C9004C8FB2 /* Clipboard History.app */,
+				7A0000010000000000000003 /* Clipboard HistoryTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +109,30 @@
 			productReference = 0844A5EE2FA8C5C9004C8FB2 /* Clipboard History.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7A0000010000000000000006 /* Clipboard HistoryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A0000010000000000000007 /* Build configuration list for PBXNativeTarget "Clipboard HistoryTests" */;
+			buildPhases = (
+				7A0000010000000000000008 /* Sources */,
+				7A0000010000000000000005 /* Frameworks */,
+				7A0000010000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7A000001000000000000000A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7A0000010000000000000004 /* Clipboard HistoryTests */,
+			);
+			name = "Clipboard HistoryTests";
+			packageProductDependencies = (
+				0844A60B2FA8CF69004C8FB2 /* GRDB */,
+			);
+			productName = "Clipboard HistoryTests";
+			productReference = 7A0000010000000000000003 /* Clipboard HistoryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -94,6 +145,10 @@
 				TargetAttributes = {
 					0844A5ED2FA8C5C9004C8FB2 = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					7A0000010000000000000006 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 0844A5ED2FA8C5C9004C8FB2;
 					};
 				};
 			};
@@ -117,12 +172,20 @@
 			projectRoot = "";
 			targets = (
 				0844A5ED2FA8C5C9004C8FB2 /* Clipboard History */,
+				7A0000010000000000000006 /* Clipboard HistoryTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		0844A5EC2FA8C5C9004C8FB2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A0000010000000000000009 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -139,7 +202,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A0000010000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7A000001000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0844A5ED2FA8C5C9004C8FB2 /* Clipboard History */;
+			targetProxy = 7A0000010000000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0844A5F72FA8C5CA004C8FB2 /* Debug */ = {
@@ -196,7 +274,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -210,6 +288,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -254,9 +333,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
@@ -286,7 +366,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.clipboard-history";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -324,7 +404,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.clipboard-history";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -335,6 +415,40 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7A000001000000000000000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = N7S7ZCZ5P7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.clipboard-history.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipboard History.app/Contents/MacOS/Clipboard History";
+			};
+			name = Debug;
+		};
+		7A000001000000000000000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = N7S7ZCZ5P7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.clipboard-history.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipboard History.app/Contents/MacOS/Clipboard History";
 			};
 			name = Release;
 		};
@@ -355,6 +469,15 @@
 			buildConfigurations = (
 				0844A5FA2FA8C5CA004C8FB2 /* Debug */,
 				0844A5FB2FA8C5CA004C8FB2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7A0000010000000000000007 /* Build configuration list for PBXNativeTarget "Clipboard HistoryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A000001000000000000000B /* Debug */,
+				7A000001000000000000000C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

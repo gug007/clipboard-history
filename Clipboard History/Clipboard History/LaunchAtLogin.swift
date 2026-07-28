@@ -21,14 +21,15 @@ final class LaunchAtLogin {
 
     private init() {
         state = Self.read(service)
-        applyDefaultIfNeeded()
+        recordDefaultAsHandledIfNeeded()
     }
 
-    private func applyDefaultIfNeeded() {
+    /// Older builds silently registered the app as a login item on first launch.
+    /// New installs make that choice explicitly during onboarding instead.
+    private func recordDefaultAsHandledIfNeeded() {
         let d = UserDefaults.standard
         guard !d.bool(forKey: Self.defaultAppliedKey) else { return }
         d.set(true, forKey: Self.defaultAppliedKey)
-        setEnabled(true)
     }
 
     func setEnabled(_ enabled: Bool) {

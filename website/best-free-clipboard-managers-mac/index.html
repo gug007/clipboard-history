@@ -43,7 +43,7 @@
         "description": "A balanced comparison of free clipboard history options for macOS, plus two paid alternatives.",
         "url": "https://clipboard-history.cc/best-free-clipboard-managers-mac/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -89,7 +89,7 @@
         <div class="article-eyebrow">Independent facts, clear trade-offs</div>
         <h1>The best free clipboard managers for Mac.</h1>
         <p class="article-lede">Start with Apple's built-in option if you use macOS Tahoe. Choose Clipboard History or Maccy for a focused standalone app, or Raycast if you also want a full command launcher.</p>
-        <div class="article-meta"><span class="article-pill">4 free options</span><span class="article-pill">2 paid alternatives</span><span class="article-pill">Reviewed July 27, 2026</span></div>
+        <div class="article-meta"><span class="article-pill">4 free options</span><span class="article-pill">2 paid alternatives</span><span class="article-pill">Reviewed July 28, 2026</span></div>
       </header>
       <div class="article-body">
         <section aria-labelledby="shortlist">
@@ -99,7 +99,7 @@
               <thead><tr><th scope="col">Option</th><th scope="col">Best fit</th><th scope="col">Main trade-off</th></tr></thead>
               <tbody>
                 <tr><td>macOS Tahoe Spotlight</td><td>Occasional retrieval with no install</td><td>Requires macOS 26; fewer organization features</td></tr>
-                <tr><td>Clipboard History</td><td>Files, folders, favorites, and groups</td><td>No cloud sync or raw bitmap history</td></tr>
+                <tr><td>Clipboard History</td><td>Files, folders, rich text, images, favorites, and groups</td><td>No cloud sync, OCR, QR recognition, or clip editor</td></tr>
                 <tr><td>Maccy</td><td>A minimal, keyboard-first standalone app</td><td>Its deliberately narrow scope may be too simple for some workflows</td></tr>
                 <tr><td>Raycast</td><td>Clipboard history inside a broader launcher</td><td>More than a single-purpose clipboard utility</td></tr>
               </tbody>
@@ -117,8 +117,8 @@
         <section aria-labelledby="clipboard-history">
           <h2 id="clipboard-history">2. Clipboard History: best for files, folders, and groups</h2>
           <p>Clipboard History is the app made by this site, so treat this section as first-party information. It is free and open source under the MIT License. It runs on macOS 14 or later and opens directly from any app with <strong>Shift + Command + V</strong>.</p>
-          <p>Its useful distinction is handling Finder files and folders by reference. Search their names, paste them again as files, or reveal the original with Command + R. Favorites and groups keep reusable clips outside normal automatic cleanup. History is local-only, and supported password managers are excluded.</p>
-          <p>The limits matter: there is no cloud sync, and raw clipboard images or screenshots are not stored. An image file copied in Finder works; a bitmap copied directly from an editor or browser does not. See the <a href="/clipboard-history-files-folders-mac/">format guide</a>, <a href="/security/">security model</a>, or <a href="https://github.com/gug007/clipboard-history">inspect the source on GitHub</a>.</p>
+          <p>Its useful distinction is handling Finder files and folders by reference. Search their names, paste them again as files, or reveal the original with Command + R. Favorites and groups keep reusable clips outside normal automatic cleanup. History is local-only, and copies made while a supported password manager is frontmost are excluded.</p>
+          <p>It also preserves RTF or HTML with a plain-text fallback and stores direct PNG or TIFF clipboard images with bounded previews. The limits matter: there is no cloud sync, OCR, QR recognition, image-content search, or clip editor. See the <a href="/clipboard-history-files-folders-mac/">format guide</a>, <a href="/security/">security model</a>, or <a href="https://github.com/gug007/clipboard-history">inspect the source on GitHub</a>.</p>
         </section>
         <section aria-labelledby="maccy">
           <h2 id="maccy">3. Maccy: best for deliberate simplicity</h2>
@@ -142,7 +142,7 @@
         <section aria-labelledby="choose">
           <h2 id="choose">How to choose safely</h2>
           <ol>
-            <li><strong>Check formats.</strong> If you copy raw images, rule out managers that only support image files or text.</li>
+            <li><strong>Check formats.</strong> Distinguish direct clipboard images, image files, rich text, OCR, and editing—“image support” can mean different things.</li>
             <li><strong>Choose local or synced.</strong> Local-only history reduces cloud exposure; sync is more convenient across devices.</li>
             <li><strong>Review exclusions.</strong> Look for concealed-data handling, password-manager exclusions, and an app skip list.</li>
             <li><strong>Test retrieval.</strong> The best shortcut and search interface is the one you can use without interrupting your work.</li>
@@ -152,7 +152,7 @@
         </section>
         <aside class="article-cta">
           <h2>Want the free option built for files and groups?</h2>
-          <p>Clipboard History is open source, local-only, and about 5 MB.</p>
+          <p>Clipboard History is open source, local-only, and free.</p>
           <div class="article-actions"><a class="btn btn-primary btn-lg" href="/download/">Download Clipboard History</a><a class="btn btn-ghost btn-lg" href="/mac-clipboard-history/">Read the Mac guide</a></div>
         </aside>
       </div>

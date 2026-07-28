@@ -1,14 +1,15 @@
 # Clipboard History
 
-> Free, open-source clipboard manager for macOS — brings back any text, link, or file you've recently copied with Shift+Command+V (customizable). Keeps your last 1,000 copies by default (up to 10,000). Works offline. Skips passwords automatically.
+> Free, open-source clipboard manager for macOS — brings back recently copied text, links, rich text, direct PNG/TIFF images, and Finder items with Shift+Command+V (customizable). Keeps the last 1,000 copies by default (up to 10,000) and works offline.
 
 Key facts:
-- Requires macOS 14 (Sonoma) or later; Apple Silicon and Intel. ~5 MB download, signed and notarized by Apple.
+- Requires macOS 14 (Sonoma) or later; Apple Silicon and Intel. Downloads are signed and notarized by Apple; disk-image size varies by release.
 - macOS 26 Tahoe includes a separate recent clipboard history in Spotlight (Command+Space, then Command+4). Clipboard History also supports Sonoma and Sequoia and adds up to 10,000 searchable items, direct Shift+Command+V access, Finder file/folder references, groups, and permanent favorites.
-- Captures text (including links and code) and files/folders copied in Finder. Files are stored by reference with thumbnails and previews, and paste back as real files. Images copied directly to the clipboard (e.g. screenshot-to-clipboard) are not captured yet.
+- Captures plain text (including links and code), preserves RTF or HTML with a plain-text fallback, and stores direct PNG or TIFF clipboard images with bounded preview thumbnails. It does not perform OCR, QR recognition, or image-content search. Files and folders copied in Finder are stored by reference with previews and paste back as real Finder items.
 - Instant search across text, links, and filenames; star favorites; organize clips into groups — starred and grouped clips are never auto-removed.
-- Privacy: everything stays in a local SQLite file (~/Library/Application Support/Clipboard History/). No account, no sync, no telemetry. Copies from 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, and LastPass are skipped, as is anything any app marks concealed/transient on the clipboard. Recording can be paused from the menu bar.
-- Overlay opens on the screen you're using, even over fullscreen apps. System / Light / Dark appearance. Menu-bar app with no Dock icon; starts at login (can be turned off).
+- Privacy: everything stays in a local SQLite file inside the app sandbox at ~/Library/Containers/app.clipboard-history/Data/Library/Application Support/Clipboard History/clipboard.sqlite. No account, no sync, no telemetry. Copies made while 1Password, Bitwarden, Dashlane, KeePassXC, Apple Passwords, Keychain Access, or LastPass is frontmost are skipped, as is content marked concealed, transient, or auto-generated on the clipboard. Ordinary unmarked secrets can still be recorded, so users can add sensitive apps to the skip list or pause recording.
+- Overlay opens on the screen you're using, even over fullscreen apps. System / Light / Dark appearance. Menu-bar app with no Dock icon. Starting at login is an explicit first-run choice and can be changed in Settings; recording begins after setup is complete.
+- Selecting a clip always restores it to the clipboard. Optional macOS event-posting access lets the app press Command+V automatically; without it, paste manually.
 - Shortcuts: ⇧⌘V open (default, customizable) · type to search · ↑↓ navigate · ⏎ paste · ⌘1–9 paste item directly · ⌥1–9 switch tabs · ⌘D star · ⌘⌫ delete · ⌘R reveal file in Finder · ⇧⌘F Favorites tab · ⎋ close.
 
 ## Docs
@@ -24,9 +25,9 @@ Key facts:
 - [Raycast comparison](https://clipboard-history.cc/compare/raycast/) — focused clipboard app versus a broad productivity launcher
 - [Paste comparison](https://clipboard-history.cc/compare/paste/) — local-only free history versus paid cross-device sync
 - [Alfred comparison](https://clipboard-history.cc/compare/alfred/) — standalone free history versus Alfred Powerpack
-- [Files and folders](https://clipboard-history.cc/clipboard-history-files-folders-mac/) — Finder file references, previews, pasting, and bitmap-image limitations
+- [Files, folders, and images](https://clipboard-history.cc/clipboard-history-files-folders-mac/) — Finder references, direct PNG/TIFF clipboard images, previews, and pasting
 - [Security](https://clipboard-history.cc/security/) — local storage, exclusions, permissions, updates, and download verification
-- [Uninstall guide](https://clipboard-history.cc/uninstall/) — remove the app, stored clipboard database, and Accessibility permission
+- [Uninstall guide](https://clipboard-history.cc/uninstall/) — remove the app, sandboxed clipboard database, and optional auto-paste permission
 
 ## Download
 

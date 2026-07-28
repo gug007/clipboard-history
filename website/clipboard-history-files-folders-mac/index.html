@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mac Clipboard History for Files &amp; Folders</title>
-  <meta name="description" content="Keep a searchable history of files and folders copied in Finder on Mac. Learn what Clipboard History supports, how references work, and its image limits."/>
+  <meta name="description" content="Keep a history of Finder files and folders plus direct PNG or TIFF clipboard images on Mac. Learn how references, image data, and bounded previews work."/>
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1"/>
   <link rel="canonical" href="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
   <link rel="alternate" hreflang="en" href="https://clipboard-history.cc/clipboard-history-files-folders-mac/"/>
@@ -40,10 +40,10 @@
         "@type": "TechArticle",
         "@id": "https://clipboard-history.cc/clipboard-history-files-folders-mac/#article",
         "headline": "Mac Clipboard History for Files and Folders",
-        "description": "How Clipboard History records, searches, reveals, and pastes Finder file and folder references on Mac.",
+        "description": "How Clipboard History handles Finder file and folder references plus direct PNG or TIFF clipboard images on Mac.",
         "url": "https://clipboard-history.cc/clipboard-history-files-folders-mac/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -98,7 +98,7 @@
           <p>You can star a file reference with Command + D or place it in a group if it is part of a recurring workflow. Review all available actions in the <a href="/keyboard-shortcuts/">keyboard shortcut guide</a>.</p>
         </section>
         <section aria-labelledby="formats">
-          <h2 id="formats">What works—and what does not</h2>
+          <h2 id="formats">How each copied format is handled</h2>
           <div style="overflow-x:auto">
             <table class="shortcut-table">
               <thead><tr><th scope="col">What you copy</th><th scope="col">Supported?</th><th scope="col">How it is handled</th></tr></thead>
@@ -107,11 +107,12 @@
                 <tr><td>Folder copied in Finder</td><td>Yes</td><td>Original location plus a small preview</td></tr>
                 <tr><td>Image file copied in Finder</td><td>Yes</td><td>Handled as a file reference</td></tr>
                 <tr><td>Several Finder items</td><td>Yes</td><td>Recorded as copied file references</td></tr>
-                <tr><td>Raw image or screenshot bitmap</td><td>No</td><td>Not recorded; save or copy the image file instead</td></tr>
+                <tr><td>Direct PNG or TIFF image, including a clipboard screenshot</td><td>Yes</td><td>Image payload plus a bounded preview thumbnail</td></tr>
+                <tr><td>RTF or HTML rich text</td><td>Yes</td><td>Original rich format plus a searchable plain-text fallback</td></tr>
               </tbody>
             </table>
           </div>
-          <div class="article-note neutral"><p><strong>Screenshot example:</strong> a screenshot saved as a PNG on the Desktop works after you copy the PNG in Finder. A screenshot sent only to the clipboard, or an image copied directly inside a browser or editor, is raw image data and is not currently stored.</p></div>
+          <div class="article-note neutral"><p><strong>Two image paths:</strong> a PNG copied in Finder is stored as a reference to that file. A screenshot sent directly to the clipboard, or a PNG/TIFF image copied inside a browser or editor, is stored as bounded clipboard image data. Clipboard History does not run OCR, recognize QR codes, or search inside the pixels.</p></div>
         </section>
         <section aria-labelledby="references">
           <h2 id="references">A reference is not a backup</h2>

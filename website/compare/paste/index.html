@@ -50,7 +50,7 @@
         "description": "A balanced, source-linked comparison of Paste and Clipboard History for Mac.",
         "url": "https://clipboard-history.cc/compare/paste/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -89,7 +89,7 @@
         <div class="article-eyebrow">Mac clipboard managers compared</div>
         <h1>Paste vs Clipboard History</h1>
         <p class="article-lede">Paste is a polished clipboard library for Mac, iPhone, and iPad with rich content and optional iCloud sync. Clipboard History is a free, open-source Mac utility that deliberately keeps every record local.</p>
-        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 27, 2026</span></div>
+        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 28, 2026</span></div>
       </header>
       <div class="article-body">
         <section aria-labelledby="short-answer">
@@ -107,11 +107,11 @@
                 <tr><th scope="row">Price</th><td>Paid monthly, annual, Lifetime, Family, and Teams options after a seven-day trial. <a href="https://pasteapp.io/help/choose-a-plan">Official plan guide</a>; see the <a href="https://pasteapp.io/">current price on Paste’s site</a>.</td><td>Free, open source, and MIT-licensed with no paid tier. <a href="https://github.com/gug007/clipboard-history">Source and releases</a>.</td></tr>
                 <tr><th scope="row">Devices</th><td>Mac, iPhone, and iPad; one personal plan unlocks all three. <a href="https://pasteapp.io/help/choose-a-plan">Paste plan guide</a>.</td><td>Mac only, requiring macOS 14 or later. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
                 <tr><th scope="row">Sync</th><td>Optional iCloud sync across devices. Data is stored on devices and in the user’s private iCloud, not Paste Team servers. <a href="https://pasteapp.io/help/where-paste-stores-your-data">Paste storage guide</a>.</td><td>No sync. Clipboard records stay in one local SQLite database. <a href="/privacy/">Privacy details</a>.</td></tr>
-                <tr><th scope="row">Content</th><td>Text, links, images, files, and other content, with preview and editing. <a href="https://pasteapp.io/help/explore-paste">Explore Paste</a>.</td><td>Text, links, and references to Finder files or folders. Bitmap-only clipboard images are not recorded. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
+                <tr><th scope="row">Content</th><td>Text, links, images, files, and other content, with preview and editing. <a href="https://pasteapp.io/help/explore-paste">Explore Paste</a>.</td><td>Plain text and links; RTF or HTML with a plain fallback; direct PNG or TIFF images; and Finder file/folder references. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
                 <tr><th scope="row">Search</th><td>Search and filter by time, source app, device, or content type. <a href="https://pasteapp.io/help/explore-paste">Paste search overview</a>.</td><td>Immediate text search across copied text, links, and filenames; no time, app, device, or content-type filter controls.</td></tr>
                 <tr><th scope="row">Organization</th><td>Pinboards for reusable content, including shared pinboards for collaboration. <a href="https://pasteapp.io/help/explore-paste">Paste organization overview</a>.</td><td>Local named groups and Favorites; no sharing or collaboration.</td></tr>
                 <tr><th scope="row">Paste tools</th><td>Original-format or plain-text paste, multi-item paste, labels, and editing. <a href="https://pasteapp.io/">Official Paste feature page</a>.</td><td>Direct paste, Command-number selection, groups, and file reveal; no editor, multi-item stack, or explicit plain-text mode.</td></tr>
-                <tr><th scope="row">Clipboard privacy</th><td>Local storage with optional private iCloud sync; excludes marked confidential/transient content and chosen apps. <a href="https://pasteapp.io/help/what-paste-captures">What Paste captures</a>.</td><td>Local-only storage; skips supported password managers plus concealed/transient content and user-selected apps. <a href="/privacy/">Privacy details</a>.</td></tr>
+                <tr><th scope="row">Clipboard privacy</th><td>Local storage with optional private iCloud sync; excludes marked confidential/transient content and chosen apps. <a href="https://pasteapp.io/help/what-paste-captures">What Paste captures</a>.</td><td>Local-only storage; skips copies while a supported password manager or user-selected app is frontmost, plus concealed, transient, or auto-generated entries. <a href="/privacy/">Privacy details</a>.</td></tr>
                 <tr><th scope="row">Usage analytics</th><td>Paste’s privacy policy says it collects anonymized app usage and device information through EU-hosted PostHog. <a href="https://pasteapp.io/privacy">Paste privacy policy</a>.</td><td>No app telemetry. Optional analytics applies to this website only after consent, never to clipboard contents or the Mac app. <a href="/privacy/#website-analytics">Website analytics disclosure</a>.</td></tr>
                 <tr><th scope="row">Source code</th><td>Proprietary.</td><td>The complete app is <a href="https://github.com/gug007/clipboard-history">open source under MIT</a>.</td></tr>
               </tbody>
@@ -124,7 +124,7 @@
           <h2 id="paste-wins">When Paste is the better fit</h2>
           <ul>
             <li><strong>Your clipboard should follow you.</strong> Paste is designed for a library shared across Macs, iPhones, and iPads through your private iCloud account.</li>
-            <li><strong>You work with images and rich content.</strong> Visual previews, bitmap capture, editing, and original/plain-text options are material advantages.</li>
+            <li><strong>You work visually or edit clips before pasting.</strong> Paste’s gallery, editing, and original/plain-text choices remain material advantages even though both apps retain copied images and rich content.</li>
             <li><strong>You need stronger retrieval filters.</strong> Time, application, device, and content-type filters help with a very large library.</li>
             <li><strong>You share reusable material.</strong> Shared pinboards and Teams plans address collaboration that Clipboard History does not attempt.</li>
           </ul>
@@ -136,7 +136,7 @@
             <li><strong>You do not want another subscription or purchase.</strong> Every current feature is free.</li>
             <li><strong>You want source-level transparency.</strong> The full Swift application is public under an MIT license.</li>
             <li><strong>Clipboard data must remain on one machine.</strong> There is no account or sync path to configure, and the app sends no usage telemetry.</li>
-            <li><strong>Your “rich content” is mostly Finder items.</strong> File and folder references, previews, missing-file states, and Reveal in Finder are core parts of the app.</li>
+            <li><strong>Your workflow centers on Finder items.</strong> File and folder references, previews, missing-file states, and Reveal in Finder are core parts of the app.</li>
           </ul>
           <p>For the larger landscape, read the <a href="/mac-clipboard-history/">Mac clipboard history guide</a> and our <a href="/best-free-clipboard-managers-mac/">free clipboard-manager comparison</a>.</p>
         </section>
@@ -145,7 +145,7 @@
           <h2 id="limits">Clipboard History limitations to know first</h2>
           <ul>
             <li>No iCloud sync and no iPhone or iPad app.</li>
-            <li>No bitmap image history, visual gallery, OCR, or image search.</li>
+            <li>Direct PNG and TIFF images are retained, but there is no visual gallery, OCR, QR recognition, image-content search, or image editor.</li>
             <li>No in-app editing, rich-format selector, multi-item stack, or shared groups.</li>
             <li>No filters for source app, device, date, or content type.</li>
             <li>Finder items are location references rather than backups; if an original moves or is deleted, its old reference cannot paste it.</li>

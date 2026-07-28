@@ -23,4 +23,10 @@ struct ClipPayload: Codable, Identifiable, Equatable, FetchableRecord, Persistab
     var uti: String?
     var byteSize: Int64
     var iconPNG: Data?
+    /// Raw, bounded clipboard representation for image and rich-text items.
+    /// Existing text and file rows leave this nil.
+    var inlineData: Data?
+    /// Original NSPasteboard type (for example public.png or public.rtf).
+    /// Kept separate from `uti` so a payload can be faithfully written back.
+    var dataFormat: String?
 }

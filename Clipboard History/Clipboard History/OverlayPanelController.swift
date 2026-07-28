@@ -16,7 +16,7 @@ private final class KeyablePanel: NSPanel {
     // the proven overlay panels (Maccy, Ice) opt into it.
 }
 
-final class OverlayPanelController {
+final class OverlayPanelController: NSObject, NSWindowDelegate {
     private let panel: NSPanel
     private var hostingView: NSHostingView<OverlayView>!
     private let store: HistoryStore
@@ -31,13 +31,15 @@ final class OverlayPanelController {
         self.store = store
         self.state = state
 
-        let size = NSSize(width: 720, height: 480)
+        let size = AppSettings.shared.overlaySize
         panel = KeyablePanel(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel, .resizable],
             backing: .buffered,
             defer: false
         )
+        panel.contentMinSize = AppSettings.minOverlaySize
+        panel.contentMaxSize = AppSettings.maxOverlaySize
         panel.isMovableByWindowBackground = true
         panel.backgroundColor = .clear
         panel.hasShadow = true
@@ -54,6 +56,7 @@ final class OverlayPanelController {
             store: store,
             state: state,
             onPaste: { _ in },
+            onCopy: { _ in },
             onDismiss: {},
             onToggleFavorite: { _ in },
             onDelete: { _ in },
@@ -72,19 +75,29 @@ final class OverlayPanelController {
         ])
         panel.contentView = container
 
+        super.init()
+
         host.rootView = OverlayView(
             store: store,
             state: state,
             onPaste: { [weak self] entry in self?.paste(entry) },
+            onCopy: { [weak self] entry in self?.copyToPasteboard(entry) },
             onDismiss: { [weak self] in self?.hide() },
             onToggleFavorite: { [weak self] entry in self?.toggleFavorite(entry) },
             onDelete: { [weak self] entry in self?.delete(entry) },
             onReveal: { [weak self] entry in self?.revealInFinder(entry) }
         )
 
+        panel.delegate = self
         applyAppearance()
         observeAppearance()
         observeFocusLoss()
+    }
+
+    /// The panel is borderless, so its frame is its content: persist the size
+    /// the user settled on and reopen at it next time.
+    func windowDidEndLiveResize(_ notification: Notification) {
+        AppSettings.shared.overlaySize = panel.frame.size
     }
 
     func toggle() {
@@ -286,6 +299,16 @@ final class OverlayPanelController {
 
     private func center(on screen: NSScreen) {
         let visible = screen.visibleFrame
+        // A size dragged out on a large display must not overflow a smaller
+        // one; setContentSize re-applies contentMinSize on its own.
+        let desired = AppSettings.shared.overlaySize
+        let fitted = NSSize(
+            width: min(desired.width, visible.width - 32),
+            height: min(desired.height, visible.height - 32)
+        )
+        if fitted != panel.frame.size {
+            panel.setContentSize(fitted)
+        }
         let panelSize = panel.frame.size
         let origin = NSPoint(
             x: visible.minX + (visible.width - panelSize.width) / 2,
@@ -385,7 +408,15 @@ final class OverlayPanelController {
                 relativeTo: nil,
                 bookmarkDataIsStale: &stale
             ) {
-                _ = url.startAccessingSecurityScopedResource()
+                guard url.startAccessingSecurityScopedResource() else {
+                    print("[Reveal] security-scoped access denied for \(payload.filename ?? "?")")
+                    continue
+                }
+                guard (try? url.checkResourceIsReachable()) == true else {
+                    url.stopAccessingSecurityScopedResource()
+                    print("[Reveal] file is no longer reachable: \(payload.filename ?? "?")")
+                    continue
+                }
                 urls.append(url)
             }
         }
@@ -404,38 +435,95 @@ final class OverlayPanelController {
 
     private func paste(_ entry: ClipEntry) {
         if let last = lastPasteAt, Date().timeIntervalSince(last) < 0.4 { return }
-        lastPasteAt = Date()
 
         print("[Paste] === paste() entered id=\(entry.id) kind=\(entry.kind) ===")
+        // Never dismiss the picker or synthesize Cmd-V unless a new,
+        // expected representation is demonstrably on the pasteboard.
+        guard let writtenChangeCount = writeToPasteboard(entry) else {
+            print("[Paste] aborted — pasteboard was not safely updated")
+            return
+        }
+        lastPasteAt = Date()
+        hide()
+        Self.performAutoPasteAfterDelay(expectedChangeCount: writtenChangeCount)
+    }
+
+    /// Copy without the synthesized Cmd-V. The clip lands on the pasteboard and
+    /// the panel closes, leaving the user to decide where and when it goes —
+    /// the escape hatch for apps that reject synthetic paste events, and for
+    /// grabbing a clip now to paste somewhere else later.
+    private func copyToPasteboard(_ entry: ClipEntry) {
+        if let last = lastPasteAt, Date().timeIntervalSince(last) < 0.4 { return }
+
+        print("[Copy] === copy() entered id=\(entry.id) kind=\(entry.kind) ===")
+        guard writeToPasteboard(entry) != nil else {
+            print("[Copy] aborted — pasteboard was not safely updated")
+            return
+        }
+        lastPasteAt = Date()
+        hide()
+    }
+
+    /// Writes the entry onto the general pasteboard and returns the verified
+    /// change count, or nil when nothing trustworthy was written.
+    private func writeToPasteboard(_ entry: ClipEntry) -> Int? {
+        let writtenChangeCount: Int?
         do {
             let payloads = try store.payloads(for: entry.id)
             print("[Paste] loaded \(payloads.count) payload(s)")
             switch entry.kind {
-            case .text, .url, .richText:
+            case .text:
                 if let text = payloads.first?.inlineText {
-                    pasteText(text)
+                    writtenChangeCount = pasteText(text)
                 } else {
                     print("[Paste] WARN: text-kind entry but no inlineText payload")
+                    writtenChangeCount = nil
+                }
+            case .url:
+                if let text = payloads.first?.inlineText {
+                    writtenChangeCount = pasteText(text, isURL: true)
+                } else {
+                    print("[Paste] WARN: URL entry but no inlineText payload")
+                    writtenChangeCount = nil
+                }
+            case .richText:
+                if let payload = payloads.first {
+                    writtenChangeCount = pasteRichText(payload)
+                } else {
+                    print("[Paste] WARN: rich-text entry has no payload")
+                    writtenChangeCount = nil
                 }
             case .file, .multiFile:
-                pasteFiles(payloads)
+                writtenChangeCount = pasteFiles(payloads)
             case .image:
-                print("[Paste] image kind — not implemented")
+                if let payload = payloads.first {
+                    writtenChangeCount = pasteImage(payload)
+                } else {
+                    print("[Paste] WARN: image entry has no payload")
+                    writtenChangeCount = nil
+                }
             }
         } catch {
             print("[Paste] payload load failed: \(error)")
+            writtenChangeCount = nil
         }
-        hide()
-        Self.performAutoPasteAfterDelay()
+        return writtenChangeCount
     }
 
-    private static func performAutoPasteAfterDelay() {
+    private static func performAutoPasteAfterDelay(expectedChangeCount: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            let opts = [
-                kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
-            ] as CFDictionary
-            guard AXIsProcessTrustedWithOptions(opts) else {
-                print("[Paste] Accessibility NOT granted — pasteboard updated, press ⌘V manually.")
+            guard NSPasteboard.general.changeCount == expectedChangeCount else {
+                print("[Paste] pasteboard changed before Cmd-V — auto-paste cancelled")
+                return
+            }
+            let mayPostEvents = CGPreflightPostEventAccess()
+                || CGRequestPostEventAccess()
+            guard mayPostEvents else {
+                print("[Paste] PostEvent access NOT granted — pasteboard updated, press ⌘V manually.")
+                return
+            }
+            guard NSPasteboard.general.changeCount == expectedChangeCount else {
+                print("[Paste] pasteboard changed during permission check — auto-paste cancelled")
                 return
             }
             let src = CGEventSource(stateID: .combinedSessionState)
@@ -451,18 +539,109 @@ final class OverlayPanelController {
         }
     }
 
-    private func pasteText(_ text: String) {
-        let pb = NSPasteboard.general
-        pb.clearContents()
-        pb.setString(text, forType: .string)
-        pb.setData(Data(), forType: Self.autoGeneratedType)
+    private func pasteText(_ text: String, isURL: Bool = false) -> Int? {
+        guard !text.isEmpty else {
+            print("[Paste] refusing to write empty text")
+            return nil
+        }
+        let item = NSPasteboardItem()
+        guard item.setString(text, forType: .string) else {
+            print("[Paste] could not prepare plain text")
+            return nil
+        }
+        if isURL {
+            // Keep .string as the guaranteed fallback for fields that do not
+            // accept the richer public.url representation.
+            _ = item.setString(text, forType: .URL)
+        }
+        return commit(item: item, requiredType: .string)
     }
 
-    private func pasteFiles(_ payloads: [ClipPayload]) {
+    private func pasteRichText(_ payload: ClipPayload) -> Int? {
+        let item = NSPasteboardItem()
+        var requiredType: NSPasteboard.PasteboardType?
+
+        if let text = payload.inlineText, !text.isEmpty,
+           item.setString(text, forType: .string) {
+            requiredType = .string
+        }
+
+        if let data = payload.inlineData, !data.isEmpty,
+           let richType = Self.richPasteboardType(
+               dataFormat: payload.dataFormat,
+               uti: payload.uti
+           ),
+           item.setData(data, forType: richType) {
+            requiredType = richType
+        }
+
+        guard let requiredType else {
+            print("[Paste] rich-text payload has neither usable raw data nor plain text")
+            return nil
+        }
+        return commit(item: item, requiredType: requiredType)
+    }
+
+    private func pasteImage(_ payload: ClipPayload) -> Int? {
+        guard payload.payloadKind == .image,
+              let data = payload.inlineData,
+              !data.isEmpty,
+              let imageType = Self.imagePasteboardType(
+                  dataFormat: payload.dataFormat,
+                  uti: payload.uti
+              ),
+              Self.hasValidImageHeader(data, type: imageType)
+        else {
+            print("[Paste] image payload is missing or invalid")
+            return nil
+        }
+
+        let item = NSPasteboardItem()
+        guard item.setData(data, forType: imageType) else {
+            print("[Paste] could not prepare image data")
+            return nil
+        }
+        return commit(item: item, requiredType: imageType)
+    }
+
+    private func commit(
+        item: NSPasteboardItem,
+        requiredType: NSPasteboard.PasteboardType
+    ) -> Int? {
+        guard item.setData(Data(), forType: Self.autoGeneratedType) else {
+            print("[Paste] could not attach capture-suppression marker")
+            return nil
+        }
+
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        guard pb.writeObjects([item]) else {
+            print("[Paste] pasteboard rejected prepared item")
+            return nil
+        }
+        let types = Set(pb.types ?? [])
+        guard types.contains(requiredType),
+              types.contains(Self.autoGeneratedType)
+        else {
+            print("[Paste] pasteboard write could not be verified")
+            return nil
+        }
+        return pb.changeCount
+    }
+
+    private func pasteFiles(_ payloads: [ClipPayload]) -> Int? {
+        guard !payloads.isEmpty else {
+            print("[Paste] file entry has no payloads")
+            return nil
+        }
+
         var resolved: [URL] = []
+        var resolutionFailed = false
         for payload in payloads {
-            guard let bookmark = payload.bookmarkData else {
+            guard payload.payloadKind == .file,
+                  let bookmark = payload.bookmarkData else {
                 print("[Paste] payload has no bookmark: \(payload.filename ?? "?")")
+                resolutionFailed = true
                 continue
             }
             var stale = false
@@ -473,40 +652,120 @@ final class OverlayPanelController {
                     relativeTo: nil,
                     bookmarkDataIsStale: &stale
                 )
-                _ = url.startAccessingSecurityScopedResource()
+                guard url.startAccessingSecurityScopedResource() else {
+                    print("[Paste] security-scoped access denied for \(payload.filename ?? "?")")
+                    resolutionFailed = true
+                    continue
+                }
+                guard (try? url.checkResourceIsReachable()) == true else {
+                    url.stopAccessingSecurityScopedResource()
+                    print("[Paste] file is no longer reachable: \(payload.filename ?? "?")")
+                    resolutionFailed = true
+                    continue
+                }
                 resolved.append(url)
             } catch {
                 print("[Paste] bookmark resolve failed for \(payload.filename ?? "?"): \(error)")
+                resolutionFailed = true
             }
         }
-        guard !resolved.isEmpty else {
-            // All bookmarks stale — fall back to copying filenames as text.
-            let names = payloads.compactMap(\.filename).joined(separator: "\n")
-            if !names.isEmpty {
-                let pb = NSPasteboard.general
-                pb.clearContents()
-                pb.setString(names, forType: .string)
-                pb.setData(Data(), forType: Self.autoGeneratedType)
-                print("[Paste] all bookmarks stale; pasted filenames as text fallback")
-            } else {
-                print("[Paste] no URLs resolved and no filenames available")
+
+        guard !resolutionFailed, resolved.count == payloads.count else {
+            for url in resolved { url.stopAccessingSecurityScopedResource() }
+            // Do not silently paste an incomplete selection. A complete list
+            // of names is a deterministic, fresh plain-text fallback.
+            let names = payloads.compactMap(\.filename)
+            guard names.count == payloads.count else {
+                print("[Paste] file references failed and a complete filename fallback is unavailable")
+                return nil
             }
-            return
+            print("[Paste] file references unavailable; using filenames as text fallback")
+            return pasteText(names.joined(separator: "\n"))
         }
 
         let pb = NSPasteboard.general
         pb.clearContents()
-        pb.writeObjects(resolved as [NSURL])
-        pb.setPropertyList(
+        guard pb.writeObjects(resolved as [NSURL]) else {
+            for url in resolved { url.stopAccessingSecurityScopedResource() }
+            print("[Paste] pasteboard rejected file URLs")
+            return nil
+        }
+        _ = pb.setPropertyList(
             resolved.map(\.path),
             forType: NSPasteboard.PasteboardType("NSFilenamesPboardType")
         )
-        pb.setData(Data(), forType: Self.autoGeneratedType)
+        guard pb.setData(Data(), forType: Self.autoGeneratedType) else {
+            for url in resolved { url.stopAccessingSecurityScopedResource() }
+            print("[Paste] could not attach capture-suppression marker to file URLs")
+            return nil
+        }
+        let availableTypes = Set(pb.types ?? [])
+        guard availableTypes.contains(.fileURL),
+              availableTypes.contains(Self.autoGeneratedType)
+        else {
+            for url in resolved { url.stopAccessingSecurityScopedResource() }
+            print("[Paste] file URL pasteboard write could not be verified")
+            return nil
+        }
+        let changeCount = pb.changeCount
 
         let urls = resolved
         Task {
             try? await Task.sleep(nanoseconds: 30_000_000_000)
             for url in urls { url.stopAccessingSecurityScopedResource() }
+        }
+        return changeCount
+    }
+
+    private static func richPasteboardType(
+        dataFormat: String?,
+        uti: String?
+    ) -> NSPasteboard.PasteboardType? {
+        for candidate in [dataFormat, uti].compactMap({ $0 }) {
+            switch candidate {
+            case NSPasteboard.PasteboardType.rtf.rawValue:
+                return .rtf
+            case NSPasteboard.PasteboardType.html.rawValue:
+                return .html
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+
+    private static func imagePasteboardType(
+        dataFormat: String?,
+        uti: String?
+    ) -> NSPasteboard.PasteboardType? {
+        for candidate in [dataFormat, uti].compactMap({ $0 }) {
+            switch candidate {
+            case NSPasteboard.PasteboardType.png.rawValue:
+                return .png
+            case NSPasteboard.PasteboardType.tiff.rawValue:
+                return .tiff
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+
+    private static func hasValidImageHeader(
+        _ data: Data,
+        type: NSPasteboard.PasteboardType
+    ) -> Bool {
+        let header = Array(data.prefix(8))
+        switch type {
+        case .png:
+            return header.count >= 8
+                && header[0...7].elementsEqual([137, 80, 78, 71, 13, 10, 26, 10])
+        case .tiff:
+            guard header.count >= 4 else { return false }
+            return header[0...3].elementsEqual([73, 73, 42, 0])
+                || header[0...3].elementsEqual([77, 77, 0, 42])
+        default:
+            return false
         }
     }
 

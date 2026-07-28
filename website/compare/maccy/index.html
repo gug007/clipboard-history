@@ -50,7 +50,7 @@
         "description": "A balanced, source-linked comparison of Maccy and Clipboard History for macOS.",
         "url": "https://clipboard-history.cc/compare/maccy/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -89,7 +89,7 @@
         <div class="article-eyebrow">Free clipboard managers compared</div>
         <h1>Maccy vs Clipboard History</h1>
         <p class="article-lede">Both are free, open-source, focused Mac apps. Maccy is the established minimalist with flexible paste actions; Clipboard History adds named groups and a detailed file-and-folder workflow.</p>
-        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 27, 2026</span></div>
+        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 28, 2026</span></div>
       </header>
       <div class="article-body">
         <section aria-labelledby="short-answer">
@@ -110,7 +110,7 @@
                 <tr><th scope="row">Keep useful clips</th><td>Pin an item to the top and give it a persistent numbered shortcut. <a href="https://github.com/p0deje/Maccy#usage">Maccy usage guide</a>.</td><td>Star clips or place them in named groups; starred and grouped clips are kept until removed. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
                 <tr><th scope="row">Paste formatting</th><td>Documents Option-Shift-Return for pasting without formatting. <a href="https://github.com/p0deje/Maccy#usage">Maccy usage guide</a>.</td><td>No dedicated paste-as-plain-text command is currently documented.</td></tr>
                 <tr><th scope="row">Files and folders</th><td>Maccy’s main documentation focuses on fast retrieval and pinning rather than a dedicated file-reference workflow.</td><td>Stores Finder items by reference, shows a preview, pastes the real item, and can reveal the original in Finder. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
-                <tr><th scope="row">Privacy controls</th><td>Stores history on the computer and honors confidential or transient copy types; recording can be paused. <a href="https://maccy.app/">Maccy privacy summary</a> and <a href="https://github.com/p0deje/Maccy#ignore-custom-copy-types">ignore-type documentation</a>.</td><td>Local SQLite storage, no app telemetry or cloud sync, password-manager exclusions, and a persistent pause control. <a href="/privacy/">Clipboard History privacy details</a>.</td></tr>
+                <tr><th scope="row">Privacy controls</th><td>Stores history on the computer and honors confidential or transient copy types; recording can be paused. <a href="https://maccy.app/">Maccy privacy summary</a> and <a href="https://github.com/p0deje/Maccy#ignore-custom-copy-types">ignore-type documentation</a>.</td><td>Local SQLite storage, no app telemetry or cloud sync; skips copies while one of seven supported password-manager apps or a user-excluded app is frontmost, plus concealed, transient, or auto-generated entries. Recording can be paused. <a href="/privacy/">Clipboard History privacy details</a>.</td></tr>
                 <tr><th scope="row">Installation</th><td>Official site, Mac App Store, GitHub, or Homebrew. <a href="https://maccy.app/">Official download options</a>.</td><td>Signed and notarized DMG from <a href="/download/">the download page</a> and GitHub Releases; not currently in the Mac App Store or Homebrew.</td></tr>
               </tbody>
             </table>
@@ -144,8 +144,8 @@
           <p>Clipboard History is not the automatic winner just because this page lives on its website. It currently has several meaningful limits:</p>
           <ul>
             <li>No Mac-to-Mac, iPhone, or iPad sync.</li>
-            <li>No direct capture of bitmap-only clipboard images, including “Copy Image” and screenshots copied straight to the clipboard. Saving the image as a file works.</li>
-            <li>No OCR, clipboard editor, or dedicated paste-as-plain-text command.</li>
+            <li>Direct PNG and TIFF clipboard images are supported with bounded previews, but there is no OCR, QR recognition, or image-content search.</li>
+            <li>No clipboard editor or dedicated paste-as-plain-text command.</li>
             <li>macOS 14 or later only, and distribution is currently through a direct DMG rather than the App Store or Homebrew.</li>
             <li>Copied files are references, not backups. Moving or deleting the original means the app cannot paste that file from its old location.</li>
           </ul>

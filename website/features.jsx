@@ -27,8 +27,8 @@ function FeatureGrid({ paused = false }) {
           <KindsVisual/>
         </div>
         <div className="feature-icon" aria-hidden="true"><Icon.clipboard/></div>
-        <h3>Text, links, files — even whole folders</h3>
-        <p>Keep text plus files and folders from Finder, complete with thumbnails and previews. <span className="kbd" role="img" aria-label="Command R">⌘R</span> reveals the original.</p>
+        <h3>Images, rich text, files — even whole folders</h3>
+        <p>Keep direct PNG/TIFF images, RTF/HTML with a plain-text fallback, and Finder files or folders with bounded previews. <span className="kbd" role="img" aria-label="Command R">⌘R</span> reveals Finder originals.</p>
       </li>
 
       <li className="feature-card span-4" data-tone="pink">
@@ -156,9 +156,9 @@ function KindsVisual() {
   // Stack of real-looking captured items, one per kind the app records
   const items = [
     { c: "url",   i: <Icon.link/>,  label: "Link",       text: "github.com/anthropics/anthropic-sdk" },
-    { c: "code",  i: <Icon.code/>,  label: "Text",       text: "new Anthropic({ apiKey })", mono: true },
-    { c: "file",  i: <Icon.image/>, label: "File",       text: "Screenshot 2026-06-30.png · 412 KB" },
-    { c: "file",  i: <Icon.doc/>,   label: "Folder",     text: "Mocks · 24 files" },
+    { c: "code",  i: <Icon.text/>,  label: "Rich text",  text: "Formatted meeting notes · RTF" },
+    { c: "file",  i: <Icon.image/>, label: "Image",      text: "Product mockup · PNG" },
+    { c: "file",  i: <Icon.doc/>,   label: "Finder",     text: "Mocks · folder" },
   ];
   return (
     <div className="kinds-visual">

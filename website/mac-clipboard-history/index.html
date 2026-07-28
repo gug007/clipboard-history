@@ -43,7 +43,7 @@
         "description": "How to search clipboard history with Spotlight in macOS Tahoe 26 and use clipboard history on macOS Sonoma or Sequoia.",
         "url": "https://clipboard-history.cc/mac-clipboard-history/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -78,7 +78,7 @@
         <div class="article-eyebrow">Updated for macOS Tahoe 26</div>
         <h1>How to view clipboard history on Mac.</h1>
         <p class="article-lede">macOS Tahoe 26 adds searchable clipboard history to Spotlight. On macOS Sequoia or Sonoma, you still need a clipboard manager to bring back more than your latest copy.</p>
-        <div class="article-meta"><span class="article-pill">Tahoe instructions</span><span class="article-pill">Sonoma &amp; Sequoia</span><span class="article-pill">Updated July 27, 2026</span></div>
+        <div class="article-meta"><span class="article-pill">Tahoe instructions</span><span class="article-pill">Sonoma &amp; Sequoia</span><span class="article-pill">Updated July 28, 2026</span></div>
       </header>
       <div class="article-body">
         <section aria-labelledby="quick-answer">
@@ -111,15 +111,15 @@
           <p>See the <a href="/keyboard-shortcuts/">complete keyboard shortcut reference</a> or compare the <a href="/best-free-clipboard-managers-mac/">best free clipboard-manager options for Mac</a>.</p>
         </section>
         <section aria-labelledby="limits">
-          <h2 id="limits">Know the format limits before you install</h2>
-          <p>Clipboard History records text, links, and Finder file or folder references. It supports image files copied in Finder, because they are files.</p>
-          <p>It does <strong>not</strong> currently store a raw bitmap copied directly from an image editor, browser, or screenshot tool. Save or locate the image as a file in Finder and copy that file instead. Read the <a href="/clipboard-history-files-folders-mac/">files, folders, and image-file guide</a> for examples.</p>
+          <h2 id="limits">Know the format support before you install</h2>
+          <p>Clipboard History records plain text and links, preserves RTF or HTML with a plain-text fallback, and stores direct PNG or TIFF clipboard images with bounded preview thumbnails. It also supports image files and other Finder items by reference.</p>
+          <p>It does <strong>not</strong> perform OCR, QR recognition, or image-content search, and it is not an image editor or visual gallery. Read the <a href="/clipboard-history-files-folders-mac/">files, folders, and image guide</a> for examples.</p>
           <p>It also does not sync history between Macs, iPhones, or iPads. That local-only design is useful if you prefer not to place clipboard history in a cloud service; it is a limitation if cross-device access is essential.</p>
         </section>
         <section aria-labelledby="privacy">
           <h2 id="privacy">Treat every clipboard history as sensitive</h2>
           <p>A history can contain email addresses, private messages, access codes, and other text you did not intend to keep. Before choosing any app, check whether it ignores concealed clipboard data, lets you exclude applications, and makes deletion easy.</p>
-          <p>Clipboard History skips supported password managers and standard concealed or transient clipboard entries. You can add applications to the skip list, pause recording, delete individual clips, or clear the database. The <a href="/security/">security overview</a> explains what that protects—and what it does not.</p>
+          <p>Clipboard History skips copies made while a supported password manager is frontmost and entries marked concealed, transient, or automatically generated. You can add applications to the skip list, pause recording, delete individual clips, or clear the database. The <a href="/security/">security overview</a> explains what that protects—and what it does not.</p>
         </section>
         <aside class="article-cta">
           <h2>Open your history with Shift + Command + V.</h2>

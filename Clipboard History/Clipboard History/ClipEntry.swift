@@ -36,21 +36,19 @@ extension ClipEntry {
         _ text: String,
         sourceApp: String?,
         sourceAppName: String?,
-        deviceId: String
+        deviceId: String,
+        timestamp: Date = Date()
     ) -> (ClipEntry, ClipPayload) {
         let id = UUID().uuidString
-        let now = Date()
-        let firstLine = text
-            .split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: true)
-            .first.map(String.init) ?? text
-        let title = String(firstLine.prefix(120))
+        let kind: Kind = isURL(text) ? .url : .text
+        let title = displayTitle(for: text)
 
         let entry = ClipEntry(
             id: id,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: timestamp,
+            updatedAt: timestamp,
             deviceId: deviceId,
-            kind: .text,
+            kind: kind,
             displayTitle: title,
             displaySubtitle: sourceAppName.map { "from \($0)" },
             byteSize: Int64(text.utf8.count),
@@ -67,21 +65,110 @@ extension ClipEntry {
             id: UUID().uuidString,
             entryId: id,
             position: 0,
-            payloadKind: .text,
+            payloadKind: kind == .url ? .url : .text,
             inlineText: text,
             filename: nil,
             fileURLString: nil,
             bookmarkData: nil,
-            uti: "public.utf8-plain-text",
+            uti: kind == .url ? "public.url" : "public.utf8-plain-text",
             byteSize: Int64(text.utf8.count),
-            iconPNG: nil
+            iconPNG: nil,
+            inlineData: nil,
+            dataFormat: nil
+        )
+        return (entry, payload)
+    }
+
+    static func fromRichText(
+        _ event: CapturedRichTextEvent,
+        deviceId: String
+    ) -> (ClipEntry, ClipPayload) {
+        let id = UUID().uuidString
+        let byteSize = event.data.count + event.plainText.utf8.count
+        let entry = ClipEntry(
+            id: id,
+            createdAt: event.timestamp,
+            updatedAt: event.timestamp,
+            deviceId: deviceId,
+            kind: .richText,
+            displayTitle: displayTitle(for: event.plainText),
+            displaySubtitle: event.sourceAppName.map { "from \($0)" },
+            byteSize: Int64(byteSize),
+            contentHash: sha256(event.data),
+            sourceApp: event.sourceApp,
+            sourceAppName: event.sourceAppName,
+            isPinned: false,
+            pinnedAt: nil,
+            deletedAt: nil,
+            searchableText: event.plainText
+        )
+        let payload = ClipPayload(
+            id: UUID().uuidString,
+            entryId: id,
+            position: 0,
+            payloadKind: .richText,
+            inlineText: event.plainText,
+            filename: nil,
+            fileURLString: nil,
+            bookmarkData: nil,
+            uti: event.uti,
+            byteSize: Int64(byteSize),
+            iconPNG: nil,
+            inlineData: event.data,
+            dataFormat: event.pasteboardType
+        )
+        return (entry, payload)
+    }
+
+    static func fromImage(
+        _ event: CapturedImageEvent,
+        deviceId: String
+    ) -> (ClipEntry, ClipPayload) {
+        let id = UUID().uuidString
+        let formatName: String
+        switch event.pasteboardType {
+        case "public.png": formatName = "PNG"
+        case "public.tiff": formatName = "TIFF"
+        default: formatName = "Clipboard"
+        }
+        let title = "\(formatName) Image"
+        let entry = ClipEntry(
+            id: id,
+            createdAt: event.timestamp,
+            updatedAt: event.timestamp,
+            deviceId: deviceId,
+            kind: .image,
+            displayTitle: title,
+            displaySubtitle: event.sourceAppName.map { "from \($0)" },
+            byteSize: Int64(event.data.count),
+            contentHash: sha256(event.data),
+            sourceApp: event.sourceApp,
+            sourceAppName: event.sourceAppName,
+            isPinned: false,
+            pinnedAt: nil,
+            deletedAt: nil,
+            searchableText: "\(formatName) image"
+        )
+        let payload = ClipPayload(
+            id: UUID().uuidString,
+            entryId: id,
+            position: 0,
+            payloadKind: .image,
+            inlineText: nil,
+            filename: nil,
+            fileURLString: nil,
+            bookmarkData: nil,
+            uti: event.uti,
+            byteSize: Int64(event.data.count),
+            iconPNG: event.iconPNG,
+            inlineData: event.data,
+            dataFormat: event.pasteboardType
         )
         return (entry, payload)
     }
 
     static func fromFiles(_ event: CapturedFileEvent, deviceId: String) -> (ClipEntry, [ClipPayload]) {
         let id = UUID().uuidString
-        let now = Date()
         let kind: Kind = event.files.count > 1 ? .multiFile : .file
 
         let title: String
@@ -108,8 +195,8 @@ extension ClipEntry {
 
         let entry = ClipEntry(
             id: id,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: event.timestamp,
+            updatedAt: event.timestamp,
             deviceId: deviceId,
             kind: kind,
             displayTitle: title,
@@ -136,10 +223,36 @@ extension ClipEntry {
                 bookmarkData: info.bookmarkData,
                 uti: info.uti,
                 byteSize: info.byteSize,
-                iconPNG: info.iconPNG
+                iconPNG: info.iconPNG,
+                inlineData: nil,
+                dataFormat: nil
             )
         }
         return (entry, payloads)
+    }
+
+    private static func displayTitle(for text: String) -> String {
+        let firstLine = text
+            .split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: true)
+            .first.map(String.init) ?? text
+        return String(firstLine.prefix(120))
+    }
+
+    private static func isURL(_ text: String) -> Bool {
+        let candidate = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !candidate.isEmpty else { return false }
+        let fullRange = NSRange(candidate.startIndex..<candidate.endIndex, in: candidate)
+        guard
+            let detector = try? NSDataDetector(
+                types: NSTextCheckingResult.CheckingType.link.rawValue
+            ),
+            let match = detector.firstMatch(
+                in: candidate,
+                options: [],
+                range: fullRange
+            )
+        else { return false }
+        return match.range == fullRange && match.url != nil
     }
 
     private static func sha256(_ data: Data) -> String {

@@ -5,9 +5,18 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (for example: 0.0.27)'
+        required: true
+        type: string
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -20,22 +29,131 @@ jobs:
       PROJECT_FILE: "Clipboard History.xcodeproj"
       SCHEME: "Clipboard History"
       APP_NAME: "Clipboard History"
+      ENTITLEMENTS_FILE: "Clipboard History/Clipboard History.entitlements"
+      MINIMUM_SYSTEM_VERSION: "14.0"
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Tag releases must be checked against the complete main history.
+          fetch-depth: 0
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
 
-      - name: Resolve version from tag
+      - name: Resolve release version
         id: version
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REF_NAME="${GITHUB_REF_NAME:-${{ github.event.inputs.version || 'v0.0.0' }}}"
+          set -euo pipefail
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+              echo "::error::Manual releases must run from the main branch; got '$GITHUB_REF'"
+              exit 1
+            fi
+            REF_NAME="$DISPATCH_VERSION"
+          else
+            REF_NAME="$GITHUB_REF_NAME"
+          fi
+
           VERSION="${REF_NAME#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must contain exactly three numeric components (for example, 0.0.27); got '$REF_NAME'"
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] && [ "$GITHUB_REF_NAME" != "$TAG" ]; then
+            echo "::error::Release tag must be '$TAG'; got '$GITHUB_REF_NAME'"
+            exit 1
+          fi
+
+          git fetch --no-tags origin \
+            "+refs/heads/main:refs/remotes/origin/main"
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] \
+            && ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Release tag '$TAG' must point to a commit on main"
+            exit 1
+          fi
+
+          version_is_greater() {
+            local candidate="$1"
+            local current="$2"
+            local candidate_parts
+            local current_parts
+            local index
+
+            IFS='.' read -r -a candidate_parts <<< "$candidate"
+            IFS='.' read -r -a current_parts <<< "$current"
+            for index in 0 1 2; do
+              if (( 10#${candidate_parts[$index]} > 10#${current_parts[$index]} )); then
+                return 0
+              fi
+              if (( 10#${candidate_parts[$index]} < 10#${current_parts[$index]} )); then
+                return 1
+              fi
+            done
+            return 1
+          }
+
+          assert_newer_than() {
+            local current="${1#v}"
+            local source="$2"
+            if ! [[ "$current" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Could not validate $source version '$1'"
+              exit 1
+            fi
+            if ! version_is_greater "$VERSION" "$current"; then
+              echo "::error::Release $VERSION must be newer than $source version $current"
+              exit 1
+            fi
+          }
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            set +e
+            git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1
+            TAG_LOOKUP_STATUS=$?
+            set -e
+            case "$TAG_LOOKUP_STATUS" in
+              0)
+                echo "::error::Tag '$TAG' already exists; choose a new release version"
+                exit 1
+                ;;
+              2)
+                ;;
+              *)
+                echo "::error::Could not verify whether tag '$TAG' already exists"
+                exit "$TAG_LOOKUP_STATUS"
+                ;;
+            esac
+
+          fi
+
+          MAIN_APPCAST="$RUNNER_TEMP/main-appcast.xml"
+          APPCAST_VERSION=""
+          if git show origin/main:appcast.xml > "$MAIN_APPCAST" 2>/dev/null; then
+            APPCAST_VERSION=$(awk -F '[<>]' \
+              '/<sparkle:shortVersionString>/ { print $3; exit }' \
+              "$MAIN_APPCAST")
+          fi
+          if [ -n "$APPCAST_VERSION" ]; then
+            assert_newer_than "$APPCAST_VERSION" "appcast"
+          fi
+
+          LATEST_RELEASE_TAG=$(gh api \
+            "repos/$GITHUB_REPOSITORY/releases/latest" \
+            --jq '.tag_name')
+          if [ -n "$LATEST_RELEASE_TAG" ]; then
+            assert_newer_than "$LATEST_RELEASE_TAG" "latest GitHub release"
+          fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$REF_NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Import signing certificate
         env:
@@ -68,22 +186,26 @@ jobs:
       - name: Build Release
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          set -o pipefail
+          set -euo pipefail
           xcodebuild \
             -project "$PROJECT_FILE" \
             -scheme "$SCHEME" \
             -configuration Release \
+            -destination "generic/platform=macOS" \
             -derivedDataPath build \
             clean build \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            MACOSX_DEPLOYMENT_TARGET="$MINIMUM_SYSTEM_VERSION" \
             CODE_SIGN_IDENTITY="$SIGN_IDENTITY" \
             CODE_SIGNING_REQUIRED=YES \
             CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             ENABLE_HARDENED_RUNTIME=YES \
             ENABLE_APP_SANDBOX=YES \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
-            MARKETING_VERSION=${{ steps.version.outputs.version }} \
-            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.version }} \
+            MARKETING_VERSION="${{ steps.version.outputs.version }}" \
+            CURRENT_PROJECT_VERSION="${{ steps.version.outputs.version }}" \
             | tee xcodebuild.log | tail -20
 
           APP_BIN="build/Build/Products/Release/$APP_NAME.app/Contents/MacOS/$APP_NAME"
@@ -96,9 +218,15 @@ jobs:
       - name: Re-sign Sparkle frameworks
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          set -e
+          set -euo pipefail
           APP_PATH="build/Build/Products/Release/$APP_NAME.app"
           SPARKLE="$APP_PATH/Contents/Frameworks/Sparkle.framework"
+          ENTITLEMENTS_PATH="$PWD/$ENTITLEMENTS_FILE"
+
+          if [ ! -f "$ENTITLEMENTS_PATH" ]; then
+            echo "::error::Main app entitlements not found at $ENTITLEMENTS_PATH"
+            exit 1
+          fi
 
           if [ ! -d "$SPARKLE" ]; then
             echo "::warning::Sparkle.framework not found — skipping re-sign"
@@ -130,7 +258,9 @@ jobs:
 
           # Re-seal the app bundle so its signature covers the new framework state
           echo "  re-sealing $APP_NAME.app"
-          sign_one "$APP_PATH"
+          codesign --force --options=runtime --timestamp \
+            --entitlements "$ENTITLEMENTS_PATH" \
+            --sign "$SIGN_IDENTITY" "$APP_PATH"
 
           echo "==> Verifying"
           codesign --verify --deep --strict --verbose=2 "$APP_PATH"
@@ -243,9 +373,245 @@ jobs:
             exit "$SIGN_RC"
           fi
 
-          # sign_update prints `sparkle:edSignature="..." length="..."` on stdout
-          SIG_LINE="$SIGN_OUT"
+          # Keep only the machine-readable attributes; diagnostic text must never
+          # leak into the appcast enclosure element or a GitHub Actions output.
+          SIG_LINE=$(printf '%s\n' "$SIGN_OUT" \
+            | grep -Eo 'sparkle:edSignature="[^"]+" length="[0-9]+"' \
+            | tail -1)
+          if [ -z "$SIG_LINE" ]; then
+            echo "::error::sign_update returned no Sparkle signature attributes"
+            exit 1
+          fi
           echo "signature_line=$SIG_LINE" >> "$GITHUB_OUTPUT"
+
+      - name: Validate final DMG
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+          DMG_PATH: ${{ steps.dmg.outputs.dmg_path }}
+        run: |
+          set -euo pipefail
+
+          MOUNT_POINT=$(mktemp -d "$RUNNER_TEMP/clipboard-history-dmg.XXXXXX")
+          ATTACHED=0
+          cleanup() {
+            if [ "$ATTACHED" -eq 1 ]; then
+              hdiutil detach "$MOUNT_POINT" -quiet || hdiutil detach "$MOUNT_POINT" -force -quiet || true
+            fi
+            rmdir "$MOUNT_POINT" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          hdiutil attach "$DMG_PATH" \
+            -readonly \
+            -nobrowse \
+            -mountpoint "$MOUNT_POINT" \
+            >/dev/null
+          ATTACHED=1
+
+          APP_PATH="$MOUNT_POINT/$APP_NAME.app"
+          INFO_PLIST="$APP_PATH/Contents/Info.plist"
+          MAIN_BINARY="$APP_PATH/Contents/MacOS/$APP_NAME"
+          MIGRATION_PLIST="$APP_PATH/Contents/Resources/container-migration.plist"
+
+          if [ ! -f "$MAIN_BINARY" ]; then
+            echo "::error::Final DMG contains no executable at $MAIN_BINARY"
+            exit 1
+          fi
+          if [ ! -f "$MIGRATION_PLIST" ]; then
+            echo "::error::Final app is missing Contents/Resources/container-migration.plist"
+            exit 1
+          fi
+          plutil -lint "$MIGRATION_PLIST"
+          MIGRATION_SOURCE=$(/usr/libexec/PlistBuddy \
+            -c "Print :Move:0" "$MIGRATION_PLIST")
+          [ "$MIGRATION_SOURCE" = '${ApplicationSupport}/Clipboard History' ] || {
+            echo "::error::Unexpected legacy container migration source '$MIGRATION_SOURCE'"
+            exit 1
+          }
+
+          BUNDLE_IDENTIFIER=$(plutil -extract CFBundleIdentifier raw -o - "$INFO_PLIST")
+          SHORT_VERSION=$(plutil -extract CFBundleShortVersionString raw -o - "$INFO_PLIST")
+          BUNDLE_VERSION=$(plutil -extract CFBundleVersion raw -o - "$INFO_PLIST")
+          PLIST_MIN_OS=$(plutil -extract LSMinimumSystemVersion raw -o - "$INFO_PLIST")
+
+          [ "$BUNDLE_IDENTIFIER" = "$BUNDLE_ID" ] || {
+            echo "::error::Expected bundle identifier '$BUNDLE_ID', found '$BUNDLE_IDENTIFIER'"
+            exit 1
+          }
+          [ "$SHORT_VERSION" = "$EXPECTED_VERSION" ] || {
+            echo "::error::Expected short version '$EXPECTED_VERSION', found '$SHORT_VERSION'"
+            exit 1
+          }
+          [ "$BUNDLE_VERSION" = "$EXPECTED_VERSION" ] || {
+            echo "::error::Expected bundle version '$EXPECTED_VERSION', found '$BUNDLE_VERSION'"
+            exit 1
+          }
+          [ "$PLIST_MIN_OS" = "$MINIMUM_SYSTEM_VERSION" ] || {
+            echo "::error::Expected minimum macOS '$MINIMUM_SYSTEM_VERSION', found '$PLIST_MIN_OS'"
+            exit 1
+          }
+
+          version_not_newer_than() {
+            local candidate="$1"
+            local maximum="$2"
+            local candidate_major candidate_minor candidate_patch
+            local maximum_major maximum_minor maximum_patch
+
+            IFS='.' read -r candidate_major candidate_minor candidate_patch <<< "$candidate"
+            IFS='.' read -r maximum_major maximum_minor maximum_patch <<< "$maximum"
+            candidate_minor="${candidate_minor:-0}"
+            candidate_patch="${candidate_patch:-0}"
+            maximum_minor="${maximum_minor:-0}"
+            maximum_patch="${maximum_patch:-0}"
+
+            if (( 10#$candidate_major != 10#$maximum_major )); then
+              (( 10#$candidate_major < 10#$maximum_major ))
+              return
+            fi
+            if (( 10#$candidate_minor != 10#$maximum_minor )); then
+              (( 10#$candidate_minor < 10#$maximum_minor ))
+              return
+            fi
+            (( 10#$candidate_patch <= 10#$maximum_patch ))
+          }
+
+          binary_minimum_os() {
+            local architecture="$1"
+            local binary="$2"
+            otool -arch "$architecture" -l "$binary" | awk '
+              $1 == "cmd" {
+                modern = ($2 == "LC_BUILD_VERSION")
+                legacy = ($2 == "LC_VERSION_MIN_MACOSX")
+                next
+              }
+              !found && modern && $1 == "minos" { print $2; found = 1 }
+              !found && legacy && $1 == "version" { print $2; found = 1 }
+            '
+          }
+
+          # Every runnable Mach-O must support both advertised architectures.
+          # Nested components may target an older macOS, but never a newer one
+          # than the app's advertised minimum.
+          MACH_O_COUNT=0
+          while IFS= read -r -d '' CANDIDATE; do
+            if file -b "$CANDIDATE" | grep -q "Mach-O"; then
+              MACH_O_COUNT=$((MACH_O_COUNT + 1))
+              BINARY_ARCHS=$(lipo -archs "$CANDIDATE")
+              case " $BINARY_ARCHS " in
+                *" arm64 "*) ;;
+                *)
+                  echo "::error::$(basename "$CANDIDATE") is missing arm64 (has: $BINARY_ARCHS)"
+                  exit 1
+                  ;;
+              esac
+              case " $BINARY_ARCHS " in
+                *" x86_64 "*) ;;
+                *)
+                  echo "::error::$(basename "$CANDIDATE") is missing x86_64 (has: $BINARY_ARCHS)"
+                  exit 1
+                  ;;
+              esac
+
+              for ARCH in arm64 x86_64; do
+                COMPONENT_MIN_OS=$(binary_minimum_os "$ARCH" "$CANDIDATE")
+                if [ -z "$COMPONENT_MIN_OS" ]; then
+                  echo "::error::Could not read $ARCH minimum OS from $CANDIDATE"
+                  exit 1
+                fi
+                if ! version_not_newer_than "$COMPONENT_MIN_OS" "$MINIMUM_SYSTEM_VERSION"; then
+                  echo "::error::$CANDIDATE ($ARCH) requires macOS $COMPONENT_MIN_OS, newer than $MINIMUM_SYSTEM_VERSION"
+                  exit 1
+                fi
+              done
+            fi
+          done < <(find "$APP_PATH" -type f -perm -111 -print0)
+
+          [ "$MACH_O_COUNT" -gt 0 ] || {
+            echo "::error::Final app contains no executable Mach-O files"
+            exit 1
+          }
+
+          for ARCH in arm64 x86_64; do
+            BINARY_MIN_OS=$(binary_minimum_os "$ARCH" "$MAIN_BINARY")
+            [ "$BINARY_MIN_OS" = "$MINIMUM_SYSTEM_VERSION" ] || {
+              echo "::error::$ARCH executable targets macOS '$BINARY_MIN_OS', expected '$MINIMUM_SYSTEM_VERSION'"
+              exit 1
+            }
+          done
+
+          ENTITLEMENTS_DUMP="$RUNNER_TEMP/final-app-entitlements.plist"
+          codesign --display --entitlements - --xml "$APP_PATH" \
+            > "$ENTITLEMENTS_DUMP" 2>/dev/null
+
+          assert_entitlement() {
+            KEY="$1"
+            EXPECTED="$2"
+            ACTUAL=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$ENTITLEMENTS_DUMP" 2>/dev/null || true)
+            [ "$ACTUAL" = "$EXPECTED" ] || {
+              echo "::error::Entitlement '$KEY' is '$ACTUAL'; expected '$EXPECTED'"
+              exit 1
+            }
+          }
+
+          assert_entitlement "com.apple.security.app-sandbox" "true"
+          assert_entitlement "com.apple.security.files.user-selected.read-only" "true"
+          assert_entitlement "com.apple.security.files.bookmarks.app-scope" "true"
+          assert_entitlement "com.apple.security.network.client" "true"
+
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+          spctl --assess --type execute --verbose=2 "$APP_PATH"
+
+          echo "Validated $APP_NAME $EXPECTED_VERSION:"
+          echo "  bundle: $BUNDLE_IDENTIFIER"
+          echo "  architectures: arm64 x86_64 ($MACH_O_COUNT Mach-O files)"
+          echo "  minimum macOS: $MINIMUM_SYSTEM_VERSION"
+          echo "  sandbox entitlements: present"
+
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.dmg.outputs.dmg_path }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          name: ${{ steps.version.outputs.tag }}
+          tag_name: ${{ steps.version.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify published release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+          DMG_NAME: ${{ steps.dmg.outputs.dmg_name }}
+          DMG_PATH: ${{ steps.dmg.outputs.dmg_path }}
+        run: |
+          set -euo pipefail
+          ASSET_INFO=$(gh api "repos/$GH_REPO/releases/tags/$TAG" \
+            | jq -r --arg name "$DMG_NAME" \
+              '.assets[] | select(.name == $name) | "\(.size)\t\(.state)"')
+
+          if [ -z "$ASSET_INFO" ]; then
+            echo "::error::Release $TAG has no asset named $DMG_NAME"
+            exit 1
+          fi
+
+          ASSET_SIZE=$(printf '%s\n' "$ASSET_INFO" | awk -F '\t' 'NR == 1 { print $1 }')
+          ASSET_STATE=$(printf '%s\n' "$ASSET_INFO" | awk -F '\t' 'NR == 1 { print $2 }')
+          LOCAL_SIZE=$(stat -f '%z' "$DMG_PATH")
+
+          [ "$ASSET_STATE" = "uploaded" ] || {
+            echo "::error::Release asset state is '$ASSET_STATE', expected 'uploaded'"
+            exit 1
+          }
+          [ "$ASSET_SIZE" = "$LOCAL_SIZE" ] || {
+            echo "::error::Uploaded asset is $ASSET_SIZE bytes; local DMG is $LOCAL_SIZE bytes"
+            exit 1
+          }
+
+          echo "Verified $TAG/$DMG_NAME ($ASSET_SIZE bytes) before appcast publication"
 
       - name: Update appcast.xml
         env:
@@ -256,7 +622,7 @@ jobs:
           DMG_PATH: ${{ steps.dmg.outputs.dmg_path }}
           SIG_LINE: ${{ steps.sparkle.outputs.signature_line }}
         run: |
-          set -e
+          set -euo pipefail
           DOWNLOAD_URL="https://github.com/$GH_REPO/releases/download/$TAG/$DMG_NAME"
           PUB_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S +0000")"
           MIN_OS="14.0"
@@ -276,7 +642,13 @@ jobs:
           XML
           )
 
-          if [ ! -f appcast.xml ]; then
+          # Always add the item to the newest appcast from main. The tag's
+          # checkout may predate one or more already-published releases.
+          git fetch --no-tags origin \
+            "+refs/heads/main:refs/remotes/origin/main"
+          if git show origin/main:appcast.xml > appcast.xml 2>/dev/null; then
+            :
+          else
             cat > appcast.xml <<XML
           <?xml version="1.0" encoding="utf-8"?>
           <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
@@ -285,12 +657,12 @@ jobs:
               <link>https://github.com/$GH_REPO</link>
               <description>Latest releases of Clipboard History.</description>
               <language>en</language>
-          $NEW_ITEM
             </channel>
           </rss>
           XML
-          else
-            python3 - "$NEW_ITEM" <<'PY'
+          fi
+
+          python3 - "$NEW_ITEM" <<'PY'
           import sys, pathlib, re
           new_item = sys.argv[1]
           path = pathlib.Path("appcast.xml")
@@ -301,7 +673,8 @@ jobs:
               text = text.replace("</channel>", new_item + "\n  </channel>", 1)
           path.write_text(text)
           PY
-          fi
+
+          xmllint --noout appcast.xml
 
           echo "::group::appcast.xml"
           cat appcast.xml
@@ -313,11 +686,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # The workflow checks out the tag, but main may have advanced past it.
-          # Re-apply the new appcast on top of the latest main so the push fast-forwards.
+          # Update the exact main revision used to generate this appcast. If
+          # main advances concurrently, the push fails instead of losing data.
           NEW_APPCAST=$(mktemp)
           cp appcast.xml "$NEW_APPCAST"
-          git fetch origin main
           git checkout -B main origin/main
           cp "$NEW_APPCAST" appcast.xml
           rm -f "$NEW_APPCAST"
@@ -329,13 +701,3 @@ jobs:
             git commit -m "release: ${{ steps.version.outputs.version }} appcast"
             git push origin main
           fi
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.dmg.outputs.dmg_path }}
-          generate_release_notes: true
-          name: ${{ steps.version.outputs.tag }}
-          tag_name: ${{ steps.version.outputs.tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -8,15 +8,16 @@ struct SettingsView: View {
     @State private var settings = AppSettings.shared
 
     enum Tab: Hashable {
-        case general, storage, privacy, about
+        case general, shortcuts, storage, privacy, about
     }
 
     private var detailTitle: String {
         switch selection {
-        case .general: return "General"
-        case .storage: return "Storage"
-        case .privacy: return "Privacy"
-        case .about:   return "About"
+        case .general:   return "General"
+        case .shortcuts: return "Shortcuts"
+        case .storage:   return "Storage"
+        case .privacy:   return "Privacy"
+        case .about:     return "About"
         }
     }
 
@@ -25,6 +26,9 @@ struct SettingsView: View {
             List(selection: $selection) {
                 NavigationLink(value: Tab.general) {
                     Label("General", systemImage: "gear")
+                }
+                NavigationLink(value: Tab.shortcuts) {
+                    Label("Shortcuts", systemImage: "keyboard")
                 }
                 NavigationLink(value: Tab.storage) {
                     Label("Storage", systemImage: "internaldrive")
@@ -42,10 +46,11 @@ struct SettingsView: View {
         } detail: {
             Group {
                 switch selection {
-                case .general: GeneralSettingsTab()
-                case .storage: StorageSettingsTab()
-                case .privacy: PrivacySettingsTab()
-                case .about:   AboutTab()
+                case .general:   GeneralSettingsTab()
+                case .shortcuts: ShortcutsSettingsTab()
+                case .storage:   StorageSettingsTab()
+                case .privacy:   PrivacySettingsTab()
+                case .about:     AboutTab()
                 }
             }
             .navigationTitle(detailTitle)
@@ -148,6 +153,58 @@ private struct GeneralSettingsTab: View {
     }
 }
 
+// MARK: - Shortcuts
+
+private struct ShortcutsSettingsTab: View {
+    private var openShortcut: String? {
+        KeyboardShortcuts.getShortcut(for: .openHistory)?.description
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text("Open clipboard history")
+                            .font(.system(size: 13, weight: .semibold))
+                        if let openShortcut {
+                            ShortcutKeyCap(keys: openShortcut)
+                        }
+                        Spacer()
+                    }
+                    Text(
+                        openShortcut == nil
+                            ? "No shortcut is set yet — choose one in General."
+                            : "Works from any app. Change it in General."
+                    )
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                }
+
+                Divider().opacity(0.35)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Inside the overlay")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("Press ⌘/ while the overlay is open to see this list there.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+
+                ShortcutsGrid()
+
+                Text(ShortcutsReference.windowTip)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollContentBackground(.hidden)
+    }
+}
+
 // MARK: - Storage
 
 private struct StorageSettingsTab: View {
@@ -161,7 +218,7 @@ private struct StorageSettingsTab: View {
                 section(
                     title: "History size",
                     valueLabel: formatNumber(settings.retentionCap) + " items",
-                    description: "Older non-favorited items are auto-removed once you exceed this cap."
+                    description: "Older items that aren't favorites or in a group are permanently removed once you exceed this cap."
                 ) {
                     Slider(
                         value: Binding(
@@ -169,7 +226,10 @@ private struct StorageSettingsTab: View {
                             set: { settings.retentionCap = Int($0) }
                         ),
                         in: 100...10_000,
-                        step: 100
+                        step: 100,
+                        onEditingChanged: { editing in
+                            if !editing { enforceRetentionCap() }
+                        }
                     )
                     .controlSize(.small)
                     .accessibilityLabel("History size")
@@ -179,9 +239,9 @@ private struct StorageSettingsTab: View {
                 Divider().opacity(0.35)
 
                 section(
-                    title: "Maximum file size to capture",
+                    title: "Maximum clipboard item size",
                     valueLabel: "\(settings.perFileSizeCapMB) MB",
-                    description: "Files larger than this still appear in history as metadata, but their bytes won't be uploaded to iCloud."
+                    description: "Oversized text, rich text, and clipboard images are skipped. Finder files and folders are stored only as references, so their size does not count."
                 ) {
                     Slider(
                         value: Binding(
@@ -192,7 +252,7 @@ private struct StorageSettingsTab: View {
                         step: 1
                     )
                     .controlSize(.small)
-                    .accessibilityLabel("Maximum file size to capture")
+                    .accessibilityLabel("Maximum clipboard item size")
                     .accessibilityValue("\(settings.perFileSizeCapMB) megabytes")
                 }
 
@@ -236,6 +296,14 @@ private struct StorageSettingsTab: View {
 
     private func formatNumber(_ n: Int) -> String {
         n.formatted(.number.grouping(.automatic).locale(Locale(identifier: "en_US")))
+    }
+
+    private func enforceRetentionCap() {
+        do {
+            try (NSApp.delegate as? AppDelegate)?.historyStore?.enforceRetentionCap()
+        } catch {
+            NSLog("Retention update failed: %@", String(describing: error))
+        }
     }
 
     @ViewBuilder
@@ -352,7 +420,7 @@ private struct PrivacySettingsTab: View {
                 }
                 .buttonStyle(.borderless)
                 .controlSize(.small)
-                .accessibilityHint("Restores the built-in list of password managers and secure-input apps.")
+                .accessibilityHint("Restores the built-in supported password-manager exclusions.")
             }
             .padding(.horizontal, 28)
             .padding(.vertical, 14)
@@ -367,11 +435,24 @@ private struct PrivacySettingsTab: View {
     }
 
     private func displayName(for bundleID: String) -> String {
+        let knownNames: [String: String] = [
+            "com.1password.1password": "1Password 8",
+            "com.agilebits.onepassword7": "1Password 7",
+            "com.bitwarden.desktop": "Bitwarden",
+            "com.dashlane.Dashlane": "Dashlane",
+            "com.dashlane.5": "Dashlane (legacy)",
+            "com.apple.keychainaccess": "Keychain Access",
+            "com.apple.Passwords": "Passwords",
+            "com.lastpass.LastPassMacApp": "LastPass",
+            "com.lastpass.lastpassforsafari": "LastPass for Safari",
+            "org.keepassxc.keepassxc": "KeePassXC"
+        ]
         guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID),
               let bundle = Bundle(url: url)
-        else { return bundleID }
+        else { return knownNames[bundleID] ?? bundleID }
         return (bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
             ?? (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String)
+            ?? knownNames[bundleID]
             ?? bundleID
     }
 
@@ -401,6 +482,10 @@ private struct PrivacySettingsTab: View {
 // MARK: - About
 
 private struct AboutTab: View {
+    private var shortcutLabel: String {
+        KeyboardShortcuts.getShortcut(for: .openHistory)?.description ?? "Set a shortcut in General"
+    }
+
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: "list.clipboard")
@@ -418,11 +503,11 @@ private struct AboutTab: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Clipboard History, version \(Bundle.main.shortVersion), build \(Bundle.main.buildNumber)")
-            Text("⇧⌘V to open · pause from the menu bar")
+            Text("\(shortcutLabel) to open · pause from the menu bar")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .padding(.top, 6)
-                .accessibilityLabel("Press Shift Command V to open. Pause from the menu bar.")
+                .accessibilityLabel("\(shortcutLabel) opens clipboard history. Pause from the menu bar.")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)

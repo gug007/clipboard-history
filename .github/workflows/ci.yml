@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Tests + universal macOS 14 build
+    runs-on: macos-latest
+    env:
+      PROJECT_DIR: "Clipboard History"
+      PROJECT_FILE: "Clipboard History.xcodeproj"
+      SCHEME: "Clipboard History"
+      APP_NAME: "Clipboard History"
+      MINIMUM_SYSTEM_VERSION: "14.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Run macOS regression tests
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+          TEST_HOME="$RUNNER_TEMP/clipboard-history-test-home"
+          mkdir -p "$TEST_HOME"
+          CFFIXED_USER_HOME="$TEST_HOME" xcodebuild \
+            -project "$PROJECT_FILE" \
+            -scheme "$SCHEME" \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            -derivedDataPath "$RUNNER_TEMP/clipboard-history-tests" \
+            test \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | tee "$RUNNER_TEMP/clipboard-history-tests.log"
+
+      - name: Build unsigned universal app
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$PROJECT_FILE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -derivedDataPath "$RUNNER_TEMP/clipboard-history-release" \
+            clean build \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            MACOSX_DEPLOYMENT_TARGET="$MINIMUM_SYSTEM_VERSION" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | tee "$RUNNER_TEMP/clipboard-history-release.log"
+
+      - name: Verify build metadata
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+          APP_PATH="$RUNNER_TEMP/clipboard-history-release/Build/Products/Release/$APP_NAME.app"
+          INFO_PLIST="$APP_PATH/Contents/Info.plist"
+          MAIN_BINARY="$APP_PATH/Contents/MacOS/$APP_NAME"
+          MIGRATION_PLIST="$APP_PATH/Contents/Resources/container-migration.plist"
+
+          if [ ! -f "$MAIN_BINARY" ]; then
+            echo "::error::Build produced no executable at $MAIN_BINARY"
+            exit 1
+          fi
+          if [ ! -f "$MIGRATION_PLIST" ]; then
+            echo "::error::Build is missing Contents/Resources/container-migration.plist"
+            exit 1
+          fi
+          plutil -lint "$MIGRATION_PLIST"
+
+          ARCHS_FOUND=$(lipo -archs "$MAIN_BINARY")
+          case " $ARCHS_FOUND " in
+            *" arm64 "*) ;;
+            *)
+              echo "::error::CI executable is missing arm64 (has: $ARCHS_FOUND)"
+              exit 1
+              ;;
+          esac
+          case " $ARCHS_FOUND " in
+            *" x86_64 "*) ;;
+            *)
+              echo "::error::CI executable is missing x86_64 (has: $ARCHS_FOUND)"
+              exit 1
+              ;;
+          esac
+
+          PLIST_MIN_OS=$(plutil -extract LSMinimumSystemVersion raw -o - "$INFO_PLIST")
+          [ "$PLIST_MIN_OS" = "$MINIMUM_SYSTEM_VERSION" ] || {
+            echo "::error::Expected minimum macOS '$MINIMUM_SYSTEM_VERSION', found '$PLIST_MIN_OS'"
+            exit 1
+          }
+
+          for ARCH in arm64 x86_64; do
+            BINARY_MIN_OS=$(otool -arch "$ARCH" -l "$MAIN_BINARY" \
+              | awk '!found && $1 == "minos" { print $2; found = 1 }')
+            [ "$BINARY_MIN_OS" = "$MINIMUM_SYSTEM_VERSION" ] || {
+              echo "::error::$ARCH executable targets macOS '$BINARY_MIN_OS', expected '$MINIMUM_SYSTEM_VERSION'"
+              exit 1
+            }
+          done
+
+          echo "Verified universal $APP_NAME build for macOS $MINIMUM_SYSTEM_VERSION"

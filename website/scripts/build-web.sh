@@ -85,18 +85,13 @@ APPCAST="$ROOT/../appcast.xml"
 if [ -f "$APPCAST" ]; then
   VERSION=$(grep -o '<sparkle:shortVersionString>[^<]*' "$APPCAST" | head -1 | sed 's/.*>//')
   DMG_URL=$(grep -o 'url="[^"]*\.dmg"' "$APPCAST" | head -1 | sed 's/^url="//; s/"$//')
-  DMG_BYTES=$(grep -o 'length="[0-9]*"' "$APPCAST" | head -1 | sed 's/[^0-9]//g')
   if [ -n "$VERSION" ]; then
-    echo "release facts from appcast: v$VERSION ($DMG_BYTES bytes)"
+    echo "release facts from appcast: v$VERSION"
     sed -i '' -E "s|const FALLBACK_VERSION = \"[^\"]*\"|const FALLBACK_VERSION = \"$VERSION\"|" "$CONCAT"
     sed -i '' -E "s|\"softwareVersion\": \"[^\"]*\"|\"softwareVersion\": \"$VERSION\"|" "$ROOT/index.html"
     if [ -n "$DMG_URL" ]; then
       sed -i '' -E "s|const FALLBACK_DOWNLOAD_URL = \"[^\"]*\"|const FALLBACK_DOWNLOAD_URL = \"$DMG_URL\"|" "$CONCAT"
       sed -i '' -E "s|\"installUrl\": \"[^\"]*\"|\"installUrl\": \"$DMG_URL\"|" "$ROOT/index.html"
-    fi
-    if [ -n "$DMG_BYTES" ]; then
-      MB=$(( (DMG_BYTES + 524288) / 1048576 ))
-      sed -i '' -E "s|\"fileSize\": \"[^\"]*\"|\"fileSize\": \"$MB MB\"|" "$ROOT/index.html"
     fi
   fi
 else

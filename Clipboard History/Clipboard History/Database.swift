@@ -6,6 +6,9 @@ enum AppDatabase {
         var config = Configuration()
         config.prepareDatabase { db in
             try db.execute(sql: "PRAGMA foreign_keys = ON")
+            // Physical deletion should remove clipboard bytes from live
+            // database pages immediately, even before a later VACUUM.
+            try db.execute(sql: "PRAGMA secure_delete = ON")
         }
         let pool = try DatabasePool(path: url.path, configuration: config)
         try migrator.migrate(pool)
@@ -103,6 +106,38 @@ enum AppDatabase {
                 on: "clip_entry_group",
                 columns: ["groupId"]
             )
+        }
+
+        m.registerMigration("v4_inline_payload_data") { db in
+            try db.alter(table: "clip_payload") { t in
+                t.add(column: "inlineData", .blob)
+                t.add(column: "dataFormat", .text)
+            }
+        }
+
+        m.registerMigration("v5_purge_legacy_soft_deletes") { db in
+            // Purge children explicitly before their legacy tombstones.
+            // This is robust even for databases whose older foreign-key
+            // definitions or migration state do not apply cascades here.
+            try db.execute(sql: """
+                DELETE FROM clip_fts
+                WHERE entryId IN (
+                    SELECT id FROM clip_entry WHERE deletedAt IS NOT NULL
+                )
+                """)
+            try db.execute(sql: """
+                DELETE FROM clip_entry_group
+                WHERE entryId IN (
+                    SELECT id FROM clip_entry WHERE deletedAt IS NOT NULL
+                )
+                """)
+            try db.execute(sql: """
+                DELETE FROM clip_payload
+                WHERE entryId IN (
+                    SELECT id FROM clip_entry WHERE deletedAt IS NOT NULL
+                )
+                """)
+            try db.execute(sql: "DELETE FROM clip_entry WHERE deletedAt IS NOT NULL")
         }
 
         return m

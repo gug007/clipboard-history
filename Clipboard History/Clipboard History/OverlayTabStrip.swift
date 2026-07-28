@@ -15,18 +15,24 @@ struct OverlayTabStrip: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
-                tab(label: "All", systemImage: nil, isSelected: selectedFilter == .all) {
+                tab(
+                    label: "All",
+                    systemImage: nil,
+                    isSelected: selectedFilter == .all,
+                    shortcut: 1
+                ) {
                     selectedFilter = .all
                 }
                 tab(
                     label: "Favorites",
                     systemImage: "star.fill",
-                    isSelected: selectedFilter == .favorites
+                    isSelected: selectedFilter == .favorites,
+                    shortcut: 2
                 ) {
                     selectedFilter = .favorites
                 }
-                ForEach(groups) { group in
-                    groupTab(group)
+                ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
+                    groupTab(group, shortcut: index + 3)
                 }
                 if isCreating {
                     creationField
@@ -44,23 +50,30 @@ struct OverlayTabStrip: View {
         label: String,
         systemImage: String?,
         isSelected: Bool,
+        shortcut: Int?,
         action: @escaping () -> Void
     ) -> some View {
         TabPill(
             label: label,
             systemImage: systemImage,
             isSelected: isSelected,
+            shortcut: shortcut,
             action: action
         )
     }
 
     @ViewBuilder
-    private func groupTab(_ group: ClipGroup) -> some View {
+    private func groupTab(_ group: ClipGroup, shortcut: Int) -> some View {
         let isSelected: Bool = {
             if case .group(let id) = selectedFilter { return id == group.id }
             return false
         }()
-        tab(label: group.name, systemImage: nil, isSelected: isSelected) {
+        tab(
+            label: group.name,
+            systemImage: nil,
+            isSelected: isSelected,
+            shortcut: shortcut
+        ) {
             selectedFilter = .group(group.id)
         }
         .contextMenu {
@@ -148,6 +161,8 @@ private struct TabPill: View {
     let label: String
     let systemImage: String?
     let isSelected: Bool
+    /// Position in the Option-digit run, when this tab is within reach of one.
+    let shortcut: Int?
     let action: () -> Void
 
     @State private var isHovering = false
@@ -169,9 +184,15 @@ private struct TabPill: View {
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        .help(helpText)
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.12), value: isHovering)
+    }
+
+    private var helpText: String {
+        guard let shortcut, shortcut <= 9 else { return label }
+        return "\(label) — ⌥\(shortcut)"
     }
 
     private var foreground: Color {

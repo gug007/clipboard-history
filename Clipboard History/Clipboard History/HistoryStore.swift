@@ -63,37 +63,52 @@ final class HistoryStore {
 
     func clearAll() throws {
         try pool.write { db in
+            try db.execute(sql: "DELETE FROM clip_fts")
+            try db.execute(sql: "DELETE FROM clip_entry_group")
             try db.execute(sql: "DELETE FROM clip_payload")
             try db.execute(sql: "DELETE FROM clip_entry")
-            try db.execute(sql: "DELETE FROM clip_fts")
             print("[Storage] cleared all history")
+        }
+
+        // Rebuild the database and truncate its WAL so removed clipboard content
+        // is not left behind in unused database pages after an explicit clear.
+        do {
+            try pool.writeWithoutTransaction { db in
+                try db.execute(sql: "VACUUM")
+                try db.checkpoint(.truncate)
+            }
+        } catch {
+            // The rows are already gone. Maintenance can fail transiently if a
+            // reader is holding a snapshot, so don't report a failed clear.
+            NSLog("Post-clear database maintenance failed: %@", String(describing: error))
+        }
+    }
+
+    func enforceRetentionCap() throws {
+        try pool.write { db in
+            try Self.pruneInTransaction(db: db, cap: AppSettings.shared.retentionCap)
         }
     }
 
     private static func pruneInTransaction(db: GRDB.Database, cap: Int) throws {
-        let toDeleteIds = try String.fetchAll(db, sql: """
+        let legacyDeletedIds = try String.fetchAll(
+            db,
+            sql: "SELECT id FROM clip_entry WHERE deletedAt IS NOT NULL"
+        )
+        let overflowIds = try String.fetchAll(db, sql: """
             SELECT id FROM clip_entry
             WHERE deletedAt IS NULL
               AND isPinned = 0
               AND id NOT IN (SELECT entryId FROM clip_entry_group)
             ORDER BY createdAt DESC
             LIMIT -1 OFFSET ?
-            """, arguments: [cap])
+            """, arguments: [max(0, cap)])
 
+        let toDeleteIds = legacyDeletedIds + overflowIds
         guard !toDeleteIds.isEmpty else { return }
 
-        let now = Date()
-        for id in toDeleteIds {
-            try db.execute(
-                sql: "UPDATE clip_entry SET deletedAt = ?, updatedAt = ? WHERE id = ?",
-                arguments: [now, now, id]
-            )
-            try db.execute(
-                sql: "DELETE FROM clip_fts WHERE entryId = ?",
-                arguments: [id]
-            )
-        }
-        print("[Retention] soft-deleted \(toDeleteIds.count) entries past cap=\(cap)")
+        try deleteEntries(db: db, ids: toDeleteIds)
+        print("[Retention] permanently deleted \(toDeleteIds.count) entries past cap=\(cap)")
     }
 
     func recent(limit: Int = 50) throws -> [ClipEntry] {
@@ -117,12 +132,7 @@ final class HistoryStore {
 
     func delete(id: String) throws {
         try pool.write { db in
-            let now = Date()
-            try db.execute(
-                sql: "UPDATE clip_entry SET deletedAt = ?, updatedAt = ? WHERE id = ?",
-                arguments: [now, now, id]
-            )
-            try db.execute(sql: "DELETE FROM clip_fts WHERE entryId = ?", arguments: [id])
+            try Self.deleteEntries(db: db, ids: [id])
         }
     }
 
@@ -142,52 +152,62 @@ final class HistoryStore {
         }
     }
 
-    func observeItems(limit: Int = 100, filter: Filter = .all) -> AsyncValueObservation<[ClipItem]> {
-        ValueObservation
+    func observeItems(
+        limit: Int = 100,
+        filter: Filter = .all,
+        query: String = ""
+    ) -> AsyncValueObservation<[ClipItem]> {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ftsQuery = Self.makeFTSQuery(from: trimmedQuery)
+
+        return ValueObservation
             .tracking { db -> [ClipItem] in
                 let entries: [ClipEntry]
-                switch filter {
-                case .all:
-                    entries = try ClipEntry
-                        .filter(Column("deletedAt") == nil)
-                        .order(Column("createdAt").desc)
-                        .limit(limit)
-                        .fetchAll(db)
-                case .favorites:
-                    entries = try ClipEntry
-                        .filter(Column("deletedAt") == nil)
-                        .filter(Column("isPinned") == true)
-                        .order(Column("createdAt").desc)
-                        .limit(limit)
-                        .fetchAll(db)
-                case .group(let groupId):
-                    entries = try ClipEntry.fetchAll(db, sql: """
-                        SELECT e.* FROM clip_entry e
-                        JOIN clip_entry_group eg ON eg.entryId = e.id
-                        WHERE e.deletedAt IS NULL AND eg.groupId = ?
-                        ORDER BY e.createdAt DESC
-                        LIMIT ?
-                        """, arguments: [groupId, limit])
+                if trimmedQuery.isEmpty {
+                    entries = try Self.fetchBrowsingEntries(
+                        db: db,
+                        limit: limit,
+                        filter: filter
+                    )
+                } else if let ftsQuery {
+                    entries = try Self.fetchSearchEntries(
+                        db: db,
+                        limit: limit,
+                        filter: filter,
+                        ftsQuery: ftsQuery
+                    )
+                } else {
+                    entries = []
                 }
 
                 let groupsByEntry = try Self.fetchGroupNames(
                     db: db,
                     entryIds: entries.map(\.id)
                 )
+                let payloadMetadata = try Self.fetchPayloadMetadata(
+                    db: db,
+                    entryIds: entries
+                        .filter {
+                            $0.kind == .file
+                                || $0.kind == .multiFile
+                                || $0.kind == .image
+                        }
+                        .map(\.id)
+                )
 
-                return try entries.map { entry in
+                return entries.map { entry in
                     let firstIcon: Data?
                     var isStale = false
                     if entry.kind == .file || entry.kind == .multiFile {
-                        let firstPayload = try ClipPayload
-                            .filter(Column("entryId") == entry.id)
-                            .order(Column("position"))
-                            .limit(1)
-                            .fetchOne(db)
-                        firstIcon = firstPayload?.iconPNG
-                        if let bookmark = firstPayload?.bookmarkData {
-                            isStale = !Self.bookmarkResolvesToReachable(bookmark)
+                        let metadata = payloadMetadata[entry.id]
+                        firstIcon = metadata?.firstIconPNG
+                        let bookmarks = metadata?.bookmarks ?? []
+                        isStale = bookmarks.isEmpty || bookmarks.contains { bookmark in
+                            guard let bookmark else { return true }
+                            return !Self.bookmarkResolvesToReachable(bookmark)
                         }
+                    } else if entry.kind == .image {
+                        firstIcon = payloadMetadata[entry.id]?.firstIconPNG
                     } else {
                         firstIcon = nil
                     }
@@ -200,6 +220,156 @@ final class HistoryStore {
                 }
             }
             .values(in: pool)
+    }
+
+    private static func fetchBrowsingEntries(
+        db: GRDB.Database,
+        limit: Int,
+        filter: Filter
+    ) throws -> [ClipEntry] {
+        switch filter {
+        case .all:
+            return try ClipEntry
+                .filter(Column("deletedAt") == nil)
+                .order(Column("createdAt").desc)
+                .limit(limit)
+                .fetchAll(db)
+        case .favorites:
+            return try ClipEntry
+                .filter(Column("deletedAt") == nil)
+                .filter(Column("isPinned") == true)
+                .order(Column("createdAt").desc)
+                .limit(limit)
+                .fetchAll(db)
+        case .group(let groupId):
+            return try ClipEntry.fetchAll(db, sql: """
+                SELECT e.* FROM clip_entry e
+                JOIN clip_entry_group eg ON eg.entryId = e.id
+                WHERE e.deletedAt IS NULL AND eg.groupId = ?
+                ORDER BY e.createdAt DESC
+                LIMIT ?
+                """, arguments: [groupId, max(0, limit)])
+        }
+    }
+
+    private static func fetchSearchEntries(
+        db: GRDB.Database,
+        limit: Int,
+        filter: Filter,
+        ftsQuery: String
+    ) throws -> [ClipEntry] {
+        let filterJoin: String
+        let filterPredicate: String
+        var arguments: StatementArguments = [ftsQuery]
+
+        switch filter {
+        case .all:
+            filterJoin = ""
+            filterPredicate = ""
+        case .favorites:
+            filterJoin = ""
+            filterPredicate = " AND e.isPinned = 1"
+        case .group(let groupId):
+            filterJoin = " JOIN clip_entry_group eg ON eg.entryId = e.id"
+            filterPredicate = " AND eg.groupId = ?"
+            arguments += [groupId]
+        }
+        arguments += [max(0, limit)]
+
+        return try ClipEntry.fetchAll(db, sql: """
+            SELECT e.*
+            FROM clip_fts
+            JOIN clip_entry e ON e.id = clip_fts.entryId
+            \(filterJoin)
+            WHERE clip_fts MATCH ?
+              AND e.deletedAt IS NULL\(filterPredicate)
+            ORDER BY bm25(clip_fts), e.createdAt DESC
+            LIMIT ?
+            """, arguments: arguments)
+    }
+
+    /// Converts arbitrary user text into a literal, prefix-matching FTS5 query.
+    /// Keeping only letter/number runs prevents FTS operators, quotes, and
+    /// punctuation from changing query structure or causing syntax errors.
+    private static func makeFTSQuery(from query: String) -> String? {
+        let tokens = query
+            .split { !$0.isLetter && !$0.isNumber }
+            .prefix(16)
+            .map { String($0.prefix(80)) }
+            .filter { !$0.isEmpty }
+
+        guard !tokens.isEmpty else { return nil }
+        return tokens
+            .map { "\"\($0)\"*" }
+            .joined(separator: " AND ")
+    }
+
+    private struct EntryPayloadMetadata {
+        var firstIconPNG: Data?
+        var bookmarks: [Data?]
+    }
+
+    private static func fetchPayloadMetadata(
+        db: GRDB.Database,
+        entryIds: [String]
+    ) throws -> [String: EntryPayloadMetadata] {
+        guard !entryIds.isEmpty else { return [:] }
+
+        let placeholders = entryIds.map { _ in "?" }.joined(separator: ",")
+        let rows = try Row.fetchAll(db, sql: """
+            SELECT entryId, iconPNG, bookmarkData
+            FROM clip_payload
+            WHERE entryId IN (\(placeholders))
+            ORDER BY entryId, position, id
+            """, arguments: StatementArguments(entryIds))
+
+        var result: [String: EntryPayloadMetadata] = [:]
+        result.reserveCapacity(entryIds.count)
+        for row in rows {
+            let entryId: String = row["entryId"]
+            let iconPNG: Data? = row["iconPNG"]
+            let bookmarkData: Data? = row["bookmarkData"]
+            if result[entryId] == nil {
+                result[entryId] = EntryPayloadMetadata(
+                    firstIconPNG: iconPNG,
+                    bookmarks: [bookmarkData]
+                )
+            } else {
+                result[entryId]?.bookmarks.append(bookmarkData)
+            }
+        }
+        return result
+    }
+
+    private static func deleteEntries(db: GRDB.Database, ids: [String]) throws {
+        guard !ids.isEmpty else { return }
+
+        // Stay well below SQLite's bound-variable limit when a lowered
+        // retention cap removes a large existing history.
+        let batchSize = 500
+        for start in stride(from: 0, to: ids.count, by: batchSize) {
+            let end = min(start + batchSize, ids.count)
+            let batch = Array(ids[start..<end])
+            let placeholders = batch.map { _ in "?" }.joined(separator: ",")
+            let arguments = StatementArguments(batch)
+
+            try db.execute(
+                sql: "DELETE FROM clip_fts WHERE entryId IN (\(placeholders))",
+                arguments: arguments
+            )
+            try db.execute(
+                sql: "DELETE FROM clip_entry_group WHERE entryId IN (\(placeholders))",
+                arguments: arguments
+            )
+            try db.execute(
+                sql: "DELETE FROM clip_payload WHERE entryId IN (\(placeholders))",
+                arguments: arguments
+            )
+            try db.execute(
+                sql: "DELETE FROM clip_entry WHERE id IN (\(placeholders))",
+                arguments: arguments
+            )
+        }
     }
 
     func observeGroups() -> AsyncValueObservation<[ClipGroup]> {

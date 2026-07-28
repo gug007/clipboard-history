@@ -50,7 +50,7 @@
         "description": "A balanced, source-linked comparison of Alfred Powerpack Clipboard History and Clipboard History for Mac.",
         "url": "https://clipboard-history.cc/compare/alfred/",
         "datePublished": "2026-07-27",
-        "dateModified": "2026-07-27",
+        "dateModified": "2026-07-28",
         "inLanguage": "en",
         "author": { "@id": "https://clipboard-history.cc/#organization" },
         "publisher": { "@id": "https://clipboard-history.cc/#organization" },
@@ -89,7 +89,7 @@
         <div class="article-eyebrow">Mac clipboard tools compared</div>
         <h1>Alfred vs Clipboard History</h1>
         <p class="article-lede">Alfred adds clipboard history, snippets, merging, and automation to its paid Powerpack productivity suite. Clipboard History is a free standalone utility for people who only want searchable local history.</p>
-        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 27, 2026</span></div>
+        <div class="article-meta"><span class="article-pill">Evidence linked</span><span class="article-pill">No affiliate links</span><span class="article-pill">Reviewed July 28, 2026</span></div>
       </header>
       <div class="article-body">
         <section aria-labelledby="short-answer">
@@ -106,12 +106,12 @@
               <tbody>
                 <tr><th scope="row">Price</th><td>Clipboard History requires Powerpack. As checked July 27, 2026, Alfred lists a £34 single-user v5 license and £59 Mega Supporter license with free lifetime upgrades. <a href="https://www.alfredapp.com/powerpack/">Official Powerpack page</a>.</td><td>Free, open source, and MIT-licensed with no paid tier. <a href="https://github.com/gug007/clipboard-history">Source and releases</a>.</td></tr>
                 <tr><th scope="row">Product scope</th><td>A Mac launcher and automation system with search, workflows, snippets, file navigation, contacts, themes, and more. <a href="https://www.alfredapp.com/powerpack/">Powerpack features</a>.</td><td>A standalone menu-bar clipboard utility. <a href="/mac-clipboard-history/">How Clipboard History works</a>.</td></tr>
-                <tr><th scope="row">Captured content</th><td>Searchable text, images, and file links. <a href="https://www.alfredapp.com/help/features/clipboard/">Alfred Clipboard History help</a>.</td><td>Searchable text, links, and Finder file/folder references; no bitmap-only clipboard images. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
+                <tr><th scope="row">Captured content</th><td>Searchable text, images, and file links. <a href="https://www.alfredapp.com/help/features/clipboard/">Alfred Clipboard History help</a>.</td><td>Plain text and links; RTF or HTML with a plain fallback; direct PNG or TIFF images; and Finder file/folder references. <a href="/faq/">Clipboard History FAQ</a>.</td></tr>
                 <tr><th scope="row">Retention</th><td>User chooses 24 hours, seven days, one month, or three months. <a href="https://www.alfredapp.com/help/features/clipboard/#using-clipboard-history">Alfred history settings</a>.</td><td>Item-based limit from 100 to 10,000, with 1,000 by default; grouped and starred items remain until removed.</td></tr>
                 <tr><th scope="row">Reusable text</th><td>Save a history item as a snippet, auto-expand snippet keywords, and sync or share snippet collections. <a href="https://www.alfredapp.com/help/features/clipboard/#saving-text-clips-as-snippets">Alfred snippets</a>.</td><td>Star an item or put it in a named group; no automatic text expansion or shared snippet collections.</td></tr>
                 <tr><th scope="row">Clipboard automation</th><td>Merge copied text with Command-C-C and use previous clipboard items as variables in workflows. <a href="https://www.alfredapp.com/help/features/clipboard/accessing-clipboard-history/">Clipboard workflows</a>.</td><td>No merging, placeholders, scripting, or workflow builder.</td></tr>
                 <tr><th scope="row">Files and folders</th><td>Records file links and can feed clipboard values into Alfred workflows. <a href="https://www.alfredapp.com/help/features/clipboard/">Alfred help</a>.</td><td>Stores Finder references with previews, pastes the real file or folder, flags missing originals, and reveals them in Finder.</td></tr>
-                <tr><th scope="row">Privacy</th><td>Disabled until the user enables it; ignores popular password apps and concealed content by default. Alfred says history data is stored locally and not sent to it. <a href="https://www.alfredapp.com/help/features/clipboard/">Clipboard privacy controls</a> and <a href="https://www.alfredapp.com/blog/tips-and-tricks/alfred-history-unburden-your-brain/">local-storage explanation</a>.</td><td>Local SQLite storage, no sync or app telemetry, plus password-manager, app, concealed, and transient exclusions. <a href="/privacy/">Privacy details</a>.</td></tr>
+                <tr><th scope="row">Privacy</th><td>Disabled until the user enables it; ignores popular password apps and concealed content by default. Alfred says history data is stored locally and not sent to it. <a href="https://www.alfredapp.com/help/features/clipboard/">Clipboard privacy controls</a> and <a href="https://www.alfredapp.com/blog/tips-and-tricks/alfred-history-unburden-your-brain/">local-storage explanation</a>.</td><td>Local SQLite storage, no sync or app telemetry; copies made while a supported password manager or user-excluded app is frontmost are skipped, along with concealed, transient, or auto-generated entries. <a href="/privacy/">Privacy details</a>.</td></tr>
                 <tr><th scope="row">Source code</th><td>Proprietary.</td><td>The complete application is <a href="https://github.com/gug007/clipboard-history">open source under MIT</a>.</td></tr>
               </tbody>
             </table>
@@ -143,7 +143,7 @@
         <section aria-labelledby="limits">
           <h2 id="limits">Clipboard History limitations to know first</h2>
           <ul>
-            <li>No bitmap image history, while Alfred can record images.</li>
+            <li>Direct PNG and TIFF images are retained with bounded previews, but there is no OCR, QR recognition, image-content search, or image editor.</li>
             <li>No text expansion, clipboard merging, workflow variables, scripts, or automation builder.</li>
             <li>No synchronization between Macs and no shared snippet collections.</li>
             <li>No general launcher, file search, contacts, custom web searches, or theme editor.</li>

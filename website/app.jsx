@@ -111,7 +111,7 @@ function Hero({ animationsPaused, onToggleAnimations }) {
         <div className="hero-kicker"><span aria-hidden="true"/> Free · open source · fully offline</div>
         <h1><em>Free clipboard manager</em> for Mac — never lose what you copy.</h1>
         <p className="hero-sub">
-          Clipboard History keeps text, links, files, and folders ready to paste again. Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to find any of your last thousand copies instantly.
+          Clipboard History keeps text, links, images, rich text, files, and folders ready to paste again. Press <span className="kbd-combo" role="img" aria-label="Shift Command V"><span className="kbd" aria-hidden="true">⇧</span><span className="kbd" aria-hidden="true">⌘</span><span className="kbd" aria-hidden="true">V</span></span> in any app to find any of your last thousand copies instantly.
         </p>
         <div className="hero-actions">
           <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'hero' } })}>
@@ -262,11 +262,11 @@ function App() {
         </section>
         <section id="features" className="features-section" aria-labelledby="features-heading">
           <div className="container">
-            <div className="section-intro section-intro-center">
-              <div className="section-eyebrow">What it does</div>
-              <h2 id="features-heading" className="section-title">Everything you copy, kept.</h2>
-              <p className="section-lede">Search instantly, keep important clips close, and paste text, links, files, or folders without breaking your flow.</p>
-            </div>
+        <div className="section-intro section-intro-center">
+          <div className="section-eyebrow">What it does</div>
+          <h2 id="features-heading" className="section-title">More of what you copy, kept.</h2>
+          <p className="section-lede">Search instantly, keep important clips close, and restore text, links, images, rich text, files, or folders without breaking your flow.</p>
+        </div>
             <FeatureGrid paused={animationsPaused}/>
           </div>
         </section>
