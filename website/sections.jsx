@@ -169,7 +169,7 @@ function DownloadSection() {
       <div className="container">
         <div className="download-card">
           <h2 id="download-heading">Stop losing what you copy.</h2>
-          <p>Free, open source, offline. Two minutes to install. Uninstall just as fast if it's not for you.</p>
+          <p>Free and open source. Clipboard history stays on your Mac with no cloud sync. Two minutes to install.</p>
           <div className="hero-actions">
             <a href={downloadUrl} className="btn btn-primary btn-lg" onClick={() => window.plausible && window.plausible('Download Click', { props: { source: 'closing' } })}>
               <span aria-hidden="true"><Icon.apple/></span> Download free for Mac
@@ -198,10 +198,12 @@ function Footer() {
         <nav className="foot-links" aria-label="Footer">
           <a href="https://github.com/gug007/clipboard-history">GitHub</a>
           <a href="https://github.com/gug007/clipboard-history/releases">Releases</a>
-          <a href="/keyboard-shortcuts/">Shortcuts</a>
-          <a href="/faq/">FAQ</a>
-          <a href="/mac-clipboard-history/">Guides</a>
-          <a href="/best-free-clipboard-managers-mac/">Compare</a>
+          <a href="/download/">Download for Mac</a>
+          <a href="/mac-clipboard-history/">Mac clipboard guide</a>
+          <a href="/keyboard-shortcuts/">Keyboard shortcuts</a>
+          <a href="/security/">Security</a>
+          <a href="/faq/">Help and FAQ</a>
+          <a href="/best-free-clipboard-managers-mac/">Best free Mac apps</a>
           <a href="/privacy/">Privacy</a>
           <a href="/uninstall/">Uninstall</a>
           <a href="https://github.com/gug007/clipboard-history/issues">Support</a>

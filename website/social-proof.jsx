@@ -34,8 +34,8 @@ function SocialProof({ variant = "hero" }) {
       />
       <TrustPill
         icon={<Icon.lock/>}
-        label="Local & offline"
-        title="Your clipboard history stays on your Mac"
+        label="No cloud sync"
+        title="Your clipboard history stays on your Mac; the app connects only to check for updates"
       />
     </div>
   );
